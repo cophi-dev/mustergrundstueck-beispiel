@@ -113,7 +113,10 @@
       </div>
       <div class="row" style="margin-top: 8px;">
         <button id="btn-export-dxf" class="accent" type="button">DXF exportieren</button>
-        <button id="btn-export-dae" class="accent" type="button">Für SketchUp exportieren</button>
+      </div>
+      <div class="row" style="margin-top: 8px;">
+        <button id="btn-export-stl" class="accent" type="button">STL für SketchUp Free</button>
+        <button id="btn-export-dae" class="accent" type="button">DAE für SketchUp Pro</button>
       </div>
     </div>
     
@@ -122,7 +125,7 @@
       <div class="legend" id="layers-legend"></div>
     </div>
     
-    <p class="hint">Maße metrisch, reine Massen. Beispiel-Kit zum Zeigen der Methodik, nicht die reale Parzelle. DXF für AutoCAD (R2010), DAE für SketchUp (in SketchUp als .skp speichern).</p>
+    <p class="hint">Maße metrisch, reine Massen. DXF für CAD, STL für SketchUp Free (Web), DAE für SketchUp Pro/Go. Native .skp wird nicht im Browser erzeugt.</p>
   </div>
   
   <div id="status">Lade Kit-Daten...</div>
@@ -661,6 +664,7 @@
     });
 
     document.getElementById("btn-export-dxf").addEventListener("click", exportDXF);
+    document.getElementById("btn-export-stl").addEventListener("click", exportSTL);
     document.getElementById("btn-export-dae").addEventListener("click", exportDAE);
 
     document.getElementById("toggle-panel").addEventListener("click", () => {
@@ -816,6 +820,162 @@
       dxf += "0\nEOF\n";
       
       return dxf;
+    }
+
+    function exportSTL() {
+      if (!kitData) return;
+      
+      const currentPositions = {};
+      for (const [pieceId, group] of pieceGroups) {
+        const parked = isParked(group.position.x, group.position.z);
+        currentPositions[pieceId] = { x: group.position.x, z: group.position.z, parked };
+      }
+
+      const stlContent = generateSTL(kitData, currentPositions);
+      const blob = new Blob([stlContent], { type: "model/stl" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "muster_oberhofer_export.stl";
+      a.click();
+      URL.revokeObjectURL(url);
+      statusEl.textContent = "STL exportiert — in SketchUp Free (Web) importieren";
+    }
+
+    function generateSTL(data, currentPositions) {
+      let stl = "solid MusterOberhofer\n";
+      
+      function addTriangle(v1, v2, v3) {
+        const ux = v2[0] - v1[0], uy = v2[1] - v1[1], uz = v2[2] - v1[2];
+        const vx = v3[0] - v1[0], vy = v3[1] - v1[1], vz = v3[2] - v1[2];
+        let nx = uy * vz - uz * vy;
+        let ny = uz * vx - ux * vz;
+        let nz = ux * vy - uy * vx;
+        const len = Math.sqrt(nx*nx + ny*ny + nz*nz) || 1;
+        nx /= len; ny /= len; nz /= len;
+        
+        stl += `  facet normal ${nx} ${ny} ${nz}\n`;
+        stl += `    outer loop\n`;
+        stl += `      vertex ${v1[0]} ${v1[1]} ${v1[2]}\n`;
+        stl += `      vertex ${v2[0]} ${v2[1]} ${v2[2]}\n`;
+        stl += `      vertex ${v3[0]} ${v3[1]} ${v3[2]}\n`;
+        stl += `    endloop\n`;
+        stl += `  endfacet\n`;
+      }
+      
+      function addBox(cx, cy, cz, w, h, d) {
+        const hw = w/2, hh = h/2, hd = d/2;
+        const x0 = cx - hw, x1 = cx + hw;
+        const y0 = cy - hh, y1 = cy + hh;
+        const z0 = cz - hd, z1 = cz + hd;
+        
+        addTriangle([x0,y0,z0], [x1,y0,z0], [x1,y1,z0]);
+        addTriangle([x0,y0,z0], [x1,y1,z0], [x0,y1,z0]);
+        addTriangle([x0,y0,z1], [x1,y1,z1], [x1,y0,z1]);
+        addTriangle([x0,y0,z1], [x0,y1,z1], [x1,y1,z1]);
+        addTriangle([x0,y0,z0], [x0,y1,z0], [x0,y1,z1]);
+        addTriangle([x0,y0,z0], [x0,y1,z1], [x0,y0,z1]);
+        addTriangle([x1,y0,z0], [x1,y1,z1], [x1,y1,z0]);
+        addTriangle([x1,y0,z0], [x1,y0,z1], [x1,y1,z1]);
+        addTriangle([x0,y0,z0], [x1,y0,z1], [x1,y0,z0]);
+        addTriangle([x0,y0,z0], [x0,y0,z1], [x1,y0,z1]);
+        addTriangle([x0,y1,z0], [x1,y1,z0], [x1,y1,z1]);
+        addTriangle([x0,y1,z0], [x1,y1,z1], [x0,y1,z1]);
+      }
+      
+      function addCylinder(cx, cy, cz, radius, height, segments = 16) {
+        const y0 = cy, y1 = cy + height;
+        
+        for (let i = 0; i < segments; i++) {
+          const a0 = (i / segments) * Math.PI * 2;
+          const a1 = ((i + 1) / segments) * Math.PI * 2;
+          const x0 = cx + Math.cos(a0) * radius;
+          const z0 = cz + Math.sin(a0) * radius;
+          const x1 = cx + Math.cos(a1) * radius;
+          const z1 = cz + Math.sin(a1) * radius;
+          
+          addTriangle([x0, y0, z0], [x1, y1, z1], [x1, y0, z1]);
+          addTriangle([x0, y0, z0], [x0, y1, z0], [x1, y1, z1]);
+          addTriangle([cx, y0, cz], [x1, y0, z1], [x0, y0, z0]);
+          addTriangle([cx, y1, cz], [x0, y1, z0], [x1, y1, z1]);
+        }
+      }
+      
+      function addPolygonExtrusion(vertices, height, offsetX, offsetZ) {
+        const n = vertices.length;
+        const verts = vertices.map(v => [v[0] + offsetX, v[1] + offsetZ]);
+        
+        for (let i = 1; i < n - 1; i++) {
+          addTriangle(
+            [verts[0][0], 0, verts[0][1]],
+            [verts[i+1][0], 0, verts[i+1][1]],
+            [verts[i][0], 0, verts[i][1]]
+          );
+          addTriangle(
+            [verts[0][0], height, verts[0][1]],
+            [verts[i][0], height, verts[i][1]],
+            [verts[i+1][0], height, verts[i+1][1]]
+          );
+        }
+        
+        for (let i = 0; i < n; i++) {
+          const [x1, z1] = verts[i];
+          const [x2, z2] = verts[(i + 1) % n];
+          addTriangle([x1, 0, z1], [x2, 0, z2], [x2, height, z2]);
+          addTriangle([x1, 0, z1], [x2, height, z2], [x1, height, z1]);
+        }
+      }
+      
+      const hw = data.site.width / 2;
+      const hd = data.site.depth / 2;
+      addBox(0, -0.05, 0, data.site.width, 0.1, data.site.depth);
+      
+      for (const piece of data.pieces) {
+        if (!piece.draggable && piece.type !== "tree") continue;
+        
+        const pos = currentPositions[piece.id];
+        let tx = 0, tz = 0;
+        if (pos) {
+          tx = pos.x;
+          tz = pos.z;
+        } else if (piece.position) {
+          tx = piece.position[0];
+          tz = piece.position[1];
+        }
+
+        if (piece.type === "box") {
+          const [w, d, h] = piece.size;
+          addBox(tx, h/2, tz, w, h, d);
+        }
+        else if (piece.type === "cylinder") {
+          addCylinder(tx, 0, tz, piece.radius, piece.height);
+        }
+        else if (piece.type === "polygon" && piece.draggable && (piece.height || 0) > 0) {
+          addPolygonExtrusion(piece.vertices, piece.height, tx, tz);
+        }
+        else if (piece.type === "tree") {
+          const trunkR = piece.radius * 0.18;
+          const trunkH = piece.height * 0.3;
+          addCylinder(piece.position[0], 0, piece.position[1], trunkR, trunkH, 8);
+          const crownR = piece.radius;
+          const crownH = piece.height * 0.7;
+          const crownY = piece.height * 0.35;
+          addCylinder(piece.position[0], crownY, piece.position[1], crownR, crownH, 12);
+        }
+      }
+      
+      for (const piece of data.pieces) {
+        if (piece.draggable) continue;
+        if (piece.type !== "box") continue;
+        
+        const [w, d, h] = piece.size;
+        const tx = piece.position[0];
+        const tz = piece.position[1];
+        addBox(tx, h/2, tz, w, h, d);
+      }
+      
+      stl += "endsolid MusterOberhofer\n";
+      return stl;
     }
 
     function exportDAE() {

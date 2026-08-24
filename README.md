@@ -12,10 +12,11 @@ Interaktiver 3D-Baukasten für ein fiktives Mustergrundstück (ca. 2400 m²). De
 
 ## Features
 
-- **Shared Kit List**: Eine JSON-Datei (`kit.json`) definiert alle Geometrien — eine Quelle für HTML-Viewer, DXF und DAE
+- **Shared Kit List**: Eine JSON-Datei (`kit.json`) definiert alle Geometrien — eine Quelle für HTML-Viewer, DXF, STL und DAE
 - **3D Viewer**: Three.js-basierter Viewer mit Orbit-Steuerung und Drag-and-Drop
 - **DXF Export**: AutoCAD-kompatibler Export (R2010, Meter, benannte Layer/Blöcke)
-- **DAE Export für SketchUp**: Collada-Export der aktuellen Konfiguration → in SketchUp öffnen → als .skp speichern
+- **STL Export**: Für SketchUp Free (Web) — STL importieren, dann als .skp speichern
+- **DAE Export**: Für SketchUp Pro/Go/Studio — Collada importieren, dann als .skp speichern
 - **Deutsche UI**: Alle Labels und Beschriftungen auf Deutsch
 
 ## Das Demo-Szenario
@@ -79,17 +80,23 @@ node generate-dxf.js                    # Erzeugt muster_oberhofer.dxf
 node generate-dxf.js ausgabe.dxf        # Erzeugt ausgabe.dxf
 ```
 
-### SketchUp-Export (DAE → SKP)
+### SketchUp-Export (STL oder DAE → SKP)
 
-Der Browser exportiert Collada (.dae), nicht natives SketchUp (.skp). Das .skp-Format ist proprietär und kann im Browser nicht zuverlässig geschrieben werden.
+Der Browser exportiert STL oder Collada (.dae), nicht natives SketchUp (.skp). Das .skp-Format ist proprietär und kann im Browser nicht geschrieben werden.
 
-**Workflow:**
+**SketchUp Free (Web) — STL:**
 1. Im Browser: Teile verschieben bis die Konfiguration passt
-2. Button "Für SketchUp exportieren" klicken → lädt `muster_oberhofer_export.dae`
-3. In SketchUp Desktop: Datei → Importieren → die .dae-Datei öffnen
+2. Button "STL für SketchUp Free" klicken → lädt `muster_oberhofer_export.stl`
+3. In SketchUp for Web (app.sketchup.com): Datei → Importieren → STL-Datei wählen
 4. In SketchUp: Datei → Speichern unter → als .skp speichern
 
-> **Hinweis:** Die DAE-Datei enthält die **aktuellen verschobenen Positionen** aller Kit-Teile. Beide Exporte (DXF und DAE) verwenden dieselbe Datenquelle (kit.json + aktuelle Transforms).
+**SketchUp Pro/Go/Studio — DAE:**
+1. Im Browser: Teile verschieben bis die Konfiguration passt
+2. Button "DAE für SketchUp Pro" klicken → lädt `muster_oberhofer_export.dae`
+3. In SketchUp Desktop: Datei → Importieren → DAE-Datei wählen
+4. In SketchUp: Datei → Speichern unter → als .skp speichern
+
+> **Hinweis:** Alle Exporte (DXF, STL, DAE) verwenden dieselbe Datenquelle (kit.json + aktuelle verschobene Positionen). Geparkte Teile sind im STL/DAE enthalten, aber räumlich getrennt vom Grundstück.
 
 ### Kit-Definition anpassen
 
@@ -139,12 +146,21 @@ Die Datei `kit.json` enthält alle Geometrien:
 - 3D-Flächen für Volumenblöcke
 - Exportiert aktuelle Drag-Positionen
 
-### DAE-Export (für SketchUp)
+### STL-Export (für SketchUp Free)
+- Format: ASCII STL
+- Einheiten: Meter
+- 3D-Meshes für alle Volumenkörper (Boxen, Zylinder, Bäume)
+- Für SketchUp for Web (app.sketchup.com) — Free-Plan unterstützt STL-Import
+- **Kein natives .skp** — in SketchUp importieren und als .skp speichern
+- Exportiert aktuelle Drag-Positionen (inkl. geparkte Teile)
+
+### DAE-Export (für SketchUp Pro/Go/Studio)
 - Format: Collada 1.4.1
 - Einheiten: Meter (Y-up)
 - Farbige Materialien pro Stück
 - 3D-Meshes für alle Volumenkörper
-- **Kein natives .skp** — SketchUp importiert DAE und speichert dann als .skp
+- Für SketchUp Desktop mit Pro/Go/Studio-Lizenz (DAE-Import nicht im Free-Plan)
+- **Kein natives .skp** — in SketchUp importieren und als .skp speichern
 - Exportiert aktuelle Drag-Positionen
 
 ### Layer im DXF
@@ -171,8 +187,8 @@ Dieser Baukasten dient als **erste Gesprächsgrundlage** mit dem Auftraggeber:
 1. **Keine echten Daten**: Alle Maße sind fiktiv
 2. **Keine Detailplanung**: Nur Massen/Volumen, keine Innenräume
 3. **Keine Simulation**: Lärmstreifen ist schematisch, keine Akustikberechnung
-4. **Kein Ersatz für CAD**: DXF/DAE-Exporte sind Ausgangspunkte, keine finale Planung
-5. **Kein natives .skp**: Browser kann kein echtes SketchUp-Format schreiben — DAE ist der Weg
+4. **Kein Ersatz für CAD**: DXF/STL/DAE-Exporte sind Ausgangspunkte, keine finale Planung
+5. **Kein natives .skp**: Browser kann kein SketchUp-Format schreiben — STL (Free) oder DAE (Pro) importieren
 
 **Nächste Schritte für echtes Projekt:**
 - Vermessungsplan einlesen
