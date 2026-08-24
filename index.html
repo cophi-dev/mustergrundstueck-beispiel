@@ -91,9 +91,10 @@
     <div class="section">
       <h2>Baukasten — verschiebbare Teile</h2>
       <ul>
-        <li><strong>Linksklick + Ziehen</strong>: Kit-Teile auf der Fläche verschieben</li>
+        <li><strong>Linksklick + Ziehen</strong>: Kit-Teile verschieben</li>
         <li><strong>Rechte Maustaste / Rad</strong>: Orbit und Zoom</li>
         <li><strong>Gelbe Fläche</strong>: Baufenster (ca. 700 m² bebaubar)</li>
+        <li><strong>Graue Fläche rechts</strong>: Parkplatz für ungenutzte Teile</li>
         <li><strong>Rote Streifen</strong>: Lärmschutzzone an Durchfahrt</li>
       </ul>
     </div>
@@ -148,13 +149,14 @@
     let SITE_W = 40;
     let SITE_D = 60;
     let HALF_W, HALF_D;
+    let PARK_X = 55, PARK_Z = 0, PARK_W = 30, PARK_D = 50;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x8aa3b0);
     scene.fog = new THREE.Fog(0x8aa3b0, 100, 250);
 
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
-    camera.position.set(52, 40, 56);
+    camera.position.set(65, 50, 70);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -171,18 +173,18 @@
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.target.set(0, 2, 0);
+    controls.target.set(20, 2, 0);
     controls.maxPolarAngle = Math.PI * 0.48;
     controls.minDistance = 15;
-    controls.maxDistance = 160;
+    controls.maxDistance = 200;
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
     const sun = new THREE.DirectionalLight(0xfff3d4, 1.1);
-    sun.position.set(30, 45, 20);
+    sun.position.set(50, 50, 25);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
-    sun.shadow.camera.left = -55;
-    sun.shadow.camera.right = 55;
+    sun.shadow.camera.left = -80;
+    sun.shadow.camera.right = 80;
     sun.shadow.camera.top = 55;
     sun.shadow.camera.bottom = -55;
     scene.add(sun);
@@ -291,6 +293,13 @@
       HALF_W = SITE_W / 2;
       HALF_D = SITE_D / 2;
 
+      if (data.parkplatz && data.parkplatz.enabled) {
+        PARK_X = data.parkplatz.position[0];
+        PARK_Z = data.parkplatz.position[1];
+        PARK_W = data.parkplatz.size[0];
+        PARK_D = data.parkplatz.size[1];
+      }
+
       const lawn = new THREE.Mesh(
         new THREE.PlaneGeometry(SITE_W, SITE_D),
         mat(0x6b8f4e, { roughness: 0.95 })
@@ -301,11 +310,11 @@
       context.add(lawn);
 
       const groundRing = new THREE.Mesh(
-        new THREE.PlaneGeometry(SITE_W + 50, SITE_D + 50),
+        new THREE.PlaneGeometry(SITE_W + 80, SITE_D + 50),
         mat(0x8a8a7a, { roughness: 1 })
       );
       groundRing.rotation.x = -Math.PI / 2;
-      groundRing.position.y = -0.03;
+      groundRing.position.set(20, -0.03, 0);
       groundRing.receiveShadow = true;
       groundRing.name = "Umgebung";
       context.add(groundRing);
@@ -317,6 +326,10 @@
       edge.rotation.x = -Math.PI / 2;
       edge.position.y = 0.04;
       context.add(edge);
+
+      if (data.parkplatz && data.parkplatz.enabled) {
+        addParkplatz(data.parkplatz);
+      }
 
       addFence();
       addNorthArrow();
@@ -469,6 +482,55 @@
       context.add(scale);
     }
 
+    function addParkplatz(parkConfig) {
+      const parkGroup = new THREE.Group();
+      parkGroup.name = "Parkplatz";
+      
+      const parkMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(parkConfig.size[0], parkConfig.size[1]),
+        mat(0x5a5a5a, { roughness: 0.95 })
+      );
+      parkMesh.rotation.x = -Math.PI / 2;
+      parkMesh.position.set(parkConfig.position[0], 0.01, parkConfig.position[1]);
+      parkMesh.receiveShadow = true;
+      parkMesh.name = "Parkplatz_Fläche";
+      parkGroup.add(parkMesh);
+      
+      const pw = parkConfig.size[0], pd = parkConfig.size[1];
+      const px = parkConfig.position[0], pz = parkConfig.position[1];
+      const parkEdge = new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.PlaneGeometry(pw, pd)),
+        new THREE.LineBasicMaterial({ color: 0x3a3a3a, linewidth: 2 })
+      );
+      parkEdge.rotation.x = -Math.PI / 2;
+      parkEdge.position.set(px, 0.05, pz);
+      parkGroup.add(parkEdge);
+      
+      const dashedMat = new THREE.LineDashedMaterial({ 
+        color: 0x888888, 
+        dashSize: 1, 
+        gapSize: 0.5,
+        linewidth: 1
+      });
+      const gridLines = new THREE.Group();
+      const hpw = pw / 2, hpd = pd / 2;
+      for (let i = -2; i <= 2; i++) {
+        const lineGeom = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(px - hpw, 0.03, pz + i * 10),
+          new THREE.Vector3(px + hpw, 0.03, pz + i * 10)
+        ]);
+        const line = new THREE.Line(lineGeom, dashedMat);
+        line.computeLineDistances();
+        gridLines.add(line);
+      }
+      parkGroup.add(gridLines);
+      
+      parkGroup.add(makeLabel(parkConfig.label || "Parkplatz", 0.8));
+      parkGroup.children[parkGroup.children.length - 1].position.set(px, 0.8, pz - hpd + 2);
+      
+      context.add(parkGroup);
+    }
+
     function buildLegend(data) {
       const optionPieces = data.pieces.filter(p => p.layer.startsWith("OPTION_"));
       for (const p of optionPieces) {
@@ -520,9 +582,30 @@
       return obj;
     }
 
-    function clampToLawn(v) {
-      v.x = THREE.MathUtils.clamp(v.x, -HALF_W + 2, HALF_W - 2);
-      v.z = THREE.MathUtils.clamp(v.z, -HALF_D + 2, HALF_D - 2);
+    function clampToBounds(v) {
+      const inSite = v.x >= -HALF_W && v.x <= HALF_W && v.z >= -HALF_D && v.z <= HALF_D;
+      const parkLeft = PARK_X - PARK_W / 2;
+      const parkRight = PARK_X + PARK_W / 2;
+      const parkTop = PARK_Z + PARK_D / 2;
+      const parkBottom = PARK_Z - PARK_D / 2;
+      const inPark = v.x >= parkLeft && v.x <= parkRight && v.z >= parkBottom && v.z <= parkTop;
+      
+      if (!inSite && !inPark) {
+        const distToSite = Math.max(Math.abs(v.x) - HALF_W, Math.abs(v.z) - HALF_D);
+        const distToPark = Math.max(
+          Math.max(parkLeft - v.x, v.x - parkRight),
+          Math.max(parkBottom - v.z, v.z - parkTop)
+        );
+        
+        if (distToSite < distToPark) {
+          v.x = THREE.MathUtils.clamp(v.x, -HALF_W + 2, HALF_W - 2);
+          v.z = THREE.MathUtils.clamp(v.z, -HALF_D + 2, HALF_D - 2);
+        } else {
+          v.x = THREE.MathUtils.clamp(v.x, parkLeft + 2, parkRight - 2);
+          v.z = THREE.MathUtils.clamp(v.z, parkBottom + 2, parkTop - 2);
+        }
+      }
+      
       v.y = 0;
       return v;
     }
@@ -545,7 +628,7 @@
       ndc(ev);
       raycaster.setFromCamera(pointer, camera);
       if (!raycaster.ray.intersectPlane(groundPlane, hit)) return;
-      dragging.position.copy(clampToLawn(hit.add(offset)));
+      dragging.position.copy(clampToBounds(hit.add(offset)));
     });
 
     function endDrag() {
@@ -567,13 +650,13 @@
 
     document.getElementById("btn-reset").addEventListener("click", resetKit);
     document.getElementById("btn-top").addEventListener("click", () => {
-      camera.position.set(0, 85, 0.01);
-      controls.target.set(0, 0, 0);
+      camera.position.set(20, 100, 0.01);
+      controls.target.set(20, 0, 0);
       controls.update();
     });
     document.getElementById("btn-iso").addEventListener("click", () => {
-      camera.position.set(52, 40, 56);
-      controls.target.set(0, 2, 0);
+      camera.position.set(65, 50, 70);
+      controls.target.set(20, 2, 0);
       controls.update();
     });
 
@@ -584,12 +667,18 @@
       document.getElementById("panel").classList.toggle("collapsed");
     });
 
+    function isParked(x, z) {
+      const inSite = x >= -HALF_W && x <= HALF_W && z >= -HALF_D && z <= HALF_D;
+      return !inSite;
+    }
+
     function exportDXF() {
       if (!kitData) return;
       
       const currentPositions = {};
       for (const [pieceId, group] of pieceGroups) {
-        currentPositions[pieceId] = { x: group.position.x, z: group.position.z };
+        const parked = isParked(group.position.x, group.position.z);
+        currentPositions[pieceId] = { x: group.position.x, z: group.position.z, parked };
       }
 
       const dxfContent = generateDXF(kitData, currentPositions);
@@ -662,13 +751,16 @@
         if (piece.type === "polygon") {
           let verts = piece.vertices;
           const pos = currentPositions[piece.id] || piece.position;
+          let parked = false;
           if (pos && Array.isArray(pos)) {
             verts = verts.map(v => [v[0] + pos[0], v[1] + pos[1]]);
           } else if (pos && typeof pos === 'object') {
             verts = verts.map(v => [v[0] + pos.x, v[1] + pos.z]);
+            parked = pos.parked || false;
           }
           
-          dxf += "0\nLWPOLYLINE\n8\n" + piece.layer + "\n";
+          const layer = (piece.draggable && parked) ? "PARKPLATZ" : piece.layer;
+          dxf += "0\nLWPOLYLINE\n8\n" + layer + "\n";
           dxf += "90\n" + verts.length + "\n70\n1\n";
           for (const v of verts) {
             dxf += "10\n" + v[0] + "\n20\n" + v[1] + "\n";
@@ -677,7 +769,7 @@
           if (piece.label) {
             const cx = verts.reduce((s, v) => s + v[0], 0) / verts.length;
             const cy = verts.reduce((s, v) => s + v[1], 0) / verts.length;
-            dxf += "0\nTEXT\n8\n" + piece.layer + "\n";
+            dxf += "0\nTEXT\n8\n" + layer + "\n";
             dxf += "10\n" + cx + "\n20\n" + cy + "\n30\n0\n";
             dxf += "40\n0.6\n1\n" + piece.label + "\n";
           }
@@ -686,8 +778,10 @@
           const pos = currentPositions[piece.id] || { x: piece.position[0], z: piece.position[1] };
           const x = typeof pos.x !== 'undefined' ? pos.x : pos[0];
           const z = typeof pos.z !== 'undefined' ? pos.z : pos[1];
+          const parked = pos.parked || false;
+          const layer = parked ? "PARKPLATZ" : piece.layer;
           
-          dxf += "0\nINSERT\n8\n" + piece.layer + "\n";
+          dxf += "0\nINSERT\n8\n" + layer + "\n";
           dxf += "2\n" + piece.id.toUpperCase() + "\n";
           dxf += "10\n" + x + "\n20\n" + z + "\n30\n0\n";
           dxf += "41\n1\n42\n1\n43\n1\n50\n0\n";
@@ -729,7 +823,8 @@
       
       const currentPositions = {};
       for (const [pieceId, group] of pieceGroups) {
-        currentPositions[pieceId] = { x: group.position.x, z: group.position.z };
+        const parked = isParked(group.position.x, group.position.z);
+        currentPositions[pieceId] = { x: group.position.x, z: group.position.z, parked };
       }
 
       const daeContent = generateDAE(kitData, currentPositions);

@@ -69,6 +69,9 @@ Einfach `index.html` öffnen:
 - Button "DXF exportieren": Lädt aktuelle Konfiguration als DXF-Datei
 - Button "Für SketchUp exportieren": Lädt aktuelle Konfiguration als Collada DAE
 
+**Parkplatz:**
+Die graue Fläche rechts neben dem Grundstück ist ein Parkplatz für ungenutzte Baukasten-Teile. Ziehen Sie Optionen vom Parkplatz auf das Baufenster (gelb), um sie zu platzieren. Ziehen Sie sie zurück auf den Parkplatz, um sie aus der Planung zu nehmen. Geparkte Teile werden im DXF/DAE-Export auf einem separaten PARKPLATZ-Layer abgelegt.
+
 ### DXF-Export (Kommandozeile)
 
 ```bash
@@ -159,6 +162,7 @@ Die Datei `kit.json` enthält alle Geometrien:
 | OPTION_ERSATZ | 30 | Ersatzneubau |
 | TECHNIK | 9 | PV, Zisterne |
 | BAEUME | 84 | Bestandsbäume |
+| PARKPLATZ | 8 | Geparkte/ungenutzte Teile |
 
 ## Hinweise zur Methodik
 

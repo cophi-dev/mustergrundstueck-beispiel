@@ -24,7 +24,14 @@
     "OPTION_ERSATZ": { "color": "#d97b3a", "dxfColor": 30 },
     "GRUENFLAECHE": { "color": "#6b8f4e", "dxfColor": 92 },
     "TECHNIK": { "color": "#7f8c8d", "dxfColor": 9 },
-    "BAEUME": { "color": "#3f6b3a", "dxfColor": 84 }
+    "BAEUME": { "color": "#3f6b3a", "dxfColor": 84 },
+    "PARKPLATZ": { "color": "#6a6a6a", "dxfColor": 8 }
+  },
+  "parkplatz": {
+    "enabled": true,
+    "position": [55, 0],
+    "size": [30, 50],
+    "label": "Parkplatz"
   },
   "pieces": [
     {
@@ -132,9 +139,10 @@
       "layer": "OPTION_BUNGALOW",
       "type": "box",
       "draggable": true,
-      "position": [6, 14],
+      "position": [55, 18],
       "size": [16, 12, 3.5],
-      "color": "#4a9f4a"
+      "color": "#4a9f4a",
+      "parked": true
     },
     {
       "id": "option_efh",
@@ -143,9 +151,10 @@
       "layer": "OPTION_EFH",
       "type": "box",
       "draggable": true,
-      "position": [-2, 8],
+      "position": [6, 14],
       "size": [10, 8, 7],
-      "color": "#3a7ca5"
+      "color": "#3a7ca5",
+      "parked": false
     },
     {
       "id": "option_mfh",
@@ -154,9 +163,10 @@
       "layer": "OPTION_MFH",
       "type": "box",
       "draggable": true,
-      "position": [4, 18],
+      "position": [55, 0],
       "size": [14, 10, 10],
-      "color": "#9f4a9f"
+      "color": "#9f4a9f",
+      "parked": true
     },
     {
       "id": "option_ersatz",
@@ -165,9 +175,10 @@
       "layer": "OPTION_ERSATZ",
       "type": "box",
       "draggable": true,
-      "position": [-6, -16],
+      "position": [55, -18],
       "size": [14, 11, 7],
-      "color": "#d97b3a"
+      "color": "#d97b3a",
+      "parked": true
     },
     {
       "id": "pv_feld",
@@ -176,9 +187,10 @@
       "layer": "TECHNIK",
       "type": "box",
       "draggable": true,
-      "position": [12, 8],
+      "position": [45, -8],
       "size": [8, 5, 0.5],
-      "color": "#1a3a6b"
+      "color": "#1a3a6b",
+      "parked": true
     },
     {
       "id": "zisterne",
@@ -187,10 +199,11 @@
       "layer": "TECHNIK",
       "type": "cylinder",
       "draggable": true,
-      "position": [0, 22],
+      "position": [45, -18],
       "radius": 1.5,
       "height": 2.4,
-      "color": "#7f8c8d"
+      "color": "#7f8c8d",
+      "parked": true
     },
     {
       "id": "gruenflaeche_1",
@@ -200,9 +213,10 @@
       "type": "polygon",
       "draggable": true,
       "vertices": [[0, 0], [6, 0], [6, 4], [0, 4]],
-      "position": [-18, 20],
+      "position": [45, -2],
       "height": 0.3,
-      "color": "#6b8f4e"
+      "color": "#6b8f4e",
+      "parked": true
     },
     {
       "id": "baum_01",
