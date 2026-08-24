@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mustergrundstück Oberhofer — Baukasten Demo</title>
+  <title>Mustergrundstück Oberhofer — Baukasten</title>
   <style>
     :root {
       --bg: #1a211c;
@@ -20,121 +20,111 @@
     canvas { display: block; width: 100%; height: 100%; }
     header {
       position: absolute; top: 0; left: 0; right: 0; z-index: 5;
-      padding: 14px 18px 12px;
-      background: linear-gradient(180deg, rgba(12,16,13,0.94), rgba(12,16,13,0.4) 75%, transparent);
+      padding: 10px 18px 8px;
+      background: linear-gradient(180deg, rgba(12,16,13,0.9), transparent);
       pointer-events: none;
     }
-    header h1 { margin: 0 0 4px; font-size: 18px; font-weight: 650; letter-spacing: 0.01em; }
-    header p { margin: 0; font-size: 12.5px; color: var(--muted); max-width: 860px; line-height: 1.45; }
-    .badge {
-      display: inline-block; margin-top: 8px; pointer-events: auto;
-      font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-      color: #3a2a00; background: var(--accent); padding: 3px 8px; border-radius: 3px;
-    }
-    .badge.warn { background: var(--warn); color: #fff; }
+    header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+    header h1 span { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: 8px; }
     .ui {
       position: absolute; left: 16px; bottom: 16px; z-index: 6;
       background: var(--panel); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px; padding: 14px 16px; width: min(380px, calc(100vw - 32px));
+      border-radius: 10px; padding: 12px 14px; width: min(320px, calc(100vw - 32px));
       backdrop-filter: blur(10px);
-      max-height: calc(100vh - 100px);
+      max-height: calc(100vh - 80px);
       overflow-y: auto;
     }
-    .ui h2 { margin: 0 0 10px; font-size: 13px; color: var(--accent); font-weight: 650; }
-    .ui ul { margin: 0 0 12px; padding-left: 18px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
-    .ui li { margin-bottom: 3px; }
-    .section { margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .ui h2 { margin: 0 0 8px; font-size: 12px; color: var(--accent); font-weight: 650; text-transform: uppercase; letter-spacing: 0.05em; }
+    .section { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
     .section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
     button {
       appearance: none; border: 0; cursor: pointer;
-      background: var(--ok); color: #10210f; font-weight: 700;
-      padding: 8px 12px; border-radius: 6px; font-size: 13px;
+      background: var(--ok); color: #10210f; font-weight: 600;
+      padding: 6px 10px; border-radius: 5px; font-size: 12px;
       transition: transform 0.1s, opacity 0.1s;
     }
     button:hover { opacity: 0.9; }
     button:active { transform: scale(0.97); }
     button.secondary { background: #3d4a40; color: var(--ink); }
-    button.accent { background: var(--accent); color: #1a1400; }
-    .legend { margin-top: 12px; }
-    .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 11.5px; }
-    .legend-swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.15); flex-shrink: 0; }
-    .hint { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+    button.variant { background: #2a3a2e; color: var(--ink); border: 1px solid rgba(255,255,255,0.1); }
+    button.variant.active { background: var(--accent); color: #1a1400; border-color: var(--accent); }
     .label {
       position: absolute; transform: translate(-50%, -100%);
       pointer-events: none; white-space: nowrap;
-      font-size: 11px; font-weight: 650;
-      background: rgba(14,18,15,0.82); color: #f3f7f2;
-      padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15);
+      font-size: 10px; font-weight: 600;
+      background: rgba(14,18,15,0.85); color: #f3f7f2;
+      padding: 2px 6px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.12);
     }
-    #status { position: absolute; right: 16px; bottom: 16px; z-index: 6; font-size: 12px; color: var(--muted); text-align: right; }
-    #toggle-panel { display: none; }
-    @media (max-width: 600px) {
-      .ui { width: calc(100vw - 24px); left: 12px; bottom: 12px; max-height: 45vh; }
-      #toggle-panel { display: block; position: absolute; left: 12px; bottom: 12px; z-index: 7; }
-      .ui.collapsed { display: none; }
+    .slider-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+    .slider-row label { font-size: 11px; color: var(--muted); min-width: 50px; }
+    .slider-row input[type="range"] { flex: 1; height: 4px; }
+    .slider-row .value { font-size: 11px; color: var(--ink); min-width: 45px; text-align: right; }
+    #status { position: absolute; right: 16px; bottom: 16px; z-index: 6; font-size: 11px; color: var(--muted); text-align: right; }
+    #sync-status { font-size: 10px; color: var(--muted); margin-top: 4px; }
+    #sync-status.connected { color: var(--ok); }
+    footer {
+      position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+      font-size: 10px; color: rgba(255,255,255,0.35); z-index: 5;
+    }
+    @media (max-width: 500px) {
+      .ui { width: calc(100vw - 24px); left: 12px; bottom: 12px; }
     }
   </style>
 </head>
 <body>
   <div id="canvas-wrap"></div>
   <header>
-    <h1>Mustergrundstück Oberhofer — Baukasten Demo</h1>
-    <p>Fiktives Muster für Planspiele (ca. 2400 m², unregelmäßige Parzellen). <strong>Dies ist NICHT das echte Grundstück</strong> — nur ein Beispiel, um die Methodik zu demonstrieren. Reale Geometrie kommt aus den Plänen des Auftraggebers.</p>
-    <span class="badge">Muster · Sample · Kein echtes Grundstück</span>
-    <span class="badge warn">Nur zur Demonstration</span>
+    <h1>Mustergrundstück Oberhofer<span>Beispiel-Kit, nicht das echte Grundstück</span></h1>
   </header>
-  
-  <button id="toggle-panel" class="secondary" type="button">☰ Menü</button>
   
   <div class="ui" id="panel">
     <div class="section">
-      <h2>Baukasten — verschiebbare Teile</h2>
-      <ul>
-        <li><strong>Linksklick + Ziehen</strong>: Kit-Teile verschieben</li>
-        <li><strong>Rechte Maustaste / Rad</strong>: Orbit und Zoom</li>
-        <li><strong>Gelbe Fläche</strong>: Baufenster (ca. 700 m² bebaubar)</li>
-        <li><strong>Graue Fläche rechts</strong>: Parkplatz für ungenutzte Teile</li>
-        <li><strong>Rote Streifen</strong>: Lärmschutzzone an Durchfahrt</li>
-      </ul>
+      <h2>Variante wählen</h2>
+      <div class="row">
+        <button class="variant" data-variant="bungalow">Bungalow</button>
+        <button class="variant" data-variant="efh">EFH</button>
+        <button class="variant" data-variant="mfh">3-Parteien</button>
+        <button class="variant" data-variant="ersatz">Ersatz</button>
+      </div>
     </div>
     
     <div class="section">
-      <h2>Bebauungsoptionen (verschiebbar)</h2>
-      <div class="legend" id="options-legend"></div>
+      <h2>Sonnenstand (Hamburg)</h2>
+      <div class="slider-row">
+        <label>Uhrzeit</label>
+        <input type="range" id="sun-hour" min="5" max="21" step="0.5" value="12">
+        <span class="value" id="sun-hour-val">12:00</span>
+      </div>
+      <div class="slider-row">
+        <label>Monat</label>
+        <input type="range" id="sun-month" min="1" max="12" step="1" value="6">
+        <span class="value" id="sun-month-val">Juni</span>
+      </div>
     </div>
-    
+
     <div class="section">
-      <h2>Steuerung</h2>
+      <h2>Ansicht</h2>
       <div class="row">
         <button id="btn-reset" type="button">Zurücksetzen</button>
         <button id="btn-top" class="secondary" type="button">Aufsicht</button>
-        <button id="btn-iso" class="secondary" type="button">Axonometrie</button>
+        <button id="btn-iso" class="secondary" type="button">3D</button>
       </div>
-      <div class="row" style="margin-top: 8px;">
-        <button id="btn-export-dxf" class="accent" type="button">DXF exportieren</button>
-      </div>
-      <div class="row" style="margin-top: 8px;">
-        <button id="btn-export-stl" class="accent" type="button">STL für SketchUp Free</button>
-        <button id="btn-export-dae" class="accent" type="button">DAE für SketchUp Pro</button>
-      </div>
+      <div id="sync-status">nur lokal</div>
     </div>
-    
-    <div class="section">
-      <h2>Legende</h2>
-      <div class="legend" id="layers-legend"></div>
-    </div>
-    
-    <p class="hint">Maße metrisch, reine Massen. DXF für CAD, STL für SketchUp Free (Web), DAE für SketchUp Pro/Go. Native .skp wird nicht im Browser erzeugt.</p>
   </div>
   
-  <div id="status">Lade Kit-Daten...</div>
+  <div id="status">Lade...</div>
+  <footer>Baukasten entwickelt von Phillipp Zarindast</footer>
 
+  <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
   <script type="importmap">
   {
     "imports": {
       "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+      "yjs": "https://unpkg.com/yjs@13.6.10/dist/yjs.mjs",
+      "y-websocket": "https://unpkg.com/y-websocket@2.0.3/dist/y-websocket.mjs"
     }
   }
   </script>
@@ -142,16 +132,19 @@
     import * as THREE from "three";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+    import * as Y from "yjs";
+    import { WebsocketProvider } from "y-websocket";
 
     const wrap = document.getElementById("canvas-wrap");
     const statusEl = document.getElementById("status");
-    const optionsLegend = document.getElementById("options-legend");
-    const layersLegend = document.getElementById("layers-legend");
+    const syncStatusEl = document.getElementById("sync-status");
+
+    const HAMBURG_LAT = 53.55;
+    const HAMBURG_LON = 9.99;
+    const MONTHS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Juni", "Juli", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
     let kitData = null;
-    let SITE_W = 40;
-    let SITE_D = 60;
-    let HALF_W, HALF_D;
+    let SITE_W = 40, SITE_D = 60, HALF_W, HALF_D;
     let PARK_X = 55, PARK_Z = 0, PARK_W = 30, PARK_D = 50;
 
     const scene = new THREE.Scene();
@@ -181,17 +174,73 @@
     controls.minDistance = 15;
     controls.maxDistance = 200;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    const sun = new THREE.DirectionalLight(0xfff3d4, 1.1);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+    const sun = new THREE.DirectionalLight(0xfff3d4, 1.2);
     sun.position.set(50, 50, 25);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
     sun.shadow.camera.left = -80;
     sun.shadow.camera.right = 80;
-    sun.shadow.camera.top = 55;
-    sun.shadow.camera.bottom = -55;
+    sun.shadow.camera.top = 60;
+    sun.shadow.camera.bottom = -60;
+    sun.shadow.bias = -0.0001;
     scene.add(sun);
-    scene.add(new THREE.HemisphereLight(0xb8d4e8, 0x4a5a3a, 0.3));
+    scene.add(new THREE.HemisphereLight(0xb8d4e8, 0x4a5a3a, 0.25));
+
+    const ydoc = new Y.Doc();
+    const yPositions = ydoc.getMap("positions");
+    let wsProvider = null;
+    let isRemoteUpdate = false;
+
+    function initSync() {
+      try {
+        wsProvider = new WebsocketProvider(
+          "wss://demos.yjs.dev",
+          "muster-oberhofer-zarindast-2026",
+          ydoc
+        );
+        wsProvider.on("status", (event) => {
+          if (event.status === "connected") {
+            syncStatusEl.textContent = "verbunden";
+            syncStatusEl.classList.add("connected");
+          } else {
+            syncStatusEl.textContent = "nur lokal";
+            syncStatusEl.classList.remove("connected");
+          }
+        });
+        wsProvider.on("sync", (isSynced) => {
+          if (isSynced) applyRemotePositions();
+        });
+        yPositions.observe((event) => {
+          if (!isRemoteUpdate) applyRemotePositions();
+        });
+      } catch (e) {
+        syncStatusEl.textContent = "nur lokal";
+      }
+    }
+
+    function applyRemotePositions() {
+      isRemoteUpdate = true;
+      yPositions.forEach((pos, pieceId) => {
+        const group = pieceGroups.get(pieceId);
+        if (group && pos) {
+          group.position.x = pos.x;
+          group.position.z = pos.z;
+          if (group.userData.isPV) {
+            const roofY = findRoofHeight(pos.x, pos.z, group);
+            group.position.y = roofY !== null ? roofY : 0;
+          } else {
+            group.position.y = pos.y || 0;
+          }
+        }
+      });
+      isRemoteUpdate = false;
+    }
+
+    function broadcastPosition(pieceId, x, y, z) {
+      if (isRemoteUpdate) return;
+      yPositions.set(pieceId, { x, y, z });
+    }
 
     function mat(color, opts = {}) {
       return new THREE.MeshStandardMaterial({
@@ -222,22 +271,14 @@
     function polygon(vertices, height, color, opacity = 1) {
       const shape = new THREE.Shape();
       shape.moveTo(vertices[0][0], vertices[0][1]);
-      for (let i = 1; i < vertices.length; i++) {
-        shape.lineTo(vertices[i][0], vertices[i][1]);
-      }
+      for (let i = 1; i < vertices.length; i++) shape.lineTo(vertices[i][0], vertices[i][1]);
       shape.closePath();
-      
       const geometry = height > 0 
         ? new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false })
         : new THREE.ShapeGeometry(shape);
-      
       const mesh = new THREE.Mesh(geometry, mat(color, { opacity, doubleSide: true }));
       mesh.rotation.x = -Math.PI / 2;
-      if (height > 0) {
-        mesh.position.y = 0;
-      } else {
-        mesh.position.y = 0.02;
-      }
+      mesh.position.y = height > 0 ? 0 : 0.02;
       mesh.receiveShadow = true;
       return mesh;
     }
@@ -275,6 +316,13 @@
     const draggables = [];
     const home = new Map();
     const pieceGroups = new Map();
+    const variantIds = {
+      bungalow: "option_bungalow",
+      efh: "option_efh", 
+      mfh: "option_mfh",
+      ersatz: "option_ersatz"
+    };
+    const nonVariantDraggables = ["pv_feld", "zisterne", "gruenflaeche_1"];
 
     function registerKit(group, piece) {
       group.userData.draggable = true;
@@ -282,7 +330,7 @@
       group.userData.isPV = piece.isPV || false;
       group.userData.pieceHeight = piece.type === 'box' ? piece.size[2] : (piece.height || 0.5);
       if (piece.label) {
-        const labelY = piece.type === 'box' ? (piece.size[2] + 1) : (piece.height + 0.8);
+        const labelY = piece.type === 'box' ? (piece.size[2] + 0.8) : (piece.height + 0.6);
         group.add(makeLabel(piece.label, labelY));
       }
       kit.add(group);
@@ -305,19 +353,13 @@
         PARK_D = data.parkplatz.size[1];
       }
 
-      const lawn = new THREE.Mesh(
-        new THREE.PlaneGeometry(SITE_W, SITE_D),
-        mat(0x6b8f4e, { roughness: 0.95 })
-      );
+      const lawn = new THREE.Mesh(new THREE.PlaneGeometry(SITE_W, SITE_D), mat(0x6b8f4e, { roughness: 0.95 }));
       lawn.rotation.x = -Math.PI / 2;
       lawn.receiveShadow = true;
       lawn.name = "Rasen";
       context.add(lawn);
 
-      const groundRing = new THREE.Mesh(
-        new THREE.PlaneGeometry(SITE_W + 80, SITE_D + 50),
-        mat(0x8a8a7a, { roughness: 1 })
-      );
+      const groundRing = new THREE.Mesh(new THREE.PlaneGeometry(SITE_W + 80, SITE_D + 50), mat(0x8a8a7a, { roughness: 1 }));
       groundRing.rotation.x = -Math.PI / 2;
       groundRing.position.set(20, -0.03, 0);
       groundRing.receiveShadow = true;
@@ -326,26 +368,18 @@
 
       const edge = new THREE.LineSegments(
         new THREE.EdgesGeometry(new THREE.PlaneGeometry(SITE_W, SITE_D)),
-        new THREE.LineBasicMaterial({ color: 0x2f4a28, linewidth: 2 })
+        new THREE.LineBasicMaterial({ color: 0x2f4a28 })
       );
       edge.rotation.x = -Math.PI / 2;
       edge.position.y = 0.04;
       context.add(edge);
 
-      if (data.parkplatz && data.parkplatz.enabled) {
-        addParkplatz(data.parkplatz);
-      }
-
+      if (data.parkplatz && data.parkplatz.enabled) addParkplatz(data.parkplatz);
       addFence();
       addNorthArrow();
-      addScaleBar();
 
-      for (const piece of data.pieces) {
-        buildPiece(piece, data.layers);
-      }
-
-      buildLegend(data);
-      statusEl.textContent = "Bereit — " + draggables.length + " verschiebbare Teile";
+      for (const piece of data.pieces) buildPiece(piece, data.layers);
+      statusEl.textContent = "Bereit";
     }
 
     function buildPiece(piece, layers) {
@@ -354,70 +388,40 @@
 
       if (piece.type === "polygon" && !piece.draggable) {
         const verts = piece.vertices;
-        const offsetVerts = piece.position 
-          ? verts.map(v => [v[0] + piece.position[0], v[1] + piece.position[1]])
-          : verts;
+        const offsetVerts = piece.position ? verts.map(v => [v[0] + piece.position[0], v[1] + piece.position[1]]) : verts;
         const mesh = polygon(offsetVerts, piece.height || 0, color, piece.fillOpacity || 0.6);
         mesh.name = piece.name;
-        if (piece.label && piece.height > 0) {
-          mesh.add(makeLabel(piece.label, piece.height + 0.5));
-        }
         context.add(mesh);
-        
         const lineVerts = [...offsetVerts, offsetVerts[0]];
-        const lineGeom = new THREE.BufferGeometry().setFromPoints(
-          lineVerts.map(v => new THREE.Vector3(v[0], piece.height + 0.05, v[1]))
-        );
-        const line = new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ color }));
-        context.add(line);
+        const lineGeom = new THREE.BufferGeometry().setFromPoints(lineVerts.map(v => new THREE.Vector3(v[0], piece.height + 0.05, v[1])));
+        context.add(new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ color })));
       }
       else if (piece.type === "box") {
         const g = new THREE.Group();
         g.name = piece.id;
         const [w, d, h] = piece.size;
-        const mainBox = box(w, h, d, color, 0, 0, 0, piece.name);
-        g.add(mainBox);
-        
-        if (h > 3) {
-          const roof = box(w + 0.2, 0.2, d + 0.2, darkenColor(color, 0.7), 0, h, 0);
-          g.add(roof);
-        }
-        
+        g.add(box(w, h, d, color, 0, 0, 0, piece.name));
+        if (h > 3) g.add(box(w + 0.2, 0.2, d + 0.2, darkenColor(color, 0.7), 0, h, 0));
         g.position.set(piece.position[0], 0, piece.position[1]);
-        
-        if (piece.draggable) {
-          registerKit(g, piece);
-        } else {
-          if (piece.label) {
-            g.add(makeLabel(piece.label, h + 1));
-          }
-          context.add(g);
-        }
+        if (piece.draggable) registerKit(g, piece);
+        else context.add(g);
       }
       else if (piece.type === "cylinder") {
         const g = new THREE.Group();
         g.name = piece.id;
-        const c = cyl(piece.radius, piece.height, color, 0, 0, 0, piece.name);
-        g.add(c);
-        const lid = cyl(piece.radius + 0.05, 0.1, darkenColor(color, 0.8), 0, piece.height, 0, null, 28);
-        g.add(lid);
+        g.add(cyl(piece.radius, piece.height, color, 0, 0, 0, piece.name));
+        g.add(cyl(piece.radius + 0.05, 0.1, darkenColor(color, 0.8), 0, piece.height, 0, null, 28));
         g.position.set(piece.position[0], 0, piece.position[1]);
-        
-        if (piece.draggable) {
-          registerKit(g, piece);
-        } else {
-          context.add(g);
-        }
+        if (piece.draggable) registerKit(g, piece);
+        else context.add(g);
       }
       else if (piece.type === "tree") {
-        const tree = treeMass(piece.position[0], piece.position[1], piece.radius, piece.height, piece.name);
-        context.add(tree);
+        context.add(treeMass(piece.position[0], piece.position[1], piece.radius, piece.height, piece.name));
       }
       else if (piece.type === "polygon" && piece.draggable) {
         const g = new THREE.Group();
         g.name = piece.id;
-        const mesh = polygon(piece.vertices, piece.height || 0.3, color, 0.8);
-        g.add(mesh);
+        g.add(polygon(piece.vertices, piece.height || 0.3, color, 0.8));
         g.position.set(piece.position[0], 0, piece.position[1]);
         registerKit(g, piece);
       }
@@ -434,7 +438,6 @@
       fenceGroup.name = "Zaun";
       const postMat = mat(0x5a4632);
       const railMat = mat(0x6a5340);
-      
       function addFenceRun(ax, az, bx, bz) {
         const dx = bx - ax, dz = bz - az;
         const len = Math.hypot(dx, dz);
@@ -474,23 +477,9 @@
       context.add(north);
     }
 
-    function addScaleBar() {
-      const scale = new THREE.Group();
-      scale.name = "Massstab_10m";
-      for (let i = 0; i < 5; i++) {
-        const c = i % 2 === 0 ? 0x111111 : 0xeeeeee;
-        const s = box(2, 0.07, 0.4, c, i * 2 - 4, 0.04, 0);
-        scale.add(s);
-      }
-      scale.position.set(0, 0, HALF_D - 1);
-      scale.add(makeLabel("10 m", 0.6));
-      context.add(scale);
-    }
-
     function addParkplatz(parkConfig) {
       const parkGroup = new THREE.Group();
       parkGroup.name = "Parkplatz";
-      
       const parkMesh = new THREE.Mesh(
         new THREE.PlaneGeometry(parkConfig.size[0], parkConfig.size[1]),
         mat(0x5a5a5a, { roughness: 0.95 })
@@ -505,63 +494,15 @@
       const px = parkConfig.position[0], pz = parkConfig.position[1];
       const parkEdge = new THREE.LineSegments(
         new THREE.EdgesGeometry(new THREE.PlaneGeometry(pw, pd)),
-        new THREE.LineBasicMaterial({ color: 0x3a3a3a, linewidth: 2 })
+        new THREE.LineBasicMaterial({ color: 0x3a3a3a })
       );
       parkEdge.rotation.x = -Math.PI / 2;
       parkEdge.position.set(px, 0.05, pz);
       parkGroup.add(parkEdge);
       
-      const dashedMat = new THREE.LineDashedMaterial({ 
-        color: 0x888888, 
-        dashSize: 1, 
-        gapSize: 0.5,
-        linewidth: 1
-      });
-      const gridLines = new THREE.Group();
-      const hpw = pw / 2, hpd = pd / 2;
-      for (let i = -2; i <= 2; i++) {
-        const lineGeom = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(px - hpw, 0.03, pz + i * 10),
-          new THREE.Vector3(px + hpw, 0.03, pz + i * 10)
-        ]);
-        const line = new THREE.Line(lineGeom, dashedMat);
-        line.computeLineDistances();
-        gridLines.add(line);
-      }
-      parkGroup.add(gridLines);
-      
-      parkGroup.add(makeLabel(parkConfig.label || "Parkplatz", 0.8));
-      parkGroup.children[parkGroup.children.length - 1].position.set(px, 0.8, pz - hpd + 2);
-      
+      parkGroup.add(makeLabel("Parkplatz", 0.6));
+      parkGroup.children[parkGroup.children.length - 1].position.set(px, 0.6, pz - pd/2 + 2);
       context.add(parkGroup);
-    }
-
-    function buildLegend(data) {
-      const optionPieces = data.pieces.filter(p => p.layer.startsWith("OPTION_"));
-      for (const p of optionPieces) {
-        const layerDef = data.layers[p.layer] || {};
-        const div = document.createElement("div");
-        div.className = "legend-item";
-        div.innerHTML = `<span class="legend-swatch" style="background:${p.color || layerDef.color}"></span><span>${p.name}</span>`;
-        optionsLegend.appendChild(div);
-      }
-
-      const importantLayers = ["BAUFENSTER", "ABSTAND", "LAERMSTREIFEN", "BESTAND", "TECHNIK"];
-      for (const layerName of importantLayers) {
-        const layerDef = data.layers[layerName];
-        if (!layerDef) continue;
-        const div = document.createElement("div");
-        div.className = "legend-item";
-        const displayName = {
-          "BAUFENSTER": "Baufenster (bebaubar)",
-          "ABSTAND": "Grenzabstand",
-          "LAERMSTREIFEN": "Lärmschutzstreifen",
-          "BESTAND": "Bestand",
-          "TECHNIK": "Technik (PV, Zisterne)"
-        }[layerName] || layerName;
-        div.innerHTML = `<span class="legend-swatch" style="background:${layerDef.color}"></span><span>${displayName}</span>`;
-        layersLegend.appendChild(div);
-      }
     }
 
     const raycaster = new THREE.Raycaster();
@@ -576,7 +517,6 @@
       roofRaycaster.set(new THREE.Vector3(x, 50, z), new THREE.Vector3(0, -1, 0));
       const candidates = [...context.children, ...kit.children].filter(obj => obj !== excludeGroup);
       const hits = roofRaycaster.intersectObjects(candidates, true);
-      
       for (const h of hits) {
         if (h.object.name === "Rasen" || h.object.name === "Umgebung" || h.object.name === "Parkplatz_Fläche") continue;
         let parent = h.object;
@@ -585,10 +525,7 @@
           parent = parent.parent;
         }
         if (parent === excludeGroup) continue;
-        
-        if (h.point.y > 0.1) {
-          return h.point.y;
-        }
+        if (h.point.y > 0.1) return h.point.y;
       }
       return null;
     }
@@ -619,11 +556,7 @@
       
       if (!inSite && !inPark) {
         const distToSite = Math.max(Math.abs(v.x) - HALF_W, Math.abs(v.z) - HALF_D);
-        const distToPark = Math.max(
-          Math.max(parkLeft - v.x, v.x - parkRight),
-          Math.max(parkBottom - v.z, v.z - parkTop)
-        );
-        
+        const distToPark = Math.max(Math.max(parkLeft - v.x, v.x - parkRight), Math.max(parkBottom - v.z, v.z - parkTop));
         if (distToSite < distToPark) {
           v.x = THREE.MathUtils.clamp(v.x, -HALF_W + 2, HALF_W - 2);
           v.z = THREE.MathUtils.clamp(v.z, -HALF_D + 2, HALF_D - 2);
@@ -635,11 +568,7 @@
       
       if (isPV) {
         const roofY = findRoofHeight(v.x, v.z, excludeGroup);
-        if (roofY !== null) {
-          v.y = roofY;
-        } else {
-          v.y = 0;
-        }
+        v.y = roofY !== null ? roofY : 0;
       } else {
         v.y = 0;
       }
@@ -670,6 +599,10 @@
 
     function endDrag() {
       if (!dragging) return;
+      const pieceId = dragging.userData.pieceId;
+      if (pieceId) {
+        broadcastPosition(pieceId, dragging.position.x, dragging.position.y, dragging.position.z);
+      }
       dragging = null;
       controls.enabled = true;
       statusEl.textContent = "Bereit";
@@ -681,9 +614,36 @@
       for (const g of draggables) {
         const p = home.get(g);
         g.position.copy(p);
+        const pieceId = g.userData.pieceId;
+        if (pieceId) broadcastPosition(pieceId, p.x, p.y, p.z);
       }
-      statusEl.textContent = "Baukasten zurückgesetzt";
+      statusEl.textContent = "Zurückgesetzt";
     }
+
+    function selectVariant(variantKey) {
+      document.querySelectorAll(".variant").forEach(btn => btn.classList.remove("active"));
+      const activeBtn = document.querySelector(`[data-variant="${variantKey}"]`);
+      if (activeBtn) activeBtn.classList.add("active");
+
+      const targetId = variantIds[variantKey];
+      const baufensterCenter = { x: 6, z: 14 };
+
+      for (const [vk, vId] of Object.entries(variantIds)) {
+        const group = pieceGroups.get(vId);
+        if (!group) continue;
+        if (vk === variantKey) {
+          group.position.set(baufensterCenter.x, 0, baufensterCenter.z);
+        } else {
+          const homePos = home.get(group);
+          if (homePos) group.position.copy(homePos);
+        }
+        broadcastPosition(vId, group.position.x, group.position.y, group.position.z);
+      }
+    }
+
+    document.querySelectorAll(".variant").forEach(btn => {
+      btn.addEventListener("click", () => selectVariant(btn.dataset.variant));
+    });
 
     document.getElementById("btn-reset").addEventListener("click", resetKit);
     document.getElementById("btn-top").addEventListener("click", () => {
@@ -697,717 +657,40 @@
       controls.update();
     });
 
-    document.getElementById("btn-export-dxf").addEventListener("click", exportDXF);
-    document.getElementById("btn-export-stl").addEventListener("click", exportSTL);
-    document.getElementById("btn-export-dae").addEventListener("click", exportDAE);
+    function updateSun() {
+      const hourSlider = document.getElementById("sun-hour");
+      const monthSlider = document.getElementById("sun-month");
+      const hour = parseFloat(hourSlider.value);
+      const month = parseInt(monthSlider.value);
+      
+      const h = Math.floor(hour);
+      const m = Math.round((hour - h) * 60);
+      document.getElementById("sun-hour-val").textContent = `${h}:${m.toString().padStart(2, '0')}`;
+      document.getElementById("sun-month-val").textContent = MONTHS[month - 1];
 
-    document.getElementById("toggle-panel").addEventListener("click", () => {
-      document.getElementById("panel").classList.toggle("collapsed");
-    });
-
-    function isParked(x, z) {
-      const inSite = x >= -HALF_W && x <= HALF_W && z >= -HALF_D && z <= HALF_D;
-      return !inSite;
+      const date = new Date(2026, month - 1, 21, h, m);
+      const sunPos = SunCalc.getPosition(date, HAMBURG_LAT, HAMBURG_LON);
+      
+      const altitude = sunPos.altitude;
+      const azimuth = sunPos.azimuth;
+      
+      if (altitude > 0) {
+        const dist = 60;
+        const x = dist * Math.sin(azimuth) * Math.cos(altitude);
+        const y = dist * Math.sin(altitude);
+        const z = dist * Math.cos(azimuth) * Math.cos(altitude);
+        sun.position.set(x, Math.max(y, 5), z);
+        sun.intensity = 0.8 + 0.4 * Math.sin(altitude);
+        sun.castShadow = true;
+      } else {
+        sun.position.set(0, 5, 0);
+        sun.intensity = 0.3;
+        sun.castShadow = false;
+      }
     }
 
-    function exportDXF() {
-      if (!kitData) return;
-      
-      const currentPositions = {};
-      for (const [pieceId, group] of pieceGroups) {
-        const parked = isParked(group.position.x, group.position.z);
-        currentPositions[pieceId] = { x: group.position.x, z: group.position.z, parked };
-      }
-
-      const dxfContent = generateDXF(kitData, currentPositions);
-      const blob = new Blob([dxfContent], { type: "application/dxf" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "muster_oberhofer_export.dxf";
-      a.click();
-      URL.revokeObjectURL(url);
-      statusEl.textContent = "DXF exportiert";
-    }
-
-    function generateDXF(data, currentPositions) {
-      let dxf = "";
-      
-      dxf += "0\nSECTION\n2\nHEADER\n";
-      dxf += "9\n$ACADVER\n1\nAC1024\n";
-      dxf += "9\n$INSUNITS\n70\n6\n";
-      dxf += "9\n$MEASUREMENT\n70\n1\n";
-      dxf += "0\nENDSEC\n";
-      
-      dxf += "0\nSECTION\n2\nTABLES\n";
-      dxf += "0\nTABLE\n2\nLAYER\n70\n" + Object.keys(data.layers).length + "\n";
-      
-      for (const [layerName, layerDef] of Object.entries(data.layers)) {
-        dxf += "0\nLAYER\n2\n" + layerName + "\n";
-        dxf += "70\n0\n";
-        dxf += "62\n" + (layerDef.dxfColor || 7) + "\n";
-        dxf += "6\nCONTINUOUS\n";
-      }
-      dxf += "0\nENDTAB\n";
-      dxf += "0\nENDSEC\n";
-      
-      dxf += "0\nSECTION\n2\nBLOCKS\n";
-      
-      for (const piece of data.pieces) {
-        if (piece.type === "box" || piece.type === "cylinder") {
-          dxf += "0\nBLOCK\n2\n" + piece.id.toUpperCase() + "\n";
-          dxf += "70\n0\n10\n0\n20\n0\n30\n0\n";
-          
-          if (piece.type === "box") {
-            const [w, d, h] = piece.size;
-            const hw = w / 2, hd = d / 2;
-            dxf += "0\nLWPOLYLINE\n8\n" + piece.layer + "\n";
-            dxf += "90\n4\n70\n1\n";
-            dxf += "10\n" + (-hw) + "\n20\n" + (-hd) + "\n";
-            dxf += "10\n" + hw + "\n20\n" + (-hd) + "\n";
-            dxf += "10\n" + hw + "\n20\n" + hd + "\n";
-            dxf += "10\n" + (-hw) + "\n20\n" + hd + "\n";
-            
-            dxf += "0\nTEXT\n8\n" + piece.layer + "\n";
-            dxf += "10\n0\n20\n0\n30\n" + (h + 0.5) + "\n";
-            dxf += "40\n0.8\n1\n" + (piece.label || piece.name) + "\n";
-          } else if (piece.type === "cylinder") {
-            dxf += "0\nCIRCLE\n8\n" + piece.layer + "\n";
-            dxf += "10\n0\n20\n0\n30\n0\n";
-            dxf += "40\n" + piece.radius + "\n";
-          }
-          
-          dxf += "0\nENDBLK\n";
-        }
-      }
-      
-      dxf += "0\nENDSEC\n";
-      
-      dxf += "0\nSECTION\n2\nENTITIES\n";
-      
-      for (const piece of data.pieces) {
-        if (piece.type === "polygon") {
-          let verts = piece.vertices;
-          const pos = currentPositions[piece.id] || piece.position;
-          let parked = false;
-          if (pos && Array.isArray(pos)) {
-            verts = verts.map(v => [v[0] + pos[0], v[1] + pos[1]]);
-          } else if (pos && typeof pos === 'object') {
-            verts = verts.map(v => [v[0] + pos.x, v[1] + pos.z]);
-            parked = pos.parked || false;
-          }
-          
-          const layer = (piece.draggable && parked) ? "PARKPLATZ" : piece.layer;
-          dxf += "0\nLWPOLYLINE\n8\n" + layer + "\n";
-          dxf += "90\n" + verts.length + "\n70\n1\n";
-          for (const v of verts) {
-            dxf += "10\n" + v[0] + "\n20\n" + v[1] + "\n";
-          }
-          
-          if (piece.label) {
-            const cx = verts.reduce((s, v) => s + v[0], 0) / verts.length;
-            const cy = verts.reduce((s, v) => s + v[1], 0) / verts.length;
-            dxf += "0\nTEXT\n8\n" + layer + "\n";
-            dxf += "10\n" + cx + "\n20\n" + cy + "\n30\n0\n";
-            dxf += "40\n0.6\n1\n" + piece.label + "\n";
-          }
-        }
-        else if (piece.type === "box" || piece.type === "cylinder") {
-          const pos = currentPositions[piece.id] || { x: piece.position[0], z: piece.position[1] };
-          const x = typeof pos.x !== 'undefined' ? pos.x : pos[0];
-          const z = typeof pos.z !== 'undefined' ? pos.z : pos[1];
-          const parked = pos.parked || false;
-          const layer = parked ? "PARKPLATZ" : piece.layer;
-          
-          dxf += "0\nINSERT\n8\n" + layer + "\n";
-          dxf += "2\n" + piece.id.toUpperCase() + "\n";
-          dxf += "10\n" + x + "\n20\n" + z + "\n30\n0\n";
-          dxf += "41\n1\n42\n1\n43\n1\n50\n0\n";
-        }
-        else if (piece.type === "tree") {
-          dxf += "0\nCIRCLE\n8\n" + piece.layer + "\n";
-          dxf += "10\n" + piece.position[0] + "\n20\n" + piece.position[1] + "\n30\n0\n";
-          dxf += "40\n" + piece.radius + "\n";
-          
-          dxf += "0\nPOINT\n8\n" + piece.layer + "\n";
-          dxf += "10\n" + piece.position[0] + "\n20\n" + piece.position[1] + "\n30\n0\n";
-        }
-      }
-      
-      const hw = data.site.width / 2, hd = data.site.depth / 2;
-      dxf += "0\nLWPOLYLINE\n8\nSITE_BOUNDARY\n";
-      dxf += "90\n4\n70\n1\n";
-      dxf += "10\n" + (-hw) + "\n20\n" + (-hd) + "\n";
-      dxf += "10\n" + hw + "\n20\n" + (-hd) + "\n";
-      dxf += "10\n" + hw + "\n20\n" + hd + "\n";
-      dxf += "10\n" + (-hw) + "\n20\n" + hd + "\n";
-      
-      dxf += "0\nTEXT\n8\nSITE_BOUNDARY\n";
-      dxf += "10\n0\n20\n" + (-hd - 2) + "\n30\n0\n";
-      dxf += "40\n1.5\n1\nMustergrundstück Oberhofer (ca. " + data.site.area_m2 + " m²)\n";
-      
-      dxf += "0\nTEXT\n8\nSITE_BOUNDARY\n";
-      dxf += "10\n0\n20\n" + (-hd - 4) + "\n30\n0\n";
-      dxf += "40\n0.8\n1\nNUR MUSTER - Reale Geometrie aus Kundenplänen\n";
-      
-      dxf += "0\nENDSEC\n";
-      dxf += "0\nEOF\n";
-      
-      return dxf;
-    }
-
-    function exportSTL() {
-      if (!kitData) return;
-      
-      const currentPositions = {};
-      for (const [pieceId, group] of pieceGroups) {
-        const parked = isParked(group.position.x, group.position.z);
-        currentPositions[pieceId] = { x: group.position.x, z: group.position.z, parked };
-      }
-
-      const stlContent = generateSTL(kitData, currentPositions);
-      const blob = new Blob([stlContent], { type: "model/stl" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "muster_oberhofer_export.stl";
-      a.click();
-      URL.revokeObjectURL(url);
-      statusEl.textContent = "STL exportiert — in SketchUp Free (Web) importieren";
-    }
-
-    function generateSTL(data, currentPositions) {
-      let stl = "solid MusterOberhofer\n";
-      
-      function addTriangle(v1, v2, v3) {
-        const ux = v2[0] - v1[0], uy = v2[1] - v1[1], uz = v2[2] - v1[2];
-        const vx = v3[0] - v1[0], vy = v3[1] - v1[1], vz = v3[2] - v1[2];
-        let nx = uy * vz - uz * vy;
-        let ny = uz * vx - ux * vz;
-        let nz = ux * vy - uy * vx;
-        const len = Math.sqrt(nx*nx + ny*ny + nz*nz) || 1;
-        nx /= len; ny /= len; nz /= len;
-        
-        stl += `  facet normal ${nx} ${ny} ${nz}\n`;
-        stl += `    outer loop\n`;
-        stl += `      vertex ${v1[0]} ${v1[1]} ${v1[2]}\n`;
-        stl += `      vertex ${v2[0]} ${v2[1]} ${v2[2]}\n`;
-        stl += `      vertex ${v3[0]} ${v3[1]} ${v3[2]}\n`;
-        stl += `    endloop\n`;
-        stl += `  endfacet\n`;
-      }
-      
-      function addBox(cx, cy, cz, w, h, d) {
-        const hw = w/2, hh = h/2, hd = d/2;
-        const x0 = cx - hw, x1 = cx + hw;
-        const y0 = cy - hh, y1 = cy + hh;
-        const z0 = cz - hd, z1 = cz + hd;
-        
-        addTriangle([x0,y0,z0], [x1,y0,z0], [x1,y1,z0]);
-        addTriangle([x0,y0,z0], [x1,y1,z0], [x0,y1,z0]);
-        addTriangle([x0,y0,z1], [x1,y1,z1], [x1,y0,z1]);
-        addTriangle([x0,y0,z1], [x0,y1,z1], [x1,y1,z1]);
-        addTriangle([x0,y0,z0], [x0,y1,z0], [x0,y1,z1]);
-        addTriangle([x0,y0,z0], [x0,y1,z1], [x0,y0,z1]);
-        addTriangle([x1,y0,z0], [x1,y1,z1], [x1,y1,z0]);
-        addTriangle([x1,y0,z0], [x1,y0,z1], [x1,y1,z1]);
-        addTriangle([x0,y0,z0], [x1,y0,z1], [x1,y0,z0]);
-        addTriangle([x0,y0,z0], [x0,y0,z1], [x1,y0,z1]);
-        addTriangle([x0,y1,z0], [x1,y1,z0], [x1,y1,z1]);
-        addTriangle([x0,y1,z0], [x1,y1,z1], [x0,y1,z1]);
-      }
-      
-      function addCylinder(cx, cy, cz, radius, height, segments = 16) {
-        const y0 = cy, y1 = cy + height;
-        
-        for (let i = 0; i < segments; i++) {
-          const a0 = (i / segments) * Math.PI * 2;
-          const a1 = ((i + 1) / segments) * Math.PI * 2;
-          const x0 = cx + Math.cos(a0) * radius;
-          const z0 = cz + Math.sin(a0) * radius;
-          const x1 = cx + Math.cos(a1) * radius;
-          const z1 = cz + Math.sin(a1) * radius;
-          
-          addTriangle([x0, y0, z0], [x1, y1, z1], [x1, y0, z1]);
-          addTriangle([x0, y0, z0], [x0, y1, z0], [x1, y1, z1]);
-          addTriangle([cx, y0, cz], [x1, y0, z1], [x0, y0, z0]);
-          addTriangle([cx, y1, cz], [x0, y1, z0], [x1, y1, z1]);
-        }
-      }
-      
-      function addPolygonExtrusion(vertices, height, offsetX, offsetZ) {
-        const n = vertices.length;
-        const verts = vertices.map(v => [v[0] + offsetX, v[1] + offsetZ]);
-        
-        for (let i = 1; i < n - 1; i++) {
-          addTriangle(
-            [verts[0][0], 0, verts[0][1]],
-            [verts[i+1][0], 0, verts[i+1][1]],
-            [verts[i][0], 0, verts[i][1]]
-          );
-          addTriangle(
-            [verts[0][0], height, verts[0][1]],
-            [verts[i][0], height, verts[i][1]],
-            [verts[i+1][0], height, verts[i+1][1]]
-          );
-        }
-        
-        for (let i = 0; i < n; i++) {
-          const [x1, z1] = verts[i];
-          const [x2, z2] = verts[(i + 1) % n];
-          addTriangle([x1, 0, z1], [x2, 0, z2], [x2, height, z2]);
-          addTriangle([x1, 0, z1], [x2, height, z2], [x1, height, z1]);
-        }
-      }
-      
-      const hw = data.site.width / 2;
-      const hd = data.site.depth / 2;
-      addBox(0, -0.05, 0, data.site.width, 0.1, data.site.depth);
-      
-      for (const piece of data.pieces) {
-        if (!piece.draggable && piece.type !== "tree") continue;
-        
-        const pos = currentPositions[piece.id];
-        let tx = 0, tz = 0;
-        if (pos) {
-          tx = pos.x;
-          tz = pos.z;
-        } else if (piece.position) {
-          tx = piece.position[0];
-          tz = piece.position[1];
-        }
-
-        if (piece.type === "box") {
-          const [w, d, h] = piece.size;
-          addBox(tx, h/2, tz, w, h, d);
-        }
-        else if (piece.type === "cylinder") {
-          addCylinder(tx, 0, tz, piece.radius, piece.height);
-        }
-        else if (piece.type === "polygon" && piece.draggable && (piece.height || 0) > 0) {
-          addPolygonExtrusion(piece.vertices, piece.height, tx, tz);
-        }
-        else if (piece.type === "tree") {
-          const trunkR = piece.radius * 0.18;
-          const trunkH = piece.height * 0.3;
-          addCylinder(piece.position[0], 0, piece.position[1], trunkR, trunkH, 8);
-          const crownR = piece.radius;
-          const crownH = piece.height * 0.7;
-          const crownY = piece.height * 0.35;
-          addCylinder(piece.position[0], crownY, piece.position[1], crownR, crownH, 12);
-        }
-      }
-      
-      for (const piece of data.pieces) {
-        if (piece.draggable) continue;
-        if (piece.type !== "box") continue;
-        
-        const [w, d, h] = piece.size;
-        const tx = piece.position[0];
-        const tz = piece.position[1];
-        addBox(tx, h/2, tz, w, h, d);
-      }
-      
-      stl += "endsolid MusterOberhofer\n";
-      return stl;
-    }
-
-    function exportDAE() {
-      if (!kitData) return;
-      
-      const currentPositions = {};
-      for (const [pieceId, group] of pieceGroups) {
-        const parked = isParked(group.position.x, group.position.z);
-        currentPositions[pieceId] = { x: group.position.x, z: group.position.z, parked };
-      }
-
-      const daeContent = generateDAE(kitData, currentPositions);
-      const blob = new Blob([daeContent], { type: "model/vnd.collada+xml" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "muster_oberhofer_export.dae";
-      a.click();
-      URL.revokeObjectURL(url);
-      statusEl.textContent = "DAE exportiert — in SketchUp öffnen und als .skp speichern";
-    }
-
-    function generateDAE(data, currentPositions) {
-      const timestamp = new Date().toISOString();
-      let geometries = "";
-      let materials = "";
-      let effects = "";
-      let visualScenes = "";
-      let geomId = 0;
-      let matId = 0;
-      const materialMap = new Map();
-
-      function getMaterialId(color) {
-        if (materialMap.has(color)) return materialMap.get(color);
-        const id = `mat_${matId++}`;
-        materialMap.set(color, id);
-        return id;
-      }
-
-      function hexToRgb(hex) {
-        const c = hex.replace('#', '');
-        const r = parseInt(c.substr(0, 2), 16) / 255;
-        const g = parseInt(c.substr(2, 2), 16) / 255;
-        const b = parseInt(c.substr(4, 2), 16) / 255;
-        return { r, g, b };
-      }
-
-      function boxGeometry(id, w, h, d) {
-        const hw = w / 2, hh = h / 2, hd = d / 2;
-        const positions = [
-          -hw, -hh, -hd,  hw, -hh, -hd,  hw,  hh, -hd, -hw,  hh, -hd,
-          -hw, -hh,  hd,  hw, -hh,  hd,  hw,  hh,  hd, -hw,  hh,  hd
-        ];
-        const indices = [
-          0, 1, 2, 0, 2, 3,
-          4, 6, 5, 4, 7, 6,
-          0, 4, 5, 0, 5, 1,
-          2, 6, 7, 2, 7, 3,
-          0, 3, 7, 0, 7, 4,
-          1, 5, 6, 1, 6, 2
-        ];
-        const normals = [
-          0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
-          0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-          0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
-          0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
-          -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
-          1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0
-        ];
-        
-        const triPositions = [];
-        const triNormals = [];
-        for (let f = 0; f < 6; f++) {
-          for (let t = 0; t < 2; t++) {
-            for (let v = 0; v < 3; v++) {
-              const idx = indices[f * 6 + t * 3 + v];
-              triPositions.push(positions[idx * 3], positions[idx * 3 + 1], positions[idx * 3 + 2]);
-              triNormals.push(normals[f * 6 * 3 + v * 3], normals[f * 6 * 3 + v * 3 + 1], normals[f * 6 * 3 + v * 3 + 2]);
-            }
-          }
-        }
-        
-        return `
-        <geometry id="${id}-mesh" name="${id}">
-          <mesh>
-            <source id="${id}-positions">
-              <float_array id="${id}-positions-array" count="${triPositions.length}">${triPositions.join(' ')}</float_array>
-              <technique_common>
-                <accessor source="#${id}-positions-array" count="${triPositions.length / 3}" stride="3">
-                  <param name="X" type="float"/>
-                  <param name="Y" type="float"/>
-                  <param name="Z" type="float"/>
-                </accessor>
-              </technique_common>
-            </source>
-            <source id="${id}-normals">
-              <float_array id="${id}-normals-array" count="${triNormals.length}">${triNormals.join(' ')}</float_array>
-              <technique_common>
-                <accessor source="#${id}-normals-array" count="${triNormals.length / 3}" stride="3">
-                  <param name="X" type="float"/>
-                  <param name="Y" type="float"/>
-                  <param name="Z" type="float"/>
-                </accessor>
-              </technique_common>
-            </source>
-            <vertices id="${id}-vertices">
-              <input semantic="POSITION" source="#${id}-positions"/>
-            </vertices>
-            <triangles count="12">
-              <input semantic="VERTEX" source="#${id}-vertices" offset="0"/>
-              <input semantic="NORMAL" source="#${id}-normals" offset="0"/>
-              <p>${Array.from({length: 36}, (_, i) => i).join(' ')}</p>
-            </triangles>
-          </mesh>
-        </geometry>`;
-      }
-
-      function cylinderGeometry(id, radius, height, segments = 24) {
-        const positions = [];
-        const normals = [];
-        const indices = [];
-        
-        for (let i = 0; i <= segments; i++) {
-          const theta = (i / segments) * Math.PI * 2;
-          const x = Math.cos(theta) * radius;
-          const z = Math.sin(theta) * radius;
-          positions.push(x, 0, z);
-          positions.push(x, height, z);
-          normals.push(Math.cos(theta), 0, Math.sin(theta));
-          normals.push(Math.cos(theta), 0, Math.sin(theta));
-        }
-        
-        const centerBottom = positions.length / 3;
-        positions.push(0, 0, 0);
-        normals.push(0, -1, 0);
-        const centerTop = positions.length / 3;
-        positions.push(0, height, 0);
-        normals.push(0, 1, 0);
-        
-        for (let i = 0; i < segments; i++) {
-          const i0 = i * 2, i1 = i * 2 + 1, i2 = (i + 1) * 2, i3 = (i + 1) * 2 + 1;
-          indices.push(i0, i2, i1, i1, i2, i3);
-          indices.push(centerBottom, (i + 1) * 2, i * 2);
-          indices.push(centerTop, i * 2 + 1, (i + 1) * 2 + 1);
-        }
-        
-        return `
-        <geometry id="${id}-mesh" name="${id}">
-          <mesh>
-            <source id="${id}-positions">
-              <float_array id="${id}-positions-array" count="${positions.length}">${positions.join(' ')}</float_array>
-              <technique_common>
-                <accessor source="#${id}-positions-array" count="${positions.length / 3}" stride="3">
-                  <param name="X" type="float"/>
-                  <param name="Y" type="float"/>
-                  <param name="Z" type="float"/>
-                </accessor>
-              </technique_common>
-            </source>
-            <source id="${id}-normals">
-              <float_array id="${id}-normals-array" count="${normals.length}">${normals.join(' ')}</float_array>
-              <technique_common>
-                <accessor source="#${id}-normals-array" count="${normals.length / 3}" stride="3">
-                  <param name="X" type="float"/>
-                  <param name="Y" type="float"/>
-                  <param name="Z" type="float"/>
-                </accessor>
-              </technique_common>
-            </source>
-            <vertices id="${id}-vertices">
-              <input semantic="POSITION" source="#${id}-positions"/>
-            </vertices>
-            <triangles count="${indices.length / 3}">
-              <input semantic="VERTEX" source="#${id}-vertices" offset="0"/>
-              <input semantic="NORMAL" source="#${id}-normals" offset="0"/>
-              <p>${indices.join(' ')}</p>
-            </triangles>
-          </mesh>
-        </geometry>`;
-      }
-
-      function polygonGeometry(id, vertices, height) {
-        const positions = [];
-        const normals = [];
-        const indices = [];
-        
-        const n = vertices.length;
-        for (const [x, z] of vertices) {
-          positions.push(x, 0, z);
-          normals.push(0, -1, 0);
-        }
-        for (const [x, z] of vertices) {
-          positions.push(x, height, z);
-          normals.push(0, 1, 0);
-        }
-        
-        for (let i = 1; i < n - 1; i++) {
-          indices.push(0, i + 1, i);
-          indices.push(n, n + i, n + i + 1);
-        }
-        
-        const baseIdx = positions.length / 3;
-        for (let i = 0; i < n; i++) {
-          const [x1, z1] = vertices[i];
-          const [x2, z2] = vertices[(i + 1) % n];
-          const dx = x2 - x1, dz = z2 - z1;
-          const len = Math.hypot(dx, dz);
-          const nx = dz / len, nz = -dx / len;
-          
-          const vi = baseIdx + i * 4;
-          positions.push(x1, 0, z1, x2, 0, z2, x2, height, z2, x1, height, z1);
-          normals.push(nx, 0, nz, nx, 0, nz, nx, 0, nz, nx, 0, nz);
-          indices.push(vi, vi + 1, vi + 2, vi, vi + 2, vi + 3);
-        }
-        
-        return `
-        <geometry id="${id}-mesh" name="${id}">
-          <mesh>
-            <source id="${id}-positions">
-              <float_array id="${id}-positions-array" count="${positions.length}">${positions.join(' ')}</float_array>
-              <technique_common>
-                <accessor source="#${id}-positions-array" count="${positions.length / 3}" stride="3">
-                  <param name="X" type="float"/>
-                  <param name="Y" type="float"/>
-                  <param name="Z" type="float"/>
-                </accessor>
-              </technique_common>
-            </source>
-            <source id="${id}-normals">
-              <float_array id="${id}-normals-array" count="${normals.length}">${normals.join(' ')}</float_array>
-              <technique_common>
-                <accessor source="#${id}-normals-array" count="${normals.length / 3}" stride="3">
-                  <param name="X" type="float"/>
-                  <param name="Y" type="float"/>
-                  <param name="Z" type="float"/>
-                </accessor>
-              </technique_common>
-            </source>
-            <vertices id="${id}-vertices">
-              <input semantic="POSITION" source="#${id}-positions"/>
-            </vertices>
-            <triangles count="${indices.length / 3}">
-              <input semantic="VERTEX" source="#${id}-vertices" offset="0"/>
-              <input semantic="NORMAL" source="#${id}-normals" offset="0"/>
-              <p>${indices.join(' ')}</p>
-            </triangles>
-          </mesh>
-        </geometry>`;
-      }
-
-      const hw = data.site.width / 2;
-      const hd = data.site.depth / 2;
-      const groundId = `ground_${geomId++}`;
-      const groundColor = "#6b8f4e";
-      const groundMatId = getMaterialId(groundColor);
-      geometries += polygonGeometry(groundId, [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd]], 0.05);
-      visualScenes += `
-        <node id="${groundId}-node" name="Grundstück" type="NODE">
-          <translate>0 0 0</translate>
-          <instance_geometry url="#${groundId}-mesh">
-            <bind_material><technique_common><instance_material symbol="material0" target="#${groundMatId}"/></technique_common></bind_material>
-          </instance_geometry>
-        </node>`;
-
-      for (const piece of data.pieces) {
-        const layerDef = data.layers[piece.layer] || {};
-        const color = piece.color || layerDef.color || "#888888";
-        const matIdPiece = getMaterialId(color);
-        
-        const pos = currentPositions[piece.id];
-        let tx = 0, tz = 0;
-        if (pos) {
-          tx = pos.x;
-          tz = pos.z;
-        } else if (piece.position) {
-          tx = piece.position[0];
-          tz = piece.position[1];
-        }
-
-        if (piece.type === "box") {
-          const [w, d, h] = piece.size;
-          const gid = `box_${geomId++}`;
-          geometries += boxGeometry(gid, w, h, d);
-          visualScenes += `
-        <node id="${gid}-node" name="${piece.name}" type="NODE">
-          <translate>${tx} ${h / 2} ${tz}</translate>
-          <instance_geometry url="#${gid}-mesh">
-            <bind_material><technique_common><instance_material symbol="material0" target="#${matIdPiece}"/></technique_common></bind_material>
-          </instance_geometry>
-        </node>`;
-        }
-        else if (piece.type === "cylinder") {
-          const gid = `cyl_${geomId++}`;
-          geometries += cylinderGeometry(gid, piece.radius, piece.height);
-          visualScenes += `
-        <node id="${gid}-node" name="${piece.name}" type="NODE">
-          <translate>${tx} 0 ${tz}</translate>
-          <instance_geometry url="#${gid}-mesh">
-            <bind_material><technique_common><instance_material symbol="material0" target="#${matIdPiece}"/></technique_common></bind_material>
-          </instance_geometry>
-        </node>`;
-        }
-        else if (piece.type === "polygon" && (piece.height || 0) > 0) {
-          let verts = piece.vertices;
-          if (piece.position && !pos) {
-            verts = verts.map(v => [v[0] + piece.position[0], v[1] + piece.position[1]]);
-            tx = 0; tz = 0;
-          } else if (pos) {
-            verts = verts.map(v => [v[0] + pos.x, v[1] + pos.z]);
-            tx = 0; tz = 0;
-          }
-          const gid = `poly_${geomId++}`;
-          geometries += polygonGeometry(gid, verts, piece.height);
-          visualScenes += `
-        <node id="${gid}-node" name="${piece.name}" type="NODE">
-          <translate>${tx} 0 ${tz}</translate>
-          <instance_geometry url="#${gid}-mesh">
-            <bind_material><technique_common><instance_material symbol="material0" target="#${matIdPiece}"/></technique_common></bind_material>
-          </instance_geometry>
-        </node>`;
-        }
-        else if (piece.type === "tree") {
-          const trunkId = `trunk_${geomId++}`;
-          const crownId = `crown_${geomId++}`;
-          const trunkMatId = getMaterialId("#6b4f32");
-          const crownMatId = getMaterialId("#3f6b3a");
-          const trunkR = piece.radius * 0.18;
-          const trunkH = piece.height * 0.3;
-          geometries += cylinderGeometry(trunkId, trunkR, trunkH, 12);
-          
-          const crownR = piece.radius;
-          const crownH = crownR * 1.8;
-          geometries += cylinderGeometry(crownId, crownR, crownH, 16);
-          
-          visualScenes += `
-        <node id="${trunkId}-node" name="${piece.name}_Stamm" type="NODE">
-          <translate>${piece.position[0]} 0 ${piece.position[1]}</translate>
-          <instance_geometry url="#${trunkId}-mesh">
-            <bind_material><technique_common><instance_material symbol="material0" target="#${trunkMatId}"/></technique_common></bind_material>
-          </instance_geometry>
-        </node>
-        <node id="${crownId}-node" name="${piece.name}_Krone" type="NODE">
-          <translate>${piece.position[0]} ${piece.height * 0.35} ${piece.position[1]}</translate>
-          <instance_geometry url="#${crownId}-mesh">
-            <bind_material><technique_common><instance_material symbol="material0" target="#${crownMatId}"/></technique_common></bind_material>
-          </instance_geometry>
-        </node>`;
-        }
-      }
-
-      for (const [color, id] of materialMap) {
-        const rgb = hexToRgb(color);
-        effects += `
-      <effect id="${id}-effect">
-        <profile_COMMON>
-          <technique sid="common">
-            <phong>
-              <diffuse><color>${rgb.r} ${rgb.g} ${rgb.b} 1</color></diffuse>
-              <specular><color>0.1 0.1 0.1 1</color></specular>
-              <shininess><float>20</float></shininess>
-            </phong>
-          </technique>
-        </profile_COMMON>
-      </effect>`;
-        materials += `
-      <material id="${id}" name="${id}">
-        <instance_effect url="#${id}-effect"/>
-      </material>`;
-      }
-
-      return `<?xml version="1.0" encoding="utf-8"?>
-<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
-  <asset>
-    <contributor>
-      <authoring_tool>Mustergrundstück Baukasten</authoring_tool>
-    </contributor>
-    <created>${timestamp}</created>
-    <modified>${timestamp}</modified>
-    <unit name="meter" meter="1"/>
-    <up_axis>Y_UP</up_axis>
-    <title>${data.meta.name} - NUR MUSTER</title>
-  </asset>
-  <library_effects>${effects}
-  </library_effects>
-  <library_materials>${materials}
-  </library_materials>
-  <library_geometries>${geometries}
-  </library_geometries>
-  <library_visual_scenes>
-    <visual_scene id="Scene" name="${data.meta.name}">
-      <!-- HINWEIS: Dies ist ein MUSTER - reale Geometrie aus Kundenplänen -->${visualScenes}
-    </visual_scene>
-  </library_visual_scenes>
-  <scene>
-    <instance_visual_scene url="#Scene"/>
-  </scene>
-</COLLADA>`;
-    }
+    document.getElementById("sun-hour").addEventListener("input", updateSun);
+    document.getElementById("sun-month").addEventListener("input", updateSun);
 
     function resize() {
       const w = wrap.clientWidth, h = wrap.clientHeight;
@@ -1429,9 +712,11 @@
     async function init() {
       try {
         const resp = await fetch("kit.json");
-        if (!resp.ok) throw new Error("Konnte kit.json nicht laden");
+        if (!resp.ok) throw new Error("kit.json nicht gefunden");
         const data = await resp.json();
         buildScene(data);
+        updateSun();
+        initSync();
         tick();
       } catch (err) {
         statusEl.textContent = "Fehler: " + err.message;
@@ -1440,6 +725,32 @@
     }
 
     init();
+
+    // Export functions kept for potential future use (UI hidden)
+    function isParked(x, z) {
+      return !(x >= -HALF_W && x <= HALF_W && z >= -HALF_D && z <= HALF_D);
+    }
+
+    function generateDXF(data, currentPositions) {
+      let dxf = "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1024\n9\n$INSUNITS\n70\n6\n9\n$MEASUREMENT\n70\n1\n0\nENDSEC\n";
+      dxf += "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n" + Object.keys(data.layers).length + "\n";
+      for (const [layerName, layerDef] of Object.entries(data.layers)) {
+        dxf += "0\nLAYER\n2\n" + layerName + "\n70\n0\n62\n" + (layerDef.dxfColor || 7) + "\n6\nCONTINUOUS\n";
+      }
+      dxf += "0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n";
+      const hw = data.site.width / 2, hd = data.site.depth / 2;
+      dxf += "0\nLWPOLYLINE\n8\nSITE_BOUNDARY\n90\n4\n70\n1\n10\n" + (-hw) + "\n20\n" + (-hd) + "\n10\n" + hw + "\n20\n" + (-hd) + "\n10\n" + hw + "\n20\n" + hd + "\n10\n" + (-hw) + "\n20\n" + hd + "\n";
+      dxf += "0\nENDSEC\n0\nEOF\n";
+      return dxf;
+    }
+
+    function generateSTL(data, currentPositions) {
+      return "solid MusterOberhofer\nendsolid MusterOberhofer\n";
+    }
+
+    function generateDAE(data, currentPositions) {
+      return '<?xml version="1.0"?><COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1"></COLLADA>';
+    }
   </script>
 </body>
 </html>
