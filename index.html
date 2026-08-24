@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Beispiel / Mustergrundstück 2400 m² — Baukasten</title>
+  <title>Mustergrundstück Oberhofer — Baukasten Demo</title>
   <style>
     :root {
       --bg: #1a211c;
-      --panel: rgba(18, 24, 20, 0.88);
+      --panel: rgba(18, 24, 20, 0.92);
       --ink: #eef4ee;
       --muted: #b7c4b8;
       --accent: #d4a017;
       --ok: #6f9f6a;
+      --warn: #cc4444;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: "Segoe UI", system-ui, sans-serif; }
@@ -20,64 +21,109 @@
     header {
       position: absolute; top: 0; left: 0; right: 0; z-index: 5;
       padding: 14px 18px 12px;
-      background: linear-gradient(180deg, rgba(12,16,13,0.92), rgba(12,16,13,0.35) 70%, transparent);
+      background: linear-gradient(180deg, rgba(12,16,13,0.94), rgba(12,16,13,0.4) 75%, transparent);
       pointer-events: none;
     }
     header h1 { margin: 0 0 4px; font-size: 18px; font-weight: 650; letter-spacing: 0.01em; }
-    header p { margin: 0; font-size: 12.5px; color: var(--muted); max-width: 820px; line-height: 1.4; }
+    header p { margin: 0; font-size: 12.5px; color: var(--muted); max-width: 860px; line-height: 1.45; }
     .badge {
       display: inline-block; margin-top: 8px; pointer-events: auto;
       font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
       color: #3a2a00; background: var(--accent); padding: 3px 8px; border-radius: 3px;
     }
+    .badge.warn { background: var(--warn); color: #fff; }
     .ui {
       position: absolute; left: 16px; bottom: 16px; z-index: 6;
       background: var(--panel); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px; padding: 12px 14px; width: min(360px, calc(100vw - 32px));
-      backdrop-filter: blur(8px);
+      border-radius: 10px; padding: 14px 16px; width: min(380px, calc(100vw - 32px));
+      backdrop-filter: blur(10px);
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
     }
-    .ui h2 { margin: 0 0 8px; font-size: 13px; color: var(--accent); font-weight: 650; }
-    .ui ul { margin: 0 0 10px; padding-left: 18px; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+    .ui h2 { margin: 0 0 10px; font-size: 13px; color: var(--accent); font-weight: 650; }
+    .ui ul { margin: 0 0 12px; padding-left: 18px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+    .ui li { margin-bottom: 3px; }
+    .section { margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
     .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     button {
       appearance: none; border: 0; cursor: pointer;
       background: var(--ok); color: #10210f; font-weight: 700;
       padding: 8px 12px; border-radius: 6px; font-size: 13px;
+      transition: transform 0.1s, opacity 0.1s;
     }
+    button:hover { opacity: 0.9; }
+    button:active { transform: scale(0.97); }
     button.secondary { background: #3d4a40; color: var(--ink); }
-    .hint { font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+    button.accent { background: var(--accent); color: #1a1400; }
+    .legend { margin-top: 12px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 11.5px; }
+    .legend-swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.15); flex-shrink: 0; }
+    .hint { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.4; }
     .label {
       position: absolute; transform: translate(-50%, -100%);
       pointer-events: none; white-space: nowrap;
       font-size: 11px; font-weight: 650;
-      background: rgba(14,18,15,0.78); color: #f3f7f2;
-      padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(14,18,15,0.82); color: #f3f7f2;
+      padding: 3px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15);
     }
-    #status { position: absolute; right: 16px; bottom: 16px; z-index: 6; font-size: 12px; color: var(--muted); }
+    #status { position: absolute; right: 16px; bottom: 16px; z-index: 6; font-size: 12px; color: var(--muted); text-align: right; }
+    #toggle-panel { display: none; }
+    @media (max-width: 600px) {
+      .ui { width: calc(100vw - 24px); left: 12px; bottom: 12px; max-height: 45vh; }
+      #toggle-panel { display: block; position: absolute; left: 12px; bottom: 12px; z-index: 7; }
+      .ui.collapsed { display: none; }
+    }
   </style>
 </head>
 <body>
   <div id="canvas-wrap"></div>
   <header>
-    <h1>Beispiel / Mustergrundstück 2400 m² — Baukasten</h1>
-    <p>Fiktives Muster für Planspiele (ca. 40&nbsp;m × 60&nbsp;m = 2400&nbsp;m²). <strong>Kein reales Hamburger Grundstück</strong> und keine Bestandsaufnahme — nur ein beschriftetes Beispiel, damit sich Teile verschieben lassen.</p>
-    <span class="badge">Muster · nicht das echte Grundstück</span>
+    <h1>Mustergrundstück Oberhofer — Baukasten Demo</h1>
+    <p>Fiktives Muster für Planspiele (ca. 2400 m², unregelmäßige Parzellen). <strong>Dies ist NICHT das echte Grundstück</strong> — nur ein Beispiel, um die Methodik zu demonstrieren. Reale Geometrie kommt aus den Plänen des Auftraggebers.</p>
+    <span class="badge">Muster · Sample · Kein echtes Grundstück</span>
+    <span class="badge warn">Nur zur Demonstration</span>
   </header>
-  <div class="ui">
-    <h2>Baukasten — verschiebbare Teile</h2>
-    <ul>
-      <li>Linksklick + Ziehen: Kit-Teile auf der Rasenfläche</li>
-      <li>Rechte Maustaste / Rad: Orbit und Zoom</li>
-      <li>Bestand (Haus, Schuppen, Bäume, Zaun) bleibt fest</li>
-    </ul>
-    <div class="row">
-      <button id="btn-reset" type="button">Zurücksetzen</button>
-      <button id="btn-top" class="secondary" type="button">Aufsicht</button>
-      <button id="btn-iso" class="secondary" type="button">Axonometrie</button>
+  
+  <button id="toggle-panel" class="secondary" type="button">☰ Menü</button>
+  
+  <div class="ui" id="panel">
+    <div class="section">
+      <h2>Baukasten — verschiebbare Teile</h2>
+      <ul>
+        <li><strong>Linksklick + Ziehen</strong>: Kit-Teile auf der Fläche verschieben</li>
+        <li><strong>Rechte Maustaste / Rad</strong>: Orbit und Zoom</li>
+        <li><strong>Gelbe Fläche</strong>: Baufenster (ca. 700 m² bebaubar)</li>
+        <li><strong>Rote Streifen</strong>: Lärmschutzzone an Durchfahrt</li>
+      </ul>
     </div>
-    <p class="hint">Maße metrisch, reine Massen. Beispiel-Kit zum Zeigen, nicht die reale Parzelle.</p>
+    
+    <div class="section">
+      <h2>Bebauungsoptionen (verschiebbar)</h2>
+      <div class="legend" id="options-legend"></div>
+    </div>
+    
+    <div class="section">
+      <h2>Steuerung</h2>
+      <div class="row">
+        <button id="btn-reset" type="button">Zurücksetzen</button>
+        <button id="btn-top" class="secondary" type="button">Aufsicht</button>
+        <button id="btn-iso" class="secondary" type="button">Axonometrie</button>
+      </div>
+      <div class="row" style="margin-top: 8px;">
+        <button id="btn-export-dxf" class="accent" type="button">DXF exportieren</button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>Legende</h2>
+      <div class="legend" id="layers-legend"></div>
+    </div>
+    
+    <p class="hint">Maße metrisch, reine Massen. Beispiel-Kit zum Zeigen der Methodik, nicht die reale Parzelle. DXF-Export erzeugt AutoCAD-kompatible Datei (R2010, Meter).</p>
   </div>
-  <div id="status">Bereit</div>
+  
+  <div id="status">Lade Kit-Daten...</div>
 
   <script type="importmap">
   {
@@ -92,20 +138,22 @@
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 
-    const SITE_W = 40;
-    const SITE_D = 60;
-    const HALF_W = SITE_W / 2;
-    const HALF_D = SITE_D / 2;
-
     const wrap = document.getElementById("canvas-wrap");
     const statusEl = document.getElementById("status");
+    const optionsLegend = document.getElementById("options-legend");
+    const layersLegend = document.getElementById("layers-legend");
+
+    let kitData = null;
+    let SITE_W = 40;
+    let SITE_D = 60;
+    let HALF_W, HALF_D;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x8aa3b0);
-    scene.fog = new THREE.Fog(0x8aa3b0, 90, 220);
+    scene.fog = new THREE.Fog(0x8aa3b0, 100, 250);
 
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
-    camera.position.set(48, 36, 52);
+    camera.position.set(52, 40, 56);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -122,46 +170,70 @@
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.target.set(0, 1.5, 0);
+    controls.target.set(0, 2, 0);
     controls.maxPolarAngle = Math.PI * 0.48;
-    controls.minDistance = 12;
-    controls.maxDistance = 140;
+    controls.minDistance = 15;
+    controls.maxDistance = 160;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-    const sun = new THREE.DirectionalLight(0xfff3d4, 1.05);
-    sun.position.set(28, 42, 18);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const sun = new THREE.DirectionalLight(0xfff3d4, 1.1);
+    sun.position.set(30, 45, 20);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
-    sun.shadow.camera.left = -50;
-    sun.shadow.camera.right = 50;
-    sun.shadow.camera.top = 50;
-    sun.shadow.camera.bottom = -50;
+    sun.shadow.camera.left = -55;
+    sun.shadow.camera.right = 55;
+    sun.shadow.camera.top = 55;
+    sun.shadow.camera.bottom = -55;
     scene.add(sun);
-    scene.add(new THREE.HemisphereLight(0xb8d4e8, 0x4a5a3a, 0.35));
+    scene.add(new THREE.HemisphereLight(0xb8d4e8, 0x4a5a3a, 0.3));
 
     function mat(color, opts = {}) {
       return new THREE.MeshStandardMaterial({
-        color, roughness: opts.roughness ?? 0.82, metalness: opts.metalness ?? 0.04,
-        transparent: !!opts.opacity, opacity: opts.opacity ?? 1
+        color, roughness: opts.roughness ?? 0.8, metalness: opts.metalness ?? 0.05,
+        transparent: !!opts.opacity, opacity: opts.opacity ?? 1,
+        side: opts.doubleSide ? THREE.DoubleSide : THREE.FrontSide
       });
     }
 
-    function box(w, h, d, color, x, y, z, name) {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color));
+    function box(w, h, d, color, x, y, z, name, opacity) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color, { opacity }));
       m.position.set(x, y + h / 2, z);
-      m.castShadow = true;
+      m.castShadow = h > 0.5;
       m.receiveShadow = true;
       if (name) m.name = name;
       return m;
     }
 
-    function cyl(r, h, color, x, y, z, name, segs = 24) {
+    function cyl(r, h, color, x, y, z, name, segs = 28) {
       const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, segs), mat(color));
       m.position.set(x, y + h / 2, z);
       m.castShadow = true;
       m.receiveShadow = true;
       if (name) m.name = name;
       return m;
+    }
+
+    function polygon(vertices, height, color, opacity = 1) {
+      const shape = new THREE.Shape();
+      shape.moveTo(vertices[0][0], vertices[0][1]);
+      for (let i = 1; i < vertices.length; i++) {
+        shape.lineTo(vertices[i][0], vertices[i][1]);
+      }
+      shape.closePath();
+      
+      const geometry = height > 0 
+        ? new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false })
+        : new THREE.ShapeGeometry(shape);
+      
+      const mesh = new THREE.Mesh(geometry, mat(color, { opacity, doubleSide: true }));
+      mesh.rotation.x = -Math.PI / 2;
+      if (height > 0) {
+        mesh.position.y = 0;
+      } else {
+        mesh.position.y = 0.02;
+      }
+      mesh.receiveShadow = true;
+      return mesh;
     }
 
     function makeLabel(text, y) {
@@ -173,129 +245,22 @@
       return obj;
     }
 
-    const context = new THREE.Group();
-    context.name = "Kontext_fest";
-    scene.add(context);
-
-    const lawn = new THREE.Mesh(
-      new THREE.PlaneGeometry(SITE_W, SITE_D),
-      mat(0x6b8f4e, { roughness: 0.95 })
-    );
-    lawn.rotation.x = -Math.PI / 2;
-    lawn.receiveShadow = true;
-    lawn.name = "Rasen";
-    context.add(lawn);
-
-    const groundRing = new THREE.Mesh(
-      new THREE.PlaneGeometry(SITE_W + 40, SITE_D + 40),
-      mat(0x8a8a7a, { roughness: 1 })
-    );
-    groundRing.rotation.x = -Math.PI / 2;
-    groundRing.position.y = -0.02;
-    groundRing.receiveShadow = true;
-    groundRing.name = "Umgebung";
-    context.add(groundRing);
-
-    const edge = new THREE.LineSegments(
-      new THREE.EdgesGeometry(new THREE.PlaneGeometry(SITE_W, SITE_D)),
-      new THREE.LineBasicMaterial({ color: 0x2f4a28 })
-    );
-    edge.rotation.x = -Math.PI / 2;
-    edge.position.y = 0.03;
-    context.add(edge);
-
-    const fenceGroup = new THREE.Group();
-    fenceGroup.name = "Zaun";
-    const postMat = mat(0x5a4632);
-    const railMat = mat(0x6a5340);
-    function addFenceRun(ax, az, bx, bz) {
-      const dx = bx - ax, dz = bz - az;
-      const len = Math.hypot(dx, dz);
-      const n = Math.max(2, Math.round(len / 4));
-      for (let i = 0; i <= n; i++) {
-        const t = i / n;
-        const p = cyl(0.08, 1.2, 0x5a4632, ax + dx * t, 0, az + dz * t);
-        p.material = postMat;
-        fenceGroup.add(p);
-      }
-      const rail = new THREE.Mesh(new THREE.BoxGeometry(len, 0.06, 0.06), railMat);
-      rail.position.set((ax + bx) / 2, 0.95, (az + bz) / 2);
-      rail.rotation.y = Math.atan2(dx, dz) + Math.PI / 2;
-      rail.castShadow = true;
-      fenceGroup.add(rail);
-      const rail2 = rail.clone();
-      rail2.position.y = 0.55;
-      fenceGroup.add(rail2);
-    }
-    addFenceRun(-HALF_W, -HALF_D, HALF_W, -HALF_D);
-    addFenceRun(HALF_W, -HALF_D, HALF_W, HALF_D);
-    addFenceRun(HALF_W, HALF_D, -HALF_W, HALF_D);
-    addFenceRun(-HALF_W, HALF_D, -HALF_W, -HALF_D);
-    context.add(fenceGroup);
-
-    const house = new THREE.Group();
-    house.name = "Bestand_Wohnhaus";
-    house.add(box(12, 6.5, 10, 0xc9b8a0, 0, 0, 0));
-    house.add(box(12.2, 0.25, 10.2, 0x7a4e3a, 0, 6.5, 0));
-    const ridge = new THREE.Mesh(new THREE.BoxGeometry(12.2, 1.4, 5.2), mat(0x6b4332));
-    ridge.position.set(0, 7.4, 0);
-    ridge.castShadow = true;
-    house.add(ridge);
-    house.position.set(-6, 0, -16);
-    house.add(makeLabel("Bestand: Wohnhaus 12×10×6,5 m (2 Geschosse)", 8.4));
-    context.add(house);
-
-    const shed = new THREE.Group();
-    shed.name = "Bestand_Schuppen";
-    shed.add(box(6, 3, 4, 0x8d7a62, 0, 0, 0));
-    shed.add(box(6.1, 0.15, 4.1, 0x4a3a2a, 0, 3, 0));
-    shed.position.set(12, 0, -18);
-    shed.add(makeLabel("Bestand: Schuppen 6×4×3 m", 3.6));
-    context.add(shed);
-
     function treeMass(x, z, r, h, name) {
       const g = new THREE.Group();
       g.name = name;
-      const trunk = cyl(r * 0.18, h * 0.28, 0x6b4f32, 0, 0, 0);
-      const crown = new THREE.Mesh(new THREE.SphereGeometry(r, 18, 14), mat(0x3f6b3a, { roughness: 0.9 }));
+      const trunk = cyl(r * 0.18, h * 0.3, 0x6b4f32, 0, 0, 0);
+      const crown = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), mat(0x3f6b3a, { roughness: 0.9 }));
       crown.position.set(0, h * 0.55, 0);
-      crown.scale.set(1, 0.85, 1);
+      crown.scale.set(1, 0.9, 1);
       crown.castShadow = true;
       g.add(trunk, crown);
       g.position.set(x, 0, z);
-      g.add(makeLabel("Baummassen (schematisch)", h * 0.95));
-      context.add(g);
+      return g;
     }
-    treeMass(-16, 20, 2.4, 7.5, "Baum_01");
-    treeMass(-12, 24, 1.8, 6.2, "Baum_02");
-    treeMass(15, 22, 2.6, 8.0, "Baum_03");
-    treeMass(16, 8, 2.0, 6.8, "Baum_04");
-    treeMass(-17, -8, 2.2, 7.0, "Baum_05");
-    treeMass(4, 24, 1.6, 5.8, "Baum_06");
 
-    const north = new THREE.Group();
-    north.name = "Nordpfeil";
-    const shaft = box(0.35, 0.12, 4.2, 0x222222, 0, 0.08, 0);
-    shaft.position.y = 0.14;
-    const head = new THREE.Mesh(new THREE.ConeGeometry(0.55, 1.4, 8), mat(0xc0392b));
-    head.rotation.x = -Math.PI / 2;
-    head.position.set(0, 0.2, 2.6);
-    north.add(shaft, head);
-    north.position.set(16.5, 0, 25);
-    north.add(makeLabel("Norden", 1.4));
-    context.add(north);
-
-    const scale = new THREE.Group();
-    scale.name = "Massstab_10m";
-    for (let i = 0; i < 5; i++) {
-      const c = i % 2 === 0 ? 0x111111 : 0xeeeeee;
-      const s = box(2, 0.08, 0.45, c, i * 2 - 4, 0.05, 0);
-      s.position.y = 0.09;
-      scale.add(s);
-    }
-    scale.position.set(0, 0, 28.6);
-    scale.add(makeLabel("Maßstab 10 m", 0.8));
-    context.add(scale);
+    const context = new THREE.Group();
+    context.name = "Kontext_fest";
+    scene.add(context);
 
     const kit = new THREE.Group();
     kit.name = "Baukasten_verschiebbar";
@@ -303,76 +268,233 @@
 
     const draggables = [];
     const home = new Map();
+    const pieceGroups = new Map();
 
-    function registerKit(group, label, labelY) {
+    function registerKit(group, piece) {
       group.userData.draggable = true;
-      group.add(makeLabel(label, labelY));
+      group.userData.pieceId = piece.id;
+      if (piece.label) {
+        const labelY = piece.type === 'box' ? (piece.size[2] + 1) : (piece.height + 0.8);
+        group.add(makeLabel(piece.label, labelY));
+      }
       kit.add(group);
       draggables.push(group);
       home.set(group, group.position.clone());
+      pieceGroups.set(piece.id, group);
     }
 
-    const varA = new THREE.Group();
-    varA.name = "Bebauung_Variante_A";
-    varA.add(box(10, 7, 8, 0xd97b3a, 0, 0, 0));
-    varA.add(box(10.15, 0.2, 8.15, 0x3d3d3d, 0, 7, 0));
-    varA.position.set(-10, 0, 6);
-    registerKit(varA, "Bebauung Variante A (kompakt 10×8×7 m)", 8.0);
+    function buildScene(data) {
+      kitData = data;
+      SITE_W = data.site.width;
+      SITE_D = data.site.depth;
+      HALF_W = SITE_W / 2;
+      HALF_D = SITE_D / 2;
 
-    const varB = new THREE.Group();
-    varB.name = "Bebauung_Variante_B";
-    varB.add(box(6, 5, 6, 0x3a7ca5, -4, 0, 0));
-    varB.add(box(5, 4, 5, 0x4a90b8, 4.2, 0, 1));
-    varB.position.set(8, 0, 4);
-    registerKit(varB, "Bebauung Variante B (zwei Volumen)", 6.2);
+      const lawn = new THREE.Mesh(
+        new THREE.PlaneGeometry(SITE_W, SITE_D),
+        mat(0x6b8f4e, { roughness: 0.95 })
+      );
+      lawn.rotation.x = -Math.PI / 2;
+      lawn.receiveShadow = true;
+      lawn.name = "Rasen";
+      context.add(lawn);
 
-    const pv = new THREE.Group();
-    pv.name = "PV_Feld";
-    const frame = box(8, 0.12, 5, 0x2c2c2c, 0, 0.55, 0);
-    frame.rotation.x = -0.35;
-    frame.position.set(0, 1.05, 0);
-    pv.add(frame);
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 2; j++) {
-        const p = box(2.3, 0.06, 2.1, 0x1a3a6b, (i - 1) * 2.5, 0.7, (j - 0.5) * 2.2);
-        p.rotation.x = -0.35;
-        p.position.y = 1.15 + (j - 0.5) * 0.35;
-        pv.add(p);
+      const groundRing = new THREE.Mesh(
+        new THREE.PlaneGeometry(SITE_W + 50, SITE_D + 50),
+        mat(0x8a8a7a, { roughness: 1 })
+      );
+      groundRing.rotation.x = -Math.PI / 2;
+      groundRing.position.y = -0.03;
+      groundRing.receiveShadow = true;
+      groundRing.name = "Umgebung";
+      context.add(groundRing);
+
+      const edge = new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.PlaneGeometry(SITE_W, SITE_D)),
+        new THREE.LineBasicMaterial({ color: 0x2f4a28, linewidth: 2 })
+      );
+      edge.rotation.x = -Math.PI / 2;
+      edge.position.y = 0.04;
+      context.add(edge);
+
+      addFence();
+      addNorthArrow();
+      addScaleBar();
+
+      for (const piece of data.pieces) {
+        buildPiece(piece, data.layers);
+      }
+
+      buildLegend(data);
+      statusEl.textContent = "Bereit — " + draggables.length + " verschiebbare Teile";
+    }
+
+    function buildPiece(piece, layers) {
+      const layerDef = layers[piece.layer] || {};
+      const color = piece.color || layerDef.color || "#888888";
+
+      if (piece.type === "polygon" && !piece.draggable) {
+        const verts = piece.vertices;
+        const offsetVerts = piece.position 
+          ? verts.map(v => [v[0] + piece.position[0], v[1] + piece.position[1]])
+          : verts;
+        const mesh = polygon(offsetVerts, piece.height || 0, color, piece.fillOpacity || 0.6);
+        mesh.name = piece.name;
+        if (piece.label && piece.height > 0) {
+          mesh.add(makeLabel(piece.label, piece.height + 0.5));
+        }
+        context.add(mesh);
+        
+        const lineVerts = [...offsetVerts, offsetVerts[0]];
+        const lineGeom = new THREE.BufferGeometry().setFromPoints(
+          lineVerts.map(v => new THREE.Vector3(v[0], piece.height + 0.05, v[1]))
+        );
+        const line = new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ color }));
+        context.add(line);
+      }
+      else if (piece.type === "box") {
+        const g = new THREE.Group();
+        g.name = piece.id;
+        const [w, d, h] = piece.size;
+        const mainBox = box(w, h, d, color, 0, 0, 0, piece.name);
+        g.add(mainBox);
+        
+        if (h > 3) {
+          const roof = box(w + 0.2, 0.2, d + 0.2, darkenColor(color, 0.7), 0, h, 0);
+          g.add(roof);
+        }
+        
+        g.position.set(piece.position[0], 0, piece.position[1]);
+        
+        if (piece.draggable) {
+          registerKit(g, piece);
+        } else {
+          if (piece.label) {
+            g.add(makeLabel(piece.label, h + 1));
+          }
+          context.add(g);
+        }
+      }
+      else if (piece.type === "cylinder") {
+        const g = new THREE.Group();
+        g.name = piece.id;
+        const c = cyl(piece.radius, piece.height, color, 0, 0, 0, piece.name);
+        g.add(c);
+        const lid = cyl(piece.radius + 0.05, 0.1, darkenColor(color, 0.8), 0, piece.height, 0, null, 28);
+        g.add(lid);
+        g.position.set(piece.position[0], 0, piece.position[1]);
+        
+        if (piece.draggable) {
+          registerKit(g, piece);
+        } else {
+          context.add(g);
+        }
+      }
+      else if (piece.type === "tree") {
+        const tree = treeMass(piece.position[0], piece.position[1], piece.radius, piece.height, piece.name);
+        context.add(tree);
+      }
+      else if (piece.type === "polygon" && piece.draggable) {
+        const g = new THREE.Group();
+        g.name = piece.id;
+        const mesh = polygon(piece.vertices, piece.height || 0.3, color, 0.8);
+        g.add(mesh);
+        g.position.set(piece.position[0], 0, piece.position[1]);
+        registerKit(g, piece);
       }
     }
-    const rack = box(7.6, 0.9, 0.12, 0x555555, 0, 0, -1.8);
-    pv.add(rack);
-    pv.position.set(-8, 0, 18);
-    registerKit(pv, "PV-Feld (verschiebbar)", 2.6);
 
-    const wind = new THREE.Group();
-    wind.name = "Kleinwindanlage";
-    wind.add(cyl(0.18, 9, 0xcfd4d8, 0, 0, 0, null, 12));
-    const nacelle = box(1.4, 0.45, 0.45, 0xe8eaed, 0.35, 9, 0);
-    nacelle.position.y = 9.22;
-    wind.add(nacelle);
-    const hub = new THREE.Group();
-    hub.position.set(1.05, 9.22, 0);
-    for (let i = 0; i < 3; i++) {
-      const blade = box(0.18, 3.4, 0.08, 0xf2f4f6, 0, 0, 0);
-      blade.position.y = 1.5;
-      const arm = new THREE.Group();
-      arm.rotation.z = (i * Math.PI * 2) / 3;
-      arm.add(blade);
-      hub.add(arm);
+    function darkenColor(hex, factor) {
+      const c = new THREE.Color(hex);
+      c.multiplyScalar(factor);
+      return c;
     }
-    wind.add(hub);
-    wind.userData.hub = hub;
-    wind.position.set(14, 0, 14);
-    registerKit(wind, "Kleinwindanlage", 11.2);
 
-    const tank = new THREE.Group();
-    tank.name = "Zisterne";
-    tank.add(cyl(1.6, 2.4, 0x7f8c8d, 0, 0, 0, null, 28));
-    tank.add(cyl(1.65, 0.12, 0x5d6d6e, 0, 2.4, 0, null, 28));
-    tank.add(cyl(0.18, 0.35, 0x444444, 0.5, 2.5, 0, null, 10));
-    tank.position.set(2, 0, 16);
-    registerKit(tank, "Zisterne / Tank", 3.3);
+    function addFence() {
+      const fenceGroup = new THREE.Group();
+      fenceGroup.name = "Zaun";
+      const postMat = mat(0x5a4632);
+      const railMat = mat(0x6a5340);
+      
+      function addFenceRun(ax, az, bx, bz) {
+        const dx = bx - ax, dz = bz - az;
+        const len = Math.hypot(dx, dz);
+        const n = Math.max(2, Math.round(len / 4));
+        for (let i = 0; i <= n; i++) {
+          const t = i / n;
+          const p = cyl(0.07, 1.1, 0x5a4632, ax + dx * t, 0, az + dz * t);
+          p.material = postMat;
+          fenceGroup.add(p);
+        }
+        const rail = new THREE.Mesh(new THREE.BoxGeometry(len, 0.05, 0.05), railMat);
+        rail.position.set((ax + bx) / 2, 0.9, (az + bz) / 2);
+        rail.rotation.y = Math.atan2(dx, dz) + Math.PI / 2;
+        rail.castShadow = true;
+        fenceGroup.add(rail);
+        const rail2 = rail.clone();
+        rail2.position.y = 0.5;
+        fenceGroup.add(rail2);
+      }
+      addFenceRun(-HALF_W, -HALF_D, HALF_W, -HALF_D);
+      addFenceRun(HALF_W, -HALF_D, HALF_W, HALF_D);
+      addFenceRun(HALF_W, HALF_D, -HALF_W, HALF_D);
+      addFenceRun(-HALF_W, HALF_D, -HALF_W, -HALF_D);
+      context.add(fenceGroup);
+    }
+
+    function addNorthArrow() {
+      const north = new THREE.Group();
+      north.name = "Nordpfeil";
+      const shaft = box(0.3, 0.1, 4, 0x222222, 0, 0.1, 0);
+      const head = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.3, 8), mat(0xc0392b));
+      head.rotation.x = -Math.PI / 2;
+      head.position.set(0, 0.15, 2.5);
+      north.add(shaft, head);
+      north.position.set(17, 0, HALF_D - 3);
+      north.add(makeLabel("N", 1.2));
+      context.add(north);
+    }
+
+    function addScaleBar() {
+      const scale = new THREE.Group();
+      scale.name = "Massstab_10m";
+      for (let i = 0; i < 5; i++) {
+        const c = i % 2 === 0 ? 0x111111 : 0xeeeeee;
+        const s = box(2, 0.07, 0.4, c, i * 2 - 4, 0.04, 0);
+        scale.add(s);
+      }
+      scale.position.set(0, 0, HALF_D - 1);
+      scale.add(makeLabel("10 m", 0.6));
+      context.add(scale);
+    }
+
+    function buildLegend(data) {
+      const optionPieces = data.pieces.filter(p => p.layer.startsWith("OPTION_"));
+      for (const p of optionPieces) {
+        const layerDef = data.layers[p.layer] || {};
+        const div = document.createElement("div");
+        div.className = "legend-item";
+        div.innerHTML = `<span class="legend-swatch" style="background:${p.color || layerDef.color}"></span><span>${p.name}</span>`;
+        optionsLegend.appendChild(div);
+      }
+
+      const importantLayers = ["BAUFENSTER", "ABSTAND", "LAERMSTREIFEN", "BESTAND", "TECHNIK"];
+      for (const layerName of importantLayers) {
+        const layerDef = data.layers[layerName];
+        if (!layerDef) continue;
+        const div = document.createElement("div");
+        div.className = "legend-item";
+        const displayName = {
+          "BAUFENSTER": "Baufenster (bebaubar)",
+          "ABSTAND": "Grenzabstand",
+          "LAERMSTREIFEN": "Lärmschutzstreifen",
+          "BESTAND": "Bestand",
+          "TECHNIK": "Technik (PV, Zisterne)"
+        }[layerName] || layerName;
+        div.innerHTML = `<span class="legend-swatch" style="background:${layerDef.color}"></span><span>${displayName}</span>`;
+        layersLegend.appendChild(div);
+      }
+    }
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
@@ -398,8 +520,8 @@
     }
 
     function clampToLawn(v) {
-      v.x = THREE.MathUtils.clamp(v.x, -HALF_W + 1, HALF_W - 1);
-      v.z = THREE.MathUtils.clamp(v.z, -HALF_D + 1, HALF_D - 1);
+      v.x = THREE.MathUtils.clamp(v.x, -HALF_W + 2, HALF_W - 2);
+      v.z = THREE.MathUtils.clamp(v.z, -HALF_D + 2, HALF_D - 2);
       v.y = 0;
       return v;
     }
@@ -441,17 +563,164 @@
       }
       statusEl.textContent = "Baukasten zurückgesetzt";
     }
+
     document.getElementById("btn-reset").addEventListener("click", resetKit);
     document.getElementById("btn-top").addEventListener("click", () => {
-      camera.position.set(0, 78, 0.01);
+      camera.position.set(0, 85, 0.01);
       controls.target.set(0, 0, 0);
       controls.update();
     });
     document.getElementById("btn-iso").addEventListener("click", () => {
-      camera.position.set(48, 36, 52);
-      controls.target.set(0, 1.5, 0);
+      camera.position.set(52, 40, 56);
+      controls.target.set(0, 2, 0);
       controls.update();
     });
+
+    document.getElementById("btn-export-dxf").addEventListener("click", exportDXF);
+
+    document.getElementById("toggle-panel").addEventListener("click", () => {
+      document.getElementById("panel").classList.toggle("collapsed");
+    });
+
+    function exportDXF() {
+      if (!kitData) return;
+      
+      const currentPositions = {};
+      for (const [pieceId, group] of pieceGroups) {
+        currentPositions[pieceId] = { x: group.position.x, z: group.position.z };
+      }
+
+      const dxfContent = generateDXF(kitData, currentPositions);
+      const blob = new Blob([dxfContent], { type: "application/dxf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "muster_oberhofer_export.dxf";
+      a.click();
+      URL.revokeObjectURL(url);
+      statusEl.textContent = "DXF exportiert";
+    }
+
+    function generateDXF(data, currentPositions) {
+      let dxf = "";
+      
+      dxf += "0\nSECTION\n2\nHEADER\n";
+      dxf += "9\n$ACADVER\n1\nAC1024\n";
+      dxf += "9\n$INSUNITS\n70\n6\n";
+      dxf += "9\n$MEASUREMENT\n70\n1\n";
+      dxf += "0\nENDSEC\n";
+      
+      dxf += "0\nSECTION\n2\nTABLES\n";
+      dxf += "0\nTABLE\n2\nLAYER\n70\n" + Object.keys(data.layers).length + "\n";
+      
+      for (const [layerName, layerDef] of Object.entries(data.layers)) {
+        dxf += "0\nLAYER\n2\n" + layerName + "\n";
+        dxf += "70\n0\n";
+        dxf += "62\n" + (layerDef.dxfColor || 7) + "\n";
+        dxf += "6\nCONTINUOUS\n";
+      }
+      dxf += "0\nENDTAB\n";
+      dxf += "0\nENDSEC\n";
+      
+      dxf += "0\nSECTION\n2\nBLOCKS\n";
+      
+      for (const piece of data.pieces) {
+        if (piece.type === "box" || piece.type === "cylinder") {
+          dxf += "0\nBLOCK\n2\n" + piece.id.toUpperCase() + "\n";
+          dxf += "70\n0\n10\n0\n20\n0\n30\n0\n";
+          
+          if (piece.type === "box") {
+            const [w, d, h] = piece.size;
+            const hw = w / 2, hd = d / 2;
+            dxf += "0\nLWPOLYLINE\n8\n" + piece.layer + "\n";
+            dxf += "90\n4\n70\n1\n";
+            dxf += "10\n" + (-hw) + "\n20\n" + (-hd) + "\n";
+            dxf += "10\n" + hw + "\n20\n" + (-hd) + "\n";
+            dxf += "10\n" + hw + "\n20\n" + hd + "\n";
+            dxf += "10\n" + (-hw) + "\n20\n" + hd + "\n";
+            
+            dxf += "0\nTEXT\n8\n" + piece.layer + "\n";
+            dxf += "10\n0\n20\n0\n30\n" + (h + 0.5) + "\n";
+            dxf += "40\n0.8\n1\n" + (piece.label || piece.name) + "\n";
+          } else if (piece.type === "cylinder") {
+            dxf += "0\nCIRCLE\n8\n" + piece.layer + "\n";
+            dxf += "10\n0\n20\n0\n30\n0\n";
+            dxf += "40\n" + piece.radius + "\n";
+          }
+          
+          dxf += "0\nENDBLK\n";
+        }
+      }
+      
+      dxf += "0\nENDSEC\n";
+      
+      dxf += "0\nSECTION\n2\nENTITIES\n";
+      
+      for (const piece of data.pieces) {
+        if (piece.type === "polygon") {
+          let verts = piece.vertices;
+          const pos = currentPositions[piece.id] || piece.position;
+          if (pos && Array.isArray(pos)) {
+            verts = verts.map(v => [v[0] + pos[0], v[1] + pos[1]]);
+          } else if (pos && typeof pos === 'object') {
+            verts = verts.map(v => [v[0] + pos.x, v[1] + pos.z]);
+          }
+          
+          dxf += "0\nLWPOLYLINE\n8\n" + piece.layer + "\n";
+          dxf += "90\n" + verts.length + "\n70\n1\n";
+          for (const v of verts) {
+            dxf += "10\n" + v[0] + "\n20\n" + v[1] + "\n";
+          }
+          
+          if (piece.label) {
+            const cx = verts.reduce((s, v) => s + v[0], 0) / verts.length;
+            const cy = verts.reduce((s, v) => s + v[1], 0) / verts.length;
+            dxf += "0\nTEXT\n8\n" + piece.layer + "\n";
+            dxf += "10\n" + cx + "\n20\n" + cy + "\n30\n0\n";
+            dxf += "40\n0.6\n1\n" + piece.label + "\n";
+          }
+        }
+        else if (piece.type === "box" || piece.type === "cylinder") {
+          const pos = currentPositions[piece.id] || { x: piece.position[0], z: piece.position[1] };
+          const x = typeof pos.x !== 'undefined' ? pos.x : pos[0];
+          const z = typeof pos.z !== 'undefined' ? pos.z : pos[1];
+          
+          dxf += "0\nINSERT\n8\n" + piece.layer + "\n";
+          dxf += "2\n" + piece.id.toUpperCase() + "\n";
+          dxf += "10\n" + x + "\n20\n" + z + "\n30\n0\n";
+          dxf += "41\n1\n42\n1\n43\n1\n50\n0\n";
+        }
+        else if (piece.type === "tree") {
+          dxf += "0\nCIRCLE\n8\n" + piece.layer + "\n";
+          dxf += "10\n" + piece.position[0] + "\n20\n" + piece.position[1] + "\n30\n0\n";
+          dxf += "40\n" + piece.radius + "\n";
+          
+          dxf += "0\nPOINT\n8\n" + piece.layer + "\n";
+          dxf += "10\n" + piece.position[0] + "\n20\n" + piece.position[1] + "\n30\n0\n";
+        }
+      }
+      
+      const hw = data.site.width / 2, hd = data.site.depth / 2;
+      dxf += "0\nLWPOLYLINE\n8\nSITE_BOUNDARY\n";
+      dxf += "90\n4\n70\n1\n";
+      dxf += "10\n" + (-hw) + "\n20\n" + (-hd) + "\n";
+      dxf += "10\n" + hw + "\n20\n" + (-hd) + "\n";
+      dxf += "10\n" + hw + "\n20\n" + hd + "\n";
+      dxf += "10\n" + (-hw) + "\n20\n" + hd + "\n";
+      
+      dxf += "0\nTEXT\n8\nSITE_BOUNDARY\n";
+      dxf += "10\n0\n20\n" + (-hd - 2) + "\n30\n0\n";
+      dxf += "40\n1.5\n1\nMustergrundstück Oberhofer (ca. " + data.site.area_m2 + " m²)\n";
+      
+      dxf += "0\nTEXT\n8\nSITE_BOUNDARY\n";
+      dxf += "10\n0\n20\n" + (-hd - 4) + "\n30\n0\n";
+      dxf += "40\n0.8\n1\nNUR MUSTER - Reale Geometrie aus Kundenplänen\n";
+      
+      dxf += "0\nENDSEC\n";
+      dxf += "0\nEOF\n";
+      
+      return dxf;
+    }
 
     function resize() {
       const w = wrap.clientWidth, h = wrap.clientHeight;
@@ -465,12 +734,25 @@
 
     function tick() {
       requestAnimationFrame(tick);
-      if (wind.userData.hub) wind.userData.hub.rotation.z += 0.01;
       controls.update();
       renderer.render(scene, camera);
       labelRenderer.render(scene, camera);
     }
-    tick();
+
+    async function init() {
+      try {
+        const resp = await fetch("kit.json");
+        if (!resp.ok) throw new Error("Konnte kit.json nicht laden");
+        const data = await resp.json();
+        buildScene(data);
+        tick();
+      } catch (err) {
+        statusEl.textContent = "Fehler: " + err.message;
+        console.error(err);
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>
