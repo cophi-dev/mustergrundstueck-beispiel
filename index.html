@@ -16,15 +16,20 @@
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: "Segoe UI", system-ui, sans-serif; }
-    #canvas-wrap { position: absolute; inset: 0; }
+    
+    /* Reserve space for fixed top toolbar */
+    :root { --topbar-height: 100px; }
+    @media (max-width: 700px) { :root { --topbar-height: 120px; } }
+    #canvas-wrap { position: absolute; top: var(--topbar-height); left: 0; right: 0; bottom: 0; z-index: 1; }
     canvas { display: block; width: 100%; height: 100%; }
     
-    /* TOP BAR - always visible */
+    /* TOP BAR - always visible, high contrast, fixed at top */
     #topbar {
-      position: absolute; top: 0; left: 0; right: 0; z-index: 10;
-      background: var(--panel);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      padding: 10px 16px 12px;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: linear-gradient(180deg, rgba(18, 24, 20, 0.98), rgba(25, 32, 27, 0.96));
+      border-bottom: 2px solid var(--accent);
+      padding: 12px 20px 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
     #topbar h1 {
       margin: 0 0 10px; font-size: 15px; font-weight: 600;
@@ -93,11 +98,11 @@
     
     /* Bottom panel - for less important controls */
     .ui {
-      position: absolute; left: 16px; bottom: 16px; z-index: 6;
+      position: fixed; left: 16px; bottom: 16px; z-index: 6;
       background: var(--panel); border: 1px solid rgba(255,255,255,0.08);
       border-radius: 10px; padding: 12px 14px; width: min(280px, calc(100vw - 32px));
       backdrop-filter: blur(10px);
-      max-height: calc(100vh - 160px);
+      max-height: calc(100vh - var(--topbar-height) - 60px);
       overflow-y: auto;
     }
     .ui h2 { margin: 0 0 8px; font-size: 11px; color: var(--accent); font-weight: 650; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -128,7 +133,7 @@
       background: rgba(14,18,15,0.85); color: #f3f7f2;
       padding: 2px 6px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.12);
     }
-    #status { position: absolute; right: 16px; bottom: 16px; z-index: 6; font-size: 11px; color: var(--muted); text-align: right; }
+    #status { position: fixed; right: 16px; bottom: 16px; z-index: 6; font-size: 11px; color: var(--muted); text-align: right; }
     #sync-status { font-size: 10px; color: var(--muted); margin-top: 4px; }
     #sync-status.connected { color: var(--ok); }
     footer {
@@ -136,7 +141,7 @@
       font-size: 10px; color: rgba(255,255,255,0.35); z-index: 5;
     }
     #loading-overlay {
-      position: fixed; inset: 0; z-index: 100;
+      position: fixed; inset: 0; z-index: 2000;
       background: var(--bg);
       display: flex; align-items: center; justify-content: center;
       font-size: 18px; color: var(--muted);
@@ -145,13 +150,13 @@
     #loading-overlay.hidden { opacity: 0; pointer-events: none; }
     
     @media (max-width: 700px) {
-      #topbar { padding: 8px 12px 10px; }
+      #topbar { padding: 10px 12px 12px; }
       #topbar h1 { font-size: 13px; margin-bottom: 8px; }
       .topbar-row { gap: 10px; }
       .variant-btn { padding: 8px 10px; font-size: 12px; min-height: 36px; }
       .sun-control input[type="range"] { width: 70px; }
       .sun-control label { min-width: 45px; font-size: 11px; }
-      .ui { width: calc(100vw - 24px); left: 12px; bottom: 12px; max-height: calc(100vh - 140px); }
+      .ui { width: calc(100vw - 24px); left: 12px; bottom: 12px; max-height: calc(100vh - var(--topbar-height) - 40px); }
     }
   </style>
 </head>
