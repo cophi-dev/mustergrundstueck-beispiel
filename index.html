@@ -75,12 +75,21 @@
       position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
       font-size: 10px; color: rgba(255,255,255,0.35); z-index: 5;
     }
+    #loading-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: var(--muted);
+      transition: opacity 0.3s;
+    }
+    #loading-overlay.hidden { opacity: 0; pointer-events: none; }
     @media (max-width: 500px) {
       .ui { width: calc(100vw - 24px); left: 12px; bottom: 12px; }
     }
   </style>
 </head>
 <body>
+  <div id="loading-overlay">Laden…</div>
   <div id="canvas-wrap"></div>
   <header>
     <h1>Mustergrundstück Oberhofer<span>Beispiel-Kit, nicht das echte Grundstück</span></h1>
@@ -144,17 +153,16 @@
     </div>
   </div>
   
-  <div id="status">Lade...</div>
+  <div id="status">Laden...</div>
   <footer>Baukasten entwickelt von Phillipp Zarindast</footer>
 
-  <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
+  <script id="kit-data" type="application/json">{"meta":{"name":"Mustergrundstück Oberhofer","units":"meters"},"site":{"width":40,"depth":60},"layers":{"SITE_BOUNDARY":{"color":"#2f4a28","dxfColor":3},"BESTAND":{"color":"#c9b8a0","dxfColor":30},"BAUFENSTER":{"color":"#d4a017","dxfColor":2},"ABSTAND":{"color":"#8b6914","dxfColor":52},"STRASSE":{"color":"#5a5a5a","dxfColor":8},"LAERMSTREIFEN":{"color":"#cc4444","dxfColor":1},"OPTION_BUNGALOW":{"color":"#4a9f4a","dxfColor":82},"OPTION_EFH":{"color":"#3a7ca5","dxfColor":150},"OPTION_MFH":{"color":"#9f4a9f","dxfColor":200},"OPTION_ERSATZ":{"color":"#d97b3a","dxfColor":30},"GRUENFLAECHE":{"color":"#6b8f4e","dxfColor":92},"TECHNIK":{"color":"#7f8c8d","dxfColor":9},"BAEUME":{"color":"#3f6b3a","dxfColor":84},"PARKPLATZ":{"color":"#6a6a6a","dxfColor":8}},"parkplatz":{"enabled":true,"position":[55,0],"size":[30,50],"label":"Parkplatz"},"pieces":[{"id":"site_boundary","name":"Grundstücksgrenze","layer":"SITE_BOUNDARY","type":"polygon","draggable":false,"vertices":[[-20,-30],[20,-30],[20,30],[-20,30]],"height":0},{"id":"bestand_wohnhaus","name":"Bestand: Wohnhaus","label":"Bestand: Wohnhaus 12×10 m, 2 Geschosse","layer":"BESTAND","type":"box","draggable":false,"position":[-6,-16],"size":[12,10,6.5],"color":"#c9b8a0"},{"id":"bestand_schuppen","name":"Bestand: Schuppen","label":"Bestand: Schuppen 6×4 m","layer":"BESTAND","type":"box","draggable":false,"position":[12,-18],"size":[6,4,3],"color":"#8d7a62"},{"id":"bestand_garage","name":"Bestand: Garage","label":"Bestand: Garage 5×6 m","layer":"BESTAND","type":"box","draggable":false,"position":[-15,-20],"size":[5,6,2.8],"color":"#a09080"},{"id":"baufenster","name":"Baufenster","label":"Baufenster ca. 700 m² (28×25 m)","layer":"BAUFENSTER","type":"polygon","draggable":false,"vertices":[[-8,2],[20,2],[20,27],[-8,27]],"height":0.1,"fillOpacity":0.25},{"id":"abstand_nord","name":"Abstand Nord","label":"Grenzabstand 3 m","layer":"ABSTAND","type":"polygon","draggable":false,"vertices":[[-20,27],[20,27],[20,30],[-20,30]],"height":0.05,"fillOpacity":0.3},{"id":"abstand_ost","name":"Abstand Ost","label":"Grenzabstand 3 m","layer":"ABSTAND","type":"polygon","draggable":false,"vertices":[[17,-30],[20,-30],[20,30],[17,30]],"height":0.05,"fillOpacity":0.3},{"id":"strasse","name":"Durchfahrtsstraße","label":"Durchfahrt / Zufahrt","layer":"STRASSE","type":"polygon","draggable":false,"vertices":[[-20,-30],[-12,-30],[-12,-8],[-20,-8]],"height":0.02,"color":"#5a5a5a"},{"id":"laermstreifen","name":"Lärmschutzstreifen","label":"Lärmschutzstreifen 4 m (schematisch)","layer":"LAERMSTREIFEN","type":"polygon","draggable":false,"vertices":[[-12,-30],[-8,-30],[-8,-8],[-12,-8]],"height":0.03,"fillOpacity":0.4,"color":"#cc4444"},{"id":"option_bungalow","name":"Option 1: Seniorengerechter Bungalow","label":"Bungalow 16×12 m, 1 Geschoss (ca. 190 m²)","layer":"OPTION_BUNGALOW","type":"box","draggable":true,"position":[55,18],"size":[16,12,3.5],"color":"#4a9f4a","parked":true},{"id":"option_efh","name":"Option 2: Kompaktes 2-geschossiges EFH","label":"EFH 10×8 m, 2 Geschosse (ca. 160 m²)","layer":"OPTION_EFH","type":"box","draggable":true,"position":[6,14],"size":[10,8,7],"color":"#3a7ca5","parked":false},{"id":"option_mfh","name":"Option 3: 3-Familien-Haus","label":"MFH 14×10 m, 3 Geschosse (ca. 420 m²)","layer":"OPTION_MFH","type":"box","draggable":true,"position":[55,0],"size":[14,10,10],"color":"#9f4a9f","parked":true},{"id":"option_ersatz","name":"Option 4: Ersatzneubau (Bestandsersatz)","label":"Ersatzneubau 14×11 m, 2 Geschosse","layer":"OPTION_ERSATZ","type":"box","draggable":true,"position":[55,-18],"size":[14,11,7],"color":"#d97b3a","parked":true},{"id":"pv_feld","name":"PV-Anlage","label":"PV-Feld (Platzhalter)","layer":"TECHNIK","type":"box","draggable":true,"position":[45,-8],"size":[8,5,0.5],"color":"#1a3a6b","parked":true,"isPV":true},{"id":"zisterne","name":"Zisterne / Regenwasser","label":"Zisterne (Platzhalter)","layer":"TECHNIK","type":"cylinder","draggable":true,"position":[45,-18],"radius":1.5,"height":2.4,"color":"#7f8c8d","parked":true},{"id":"gruenflaeche_1","name":"Grünfläche / Bepflanzung","label":"Grünfläche (Platzhalter)","layer":"GRUENFLAECHE","type":"polygon","draggable":true,"vertices":[[0,0],[6,0],[6,4],[0,4]],"position":[45,-2],"height":0.3,"color":"#6b8f4e","parked":true},{"id":"baum_01","name":"Bestandsbaum 1","layer":"BAEUME","type":"tree","draggable":false,"position":[-16,24],"radius":2.4,"height":7.5},{"id":"baum_02","name":"Bestandsbaum 2","layer":"BAEUME","type":"tree","draggable":false,"position":[15,26],"radius":2.0,"height":6.8},{"id":"baum_03","name":"Bestandsbaum 3","layer":"BAEUME","type":"tree","draggable":false,"position":[17,10],"radius":1.8,"height":6.2},{"id":"baum_04","name":"Bestandsbaum 4","layer":"BAEUME","type":"tree","draggable":false,"position":[-17,-5],"radius":2.2,"height":7.0}]}</script>
+
   <script type="importmap">
   {
     "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-      "yjs": "https://unpkg.com/yjs@13.6.10/dist/yjs.mjs",
-      "y-websocket": "https://unpkg.com/y-websocket@2.0.3/dist/y-websocket.mjs"
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
     }
   }
   </script>
@@ -162,12 +170,11 @@
     import * as THREE from "three";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
-    import * as Y from "yjs";
-    import { WebsocketProvider } from "y-websocket";
 
     const wrap = document.getElementById("canvas-wrap");
     const statusEl = document.getElementById("status");
     const syncStatusEl = document.getElementById("sync-status");
+    const loadingOverlay = document.getElementById("loading-overlay");
 
     const HAMBURG_LAT = 53.55;
     const HAMBURG_LON = 9.99;
@@ -217,48 +224,69 @@
     scene.add(sun);
     scene.add(new THREE.HemisphereLight(0xb8d4e8, 0x4a5a3a, 0.25));
 
-    const ydoc = new Y.Doc();
-    const yPositions = ydoc.getMap("positions");
-    const yCustomPieces = ydoc.getMap("customPieces");
-    let wsProvider = null;
+    let ydoc = null, yPositions = null, yCustomPieces = null, wsProvider = null;
     let isRemoteUpdate = false;
     let customPieceCounter = 0;
     let pendingPlacement = null;
+    let syncReady = false;
 
-    function initSync() {
-      try {
-        wsProvider = new WebsocketProvider(
-          "wss://demos.yjs.dev",
-          "muster-oberhofer-zarindast-2026",
-          ydoc
-        );
-        wsProvider.on("status", (event) => {
-          if (event.status === "connected") {
-            syncStatusEl.textContent = "verbunden";
-            syncStatusEl.classList.add("connected");
-          } else {
-            syncStatusEl.textContent = "nur lokal";
-            syncStatusEl.classList.remove("connected");
-          }
-        });
-        wsProvider.on("sync", (isSynced) => {
-          if (isSynced) {
-            applyRemoteCustomPieces();
-            applyRemotePositions();
-          }
-        });
-        yPositions.observe((event) => {
-          if (!isRemoteUpdate) applyRemotePositions();
-        });
-        yCustomPieces.observe((event) => {
-          if (!isRemoteUpdate) applyRemoteCustomPieces();
-        });
-      } catch (e) {
+    function initSyncLazy() {
+      const connectTimeout = setTimeout(() => {
+        if (!syncReady) {
+          syncStatusEl.textContent = "nur lokal";
+          syncStatusEl.classList.remove("connected");
+        }
+      }, 3000);
+
+      Promise.all([
+        import("https://cdn.jsdelivr.net/npm/yjs@13.6.10/+esm"),
+        import("https://cdn.jsdelivr.net/npm/y-websocket@2.0.3/+esm")
+      ]).then(([Y, YWebsocket]) => {
+        ydoc = new Y.Doc();
+        yPositions = ydoc.getMap("positions");
+        yCustomPieces = ydoc.getMap("customPieces");
+        
+        try {
+          wsProvider = new YWebsocket.WebsocketProvider(
+            "wss://demos.yjs.dev",
+            "muster-oberhofer-zarindast-2026",
+            ydoc
+          );
+          wsProvider.on("status", (event) => {
+            if (event.status === "connected") {
+              clearTimeout(connectTimeout);
+              syncReady = true;
+              syncStatusEl.textContent = "verbunden";
+              syncStatusEl.classList.add("connected");
+            } else {
+              syncStatusEl.textContent = "nur lokal";
+              syncStatusEl.classList.remove("connected");
+            }
+          });
+          wsProvider.on("sync", (isSynced) => {
+            if (isSynced) {
+              applyRemoteCustomPieces();
+              applyRemotePositions();
+            }
+          });
+          yPositions.observe(() => {
+            if (!isRemoteUpdate) applyRemotePositions();
+          });
+          yCustomPieces.observe(() => {
+            if (!isRemoteUpdate) applyRemoteCustomPieces();
+          });
+        } catch (e) {
+          clearTimeout(connectTimeout);
+          syncStatusEl.textContent = "nur lokal";
+        }
+      }).catch(() => {
+        clearTimeout(connectTimeout);
         syncStatusEl.textContent = "nur lokal";
-      }
+      });
     }
 
     function applyRemotePositions() {
+      if (!yPositions) return;
       isRemoteUpdate = true;
       yPositions.forEach((pos, pieceId) => {
         const group = pieceGroups.get(pieceId);
@@ -277,6 +305,7 @@
     }
 
     function applyRemoteCustomPieces() {
+      if (!yCustomPieces) return;
       isRemoteUpdate = true;
       yCustomPieces.forEach((pieceData, pieceId) => {
         if (!pieceGroups.has(pieceId)) {
@@ -314,7 +343,7 @@
     }
 
     function broadcastPosition(pieceId, x, y, z) {
-      if (isRemoteUpdate) return;
+      if (isRemoteUpdate || !yPositions) return;
       yPositions.set(pieceId, { x, y, z });
     }
 
@@ -398,7 +427,6 @@
       mfh: "option_mfh",
       ersatz: "option_ersatz"
     };
-    const nonVariantDraggables = ["pv_feld", "zisterne", "gruenflaeche_1"];
 
     function registerKit(group, piece) {
       group.userData.draggable = true;
@@ -455,7 +483,6 @@
       addNorthArrow();
 
       for (const piece of data.pieces) buildPiece(piece, data.layers);
-      statusEl.textContent = "Bereit";
     }
 
     function buildPiece(piece, layers) {
@@ -707,7 +734,6 @@
       const activeBtn = document.querySelector(`[data-variant="${variantKey}"]`);
       if (activeBtn) activeBtn.classList.add("active");
 
-      const targetId = variantIds[variantKey];
       const baufensterCenter = { x: 6, z: 14 };
 
       for (const [vk, vId] of Object.entries(variantIds)) {
@@ -758,19 +784,19 @@
       let placeX = 0, placeY = 0, placeZ = 0;
       let foundHit = false;
       
-      for (const hit of hits) {
-        const objName = hit.object.name;
+      for (const h of hits) {
+        const objName = h.object.name;
         if (objName === "Rasen" || objName === "Umgebung" || objName === "Parkplatz_Fläche" || 
-            objName === "Baufenster" || hit.object.geometry instanceof THREE.PlaneGeometry) {
-          placeX = hit.point.x;
-          placeZ = hit.point.z;
+            objName === "Baufenster" || h.object.geometry instanceof THREE.PlaneGeometry) {
+          placeX = h.point.x;
+          placeZ = h.point.z;
           placeY = 0;
           foundHit = true;
           break;
         } else {
-          placeX = hit.point.x;
-          placeZ = hit.point.z;
-          placeY = hit.point.y;
+          placeX = h.point.x;
+          placeZ = h.point.z;
+          placeY = h.point.y;
           foundHit = true;
           break;
         }
@@ -794,7 +820,7 @@
       
       createCustomPieceFromData(pieceId, pieceData);
       
-      yCustomPieces.set(pieceId, pieceData);
+      if (yCustomPieces) yCustomPieces.set(pieceId, pieceData);
       broadcastPosition(pieceId, placeX, placeY, placeZ);
       
       pendingPlacement = null;
@@ -820,7 +846,12 @@
       controls.update();
     });
 
+    let suncalcLoaded = false;
     function updateSun() {
+      if (!suncalcLoaded || typeof SunCalc === "undefined") {
+        sun.position.set(50, 50, 25);
+        return;
+      }
       const hourSlider = document.getElementById("sun-hour");
       const monthSlider = document.getElementById("sun-month");
       const hour = parseFloat(hourSlider.value);
@@ -855,6 +886,19 @@
     document.getElementById("sun-hour").addEventListener("input", updateSun);
     document.getElementById("sun-month").addEventListener("input", updateSun);
 
+    function loadSunCalc() {
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/suncalc@1.9.0/suncalc.min.js";
+      script.onload = () => {
+        suncalcLoaded = true;
+        updateSun();
+      };
+      script.onerror = () => {
+        console.warn("SunCalc failed to load, using default sun position");
+      };
+      document.head.appendChild(script);
+    }
+
     function resize() {
       const w = wrap.clientWidth, h = wrap.clientHeight;
       camera.aspect = w / h;
@@ -872,48 +916,21 @@
       labelRenderer.render(scene, camera);
     }
 
-    async function init() {
-      try {
-        const resp = await fetch("kit.json");
-        if (!resp.ok) throw new Error("kit.json nicht gefunden");
-        const data = await resp.json();
-        buildScene(data);
-        updateSun();
-        initSync();
-        tick();
-      } catch (err) {
-        statusEl.textContent = "Fehler: " + err.message;
-        console.error(err);
-      }
+    function init() {
+      const dataEl = document.getElementById("kit-data");
+      const data = JSON.parse(dataEl.textContent);
+      buildScene(data);
+      
+      loadingOverlay.classList.add("hidden");
+      statusEl.textContent = "Bereit";
+      
+      tick();
+      
+      loadSunCalc();
+      initSyncLazy();
     }
 
     init();
-
-    // Export functions kept for potential future use (UI hidden)
-    function isParked(x, z) {
-      return !(x >= -HALF_W && x <= HALF_W && z >= -HALF_D && z <= HALF_D);
-    }
-
-    function generateDXF(data, currentPositions) {
-      let dxf = "0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1024\n9\n$INSUNITS\n70\n6\n9\n$MEASUREMENT\n70\n1\n0\nENDSEC\n";
-      dxf += "0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n" + Object.keys(data.layers).length + "\n";
-      for (const [layerName, layerDef] of Object.entries(data.layers)) {
-        dxf += "0\nLAYER\n2\n" + layerName + "\n70\n0\n62\n" + (layerDef.dxfColor || 7) + "\n6\nCONTINUOUS\n";
-      }
-      dxf += "0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n";
-      const hw = data.site.width / 2, hd = data.site.depth / 2;
-      dxf += "0\nLWPOLYLINE\n8\nSITE_BOUNDARY\n90\n4\n70\n1\n10\n" + (-hw) + "\n20\n" + (-hd) + "\n10\n" + hw + "\n20\n" + (-hd) + "\n10\n" + hw + "\n20\n" + hd + "\n10\n" + (-hw) + "\n20\n" + hd + "\n";
-      dxf += "0\nENDSEC\n0\nEOF\n";
-      return dxf;
-    }
-
-    function generateSTL(data, currentPositions) {
-      return "solid MusterOberhofer\nendsolid MusterOberhofer\n";
-    }
-
-    function generateDAE(data, currentPositions) {
-      return '<?xml version="1.0"?><COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1"></COLLADA>';
-    }
   </script>
 </body>
 </html>
