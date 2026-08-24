@@ -12,9 +12,10 @@ Interaktiver 3D-Baukasten für ein fiktives Mustergrundstück (ca. 2400 m²). De
 
 ## Features
 
-- **Shared Kit List**: Eine JSON-Datei (`kit.json`) definiert alle Geometrien für HTML-Viewer und DXF-Export
+- **Shared Kit List**: Eine JSON-Datei (`kit.json`) definiert alle Geometrien — eine Quelle für HTML-Viewer, DXF und DAE
 - **3D Viewer**: Three.js-basierter Viewer mit Orbit-Steuerung und Drag-and-Drop
 - **DXF Export**: AutoCAD-kompatibler Export (R2010, Meter, benannte Layer/Blöcke)
+- **DAE Export für SketchUp**: Collada-Export der aktuellen Konfiguration → in SketchUp öffnen → als .skp speichern
 - **Deutsche UI**: Alle Labels und Beschriftungen auf Deutsch
 
 ## Das Demo-Szenario
@@ -66,6 +67,7 @@ Einfach `index.html` öffnen:
 - Rechte Maustaste: Orbit
 - Mausrad: Zoom
 - Button "DXF exportieren": Lädt aktuelle Konfiguration als DXF-Datei
+- Button "Für SketchUp exportieren": Lädt aktuelle Konfiguration als Collada DAE
 
 ### DXF-Export (Kommandozeile)
 
@@ -73,6 +75,18 @@ Einfach `index.html` öffnen:
 node generate-dxf.js                    # Erzeugt muster_oberhofer.dxf
 node generate-dxf.js ausgabe.dxf        # Erzeugt ausgabe.dxf
 ```
+
+### SketchUp-Export (DAE → SKP)
+
+Der Browser exportiert Collada (.dae), nicht natives SketchUp (.skp). Das .skp-Format ist proprietär und kann im Browser nicht zuverlässig geschrieben werden.
+
+**Workflow:**
+1. Im Browser: Teile verschieben bis die Konfiguration passt
+2. Button "Für SketchUp exportieren" klicken → lädt `muster_oberhofer_export.dae`
+3. In SketchUp Desktop: Datei → Importieren → die .dae-Datei öffnen
+4. In SketchUp: Datei → Speichern unter → als .skp speichern
+
+> **Hinweis:** Die DAE-Datei enthält die **aktuellen verschobenen Positionen** aller Kit-Teile. Beide Exporte (DXF und DAE) verwenden dieselbe Datenquelle (kit.json + aktuelle Transforms).
 
 ### Kit-Definition anpassen
 
@@ -120,6 +134,15 @@ Die Datei `kit.json` enthält alle Geometrien:
 - Benannte Layer für jede Kategorie
 - Benannte Blöcke für verschiebbare Elemente
 - 3D-Flächen für Volumenblöcke
+- Exportiert aktuelle Drag-Positionen
+
+### DAE-Export (für SketchUp)
+- Format: Collada 1.4.1
+- Einheiten: Meter (Y-up)
+- Farbige Materialien pro Stück
+- 3D-Meshes für alle Volumenkörper
+- **Kein natives .skp** — SketchUp importiert DAE und speichert dann als .skp
+- Exportiert aktuelle Drag-Positionen
 
 ### Layer im DXF
 
@@ -144,7 +167,8 @@ Dieser Baukasten dient als **erste Gesprächsgrundlage** mit dem Auftraggeber:
 1. **Keine echten Daten**: Alle Maße sind fiktiv
 2. **Keine Detailplanung**: Nur Massen/Volumen, keine Innenräume
 3. **Keine Simulation**: Lärmstreifen ist schematisch, keine Akustikberechnung
-4. **Kein Ersatz für CAD**: Der DXF-Export ist ein Ausgangspunkt, keine finale Planung
+4. **Kein Ersatz für CAD**: DXF/DAE-Exporte sind Ausgangspunkte, keine finale Planung
+5. **Kein natives .skp**: Browser kann kein echtes SketchUp-Format schreiben — DAE ist der Weg
 
 **Nächste Schritte für echtes Projekt:**
 - Vermessungsplan einlesen

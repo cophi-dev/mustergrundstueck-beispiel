@@ -112,6 +112,7 @@
       </div>
       <div class="row" style="margin-top: 8px;">
         <button id="btn-export-dxf" class="accent" type="button">DXF exportieren</button>
+        <button id="btn-export-dae" class="accent" type="button">Für SketchUp exportieren</button>
       </div>
     </div>
     
@@ -120,7 +121,7 @@
       <div class="legend" id="layers-legend"></div>
     </div>
     
-    <p class="hint">Maße metrisch, reine Massen. Beispiel-Kit zum Zeigen der Methodik, nicht die reale Parzelle. DXF-Export erzeugt AutoCAD-kompatible Datei (R2010, Meter).</p>
+    <p class="hint">Maße metrisch, reine Massen. Beispiel-Kit zum Zeigen der Methodik, nicht die reale Parzelle. DXF für AutoCAD (R2010), DAE für SketchUp (in SketchUp als .skp speichern).</p>
   </div>
   
   <div id="status">Lade Kit-Daten...</div>
@@ -577,6 +578,7 @@
     });
 
     document.getElementById("btn-export-dxf").addEventListener("click", exportDXF);
+    document.getElementById("btn-export-dae").addEventListener("click", exportDAE);
 
     document.getElementById("toggle-panel").addEventListener("click", () => {
       document.getElementById("panel").classList.toggle("collapsed");
@@ -720,6 +722,402 @@
       dxf += "0\nEOF\n";
       
       return dxf;
+    }
+
+    function exportDAE() {
+      if (!kitData) return;
+      
+      const currentPositions = {};
+      for (const [pieceId, group] of pieceGroups) {
+        currentPositions[pieceId] = { x: group.position.x, z: group.position.z };
+      }
+
+      const daeContent = generateDAE(kitData, currentPositions);
+      const blob = new Blob([daeContent], { type: "model/vnd.collada+xml" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "muster_oberhofer_export.dae";
+      a.click();
+      URL.revokeObjectURL(url);
+      statusEl.textContent = "DAE exportiert — in SketchUp öffnen und als .skp speichern";
+    }
+
+    function generateDAE(data, currentPositions) {
+      const timestamp = new Date().toISOString();
+      let geometries = "";
+      let materials = "";
+      let effects = "";
+      let visualScenes = "";
+      let geomId = 0;
+      let matId = 0;
+      const materialMap = new Map();
+
+      function getMaterialId(color) {
+        if (materialMap.has(color)) return materialMap.get(color);
+        const id = `mat_${matId++}`;
+        materialMap.set(color, id);
+        return id;
+      }
+
+      function hexToRgb(hex) {
+        const c = hex.replace('#', '');
+        const r = parseInt(c.substr(0, 2), 16) / 255;
+        const g = parseInt(c.substr(2, 2), 16) / 255;
+        const b = parseInt(c.substr(4, 2), 16) / 255;
+        return { r, g, b };
+      }
+
+      function boxGeometry(id, w, h, d) {
+        const hw = w / 2, hh = h / 2, hd = d / 2;
+        const positions = [
+          -hw, -hh, -hd,  hw, -hh, -hd,  hw,  hh, -hd, -hw,  hh, -hd,
+          -hw, -hh,  hd,  hw, -hh,  hd,  hw,  hh,  hd, -hw,  hh,  hd
+        ];
+        const indices = [
+          0, 1, 2, 0, 2, 3,
+          4, 6, 5, 4, 7, 6,
+          0, 4, 5, 0, 5, 1,
+          2, 6, 7, 2, 7, 3,
+          0, 3, 7, 0, 7, 4,
+          1, 5, 6, 1, 6, 2
+        ];
+        const normals = [
+          0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
+          0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+          0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
+          0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+          -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
+          1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0
+        ];
+        
+        const triPositions = [];
+        const triNormals = [];
+        for (let f = 0; f < 6; f++) {
+          for (let t = 0; t < 2; t++) {
+            for (let v = 0; v < 3; v++) {
+              const idx = indices[f * 6 + t * 3 + v];
+              triPositions.push(positions[idx * 3], positions[idx * 3 + 1], positions[idx * 3 + 2]);
+              triNormals.push(normals[f * 6 * 3 + v * 3], normals[f * 6 * 3 + v * 3 + 1], normals[f * 6 * 3 + v * 3 + 2]);
+            }
+          }
+        }
+        
+        return `
+        <geometry id="${id}-mesh" name="${id}">
+          <mesh>
+            <source id="${id}-positions">
+              <float_array id="${id}-positions-array" count="${triPositions.length}">${triPositions.join(' ')}</float_array>
+              <technique_common>
+                <accessor source="#${id}-positions-array" count="${triPositions.length / 3}" stride="3">
+                  <param name="X" type="float"/>
+                  <param name="Y" type="float"/>
+                  <param name="Z" type="float"/>
+                </accessor>
+              </technique_common>
+            </source>
+            <source id="${id}-normals">
+              <float_array id="${id}-normals-array" count="${triNormals.length}">${triNormals.join(' ')}</float_array>
+              <technique_common>
+                <accessor source="#${id}-normals-array" count="${triNormals.length / 3}" stride="3">
+                  <param name="X" type="float"/>
+                  <param name="Y" type="float"/>
+                  <param name="Z" type="float"/>
+                </accessor>
+              </technique_common>
+            </source>
+            <vertices id="${id}-vertices">
+              <input semantic="POSITION" source="#${id}-positions"/>
+            </vertices>
+            <triangles count="12">
+              <input semantic="VERTEX" source="#${id}-vertices" offset="0"/>
+              <input semantic="NORMAL" source="#${id}-normals" offset="0"/>
+              <p>${Array.from({length: 36}, (_, i) => i).join(' ')}</p>
+            </triangles>
+          </mesh>
+        </geometry>`;
+      }
+
+      function cylinderGeometry(id, radius, height, segments = 24) {
+        const positions = [];
+        const normals = [];
+        const indices = [];
+        
+        for (let i = 0; i <= segments; i++) {
+          const theta = (i / segments) * Math.PI * 2;
+          const x = Math.cos(theta) * radius;
+          const z = Math.sin(theta) * radius;
+          positions.push(x, 0, z);
+          positions.push(x, height, z);
+          normals.push(Math.cos(theta), 0, Math.sin(theta));
+          normals.push(Math.cos(theta), 0, Math.sin(theta));
+        }
+        
+        const centerBottom = positions.length / 3;
+        positions.push(0, 0, 0);
+        normals.push(0, -1, 0);
+        const centerTop = positions.length / 3;
+        positions.push(0, height, 0);
+        normals.push(0, 1, 0);
+        
+        for (let i = 0; i < segments; i++) {
+          const i0 = i * 2, i1 = i * 2 + 1, i2 = (i + 1) * 2, i3 = (i + 1) * 2 + 1;
+          indices.push(i0, i2, i1, i1, i2, i3);
+          indices.push(centerBottom, (i + 1) * 2, i * 2);
+          indices.push(centerTop, i * 2 + 1, (i + 1) * 2 + 1);
+        }
+        
+        return `
+        <geometry id="${id}-mesh" name="${id}">
+          <mesh>
+            <source id="${id}-positions">
+              <float_array id="${id}-positions-array" count="${positions.length}">${positions.join(' ')}</float_array>
+              <technique_common>
+                <accessor source="#${id}-positions-array" count="${positions.length / 3}" stride="3">
+                  <param name="X" type="float"/>
+                  <param name="Y" type="float"/>
+                  <param name="Z" type="float"/>
+                </accessor>
+              </technique_common>
+            </source>
+            <source id="${id}-normals">
+              <float_array id="${id}-normals-array" count="${normals.length}">${normals.join(' ')}</float_array>
+              <technique_common>
+                <accessor source="#${id}-normals-array" count="${normals.length / 3}" stride="3">
+                  <param name="X" type="float"/>
+                  <param name="Y" type="float"/>
+                  <param name="Z" type="float"/>
+                </accessor>
+              </technique_common>
+            </source>
+            <vertices id="${id}-vertices">
+              <input semantic="POSITION" source="#${id}-positions"/>
+            </vertices>
+            <triangles count="${indices.length / 3}">
+              <input semantic="VERTEX" source="#${id}-vertices" offset="0"/>
+              <input semantic="NORMAL" source="#${id}-normals" offset="0"/>
+              <p>${indices.join(' ')}</p>
+            </triangles>
+          </mesh>
+        </geometry>`;
+      }
+
+      function polygonGeometry(id, vertices, height) {
+        const positions = [];
+        const normals = [];
+        const indices = [];
+        
+        const n = vertices.length;
+        for (const [x, z] of vertices) {
+          positions.push(x, 0, z);
+          normals.push(0, -1, 0);
+        }
+        for (const [x, z] of vertices) {
+          positions.push(x, height, z);
+          normals.push(0, 1, 0);
+        }
+        
+        for (let i = 1; i < n - 1; i++) {
+          indices.push(0, i + 1, i);
+          indices.push(n, n + i, n + i + 1);
+        }
+        
+        const baseIdx = positions.length / 3;
+        for (let i = 0; i < n; i++) {
+          const [x1, z1] = vertices[i];
+          const [x2, z2] = vertices[(i + 1) % n];
+          const dx = x2 - x1, dz = z2 - z1;
+          const len = Math.hypot(dx, dz);
+          const nx = dz / len, nz = -dx / len;
+          
+          const vi = baseIdx + i * 4;
+          positions.push(x1, 0, z1, x2, 0, z2, x2, height, z2, x1, height, z1);
+          normals.push(nx, 0, nz, nx, 0, nz, nx, 0, nz, nx, 0, nz);
+          indices.push(vi, vi + 1, vi + 2, vi, vi + 2, vi + 3);
+        }
+        
+        return `
+        <geometry id="${id}-mesh" name="${id}">
+          <mesh>
+            <source id="${id}-positions">
+              <float_array id="${id}-positions-array" count="${positions.length}">${positions.join(' ')}</float_array>
+              <technique_common>
+                <accessor source="#${id}-positions-array" count="${positions.length / 3}" stride="3">
+                  <param name="X" type="float"/>
+                  <param name="Y" type="float"/>
+                  <param name="Z" type="float"/>
+                </accessor>
+              </technique_common>
+            </source>
+            <source id="${id}-normals">
+              <float_array id="${id}-normals-array" count="${normals.length}">${normals.join(' ')}</float_array>
+              <technique_common>
+                <accessor source="#${id}-normals-array" count="${normals.length / 3}" stride="3">
+                  <param name="X" type="float"/>
+                  <param name="Y" type="float"/>
+                  <param name="Z" type="float"/>
+                </accessor>
+              </technique_common>
+            </source>
+            <vertices id="${id}-vertices">
+              <input semantic="POSITION" source="#${id}-positions"/>
+            </vertices>
+            <triangles count="${indices.length / 3}">
+              <input semantic="VERTEX" source="#${id}-vertices" offset="0"/>
+              <input semantic="NORMAL" source="#${id}-normals" offset="0"/>
+              <p>${indices.join(' ')}</p>
+            </triangles>
+          </mesh>
+        </geometry>`;
+      }
+
+      const hw = data.site.width / 2;
+      const hd = data.site.depth / 2;
+      const groundId = `ground_${geomId++}`;
+      const groundColor = "#6b8f4e";
+      const groundMatId = getMaterialId(groundColor);
+      geometries += polygonGeometry(groundId, [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd]], 0.05);
+      visualScenes += `
+        <node id="${groundId}-node" name="Grundstück" type="NODE">
+          <translate>0 0 0</translate>
+          <instance_geometry url="#${groundId}-mesh">
+            <bind_material><technique_common><instance_material symbol="material0" target="#${groundMatId}"/></technique_common></bind_material>
+          </instance_geometry>
+        </node>`;
+
+      for (const piece of data.pieces) {
+        const layerDef = data.layers[piece.layer] || {};
+        const color = piece.color || layerDef.color || "#888888";
+        const matIdPiece = getMaterialId(color);
+        
+        const pos = currentPositions[piece.id];
+        let tx = 0, tz = 0;
+        if (pos) {
+          tx = pos.x;
+          tz = pos.z;
+        } else if (piece.position) {
+          tx = piece.position[0];
+          tz = piece.position[1];
+        }
+
+        if (piece.type === "box") {
+          const [w, d, h] = piece.size;
+          const gid = `box_${geomId++}`;
+          geometries += boxGeometry(gid, w, h, d);
+          visualScenes += `
+        <node id="${gid}-node" name="${piece.name}" type="NODE">
+          <translate>${tx} ${h / 2} ${tz}</translate>
+          <instance_geometry url="#${gid}-mesh">
+            <bind_material><technique_common><instance_material symbol="material0" target="#${matIdPiece}"/></technique_common></bind_material>
+          </instance_geometry>
+        </node>`;
+        }
+        else if (piece.type === "cylinder") {
+          const gid = `cyl_${geomId++}`;
+          geometries += cylinderGeometry(gid, piece.radius, piece.height);
+          visualScenes += `
+        <node id="${gid}-node" name="${piece.name}" type="NODE">
+          <translate>${tx} 0 ${tz}</translate>
+          <instance_geometry url="#${gid}-mesh">
+            <bind_material><technique_common><instance_material symbol="material0" target="#${matIdPiece}"/></technique_common></bind_material>
+          </instance_geometry>
+        </node>`;
+        }
+        else if (piece.type === "polygon" && (piece.height || 0) > 0) {
+          let verts = piece.vertices;
+          if (piece.position && !pos) {
+            verts = verts.map(v => [v[0] + piece.position[0], v[1] + piece.position[1]]);
+            tx = 0; tz = 0;
+          } else if (pos) {
+            verts = verts.map(v => [v[0] + pos.x, v[1] + pos.z]);
+            tx = 0; tz = 0;
+          }
+          const gid = `poly_${geomId++}`;
+          geometries += polygonGeometry(gid, verts, piece.height);
+          visualScenes += `
+        <node id="${gid}-node" name="${piece.name}" type="NODE">
+          <translate>${tx} 0 ${tz}</translate>
+          <instance_geometry url="#${gid}-mesh">
+            <bind_material><technique_common><instance_material symbol="material0" target="#${matIdPiece}"/></technique_common></bind_material>
+          </instance_geometry>
+        </node>`;
+        }
+        else if (piece.type === "tree") {
+          const trunkId = `trunk_${geomId++}`;
+          const crownId = `crown_${geomId++}`;
+          const trunkMatId = getMaterialId("#6b4f32");
+          const crownMatId = getMaterialId("#3f6b3a");
+          const trunkR = piece.radius * 0.18;
+          const trunkH = piece.height * 0.3;
+          geometries += cylinderGeometry(trunkId, trunkR, trunkH, 12);
+          
+          const crownR = piece.radius;
+          const crownH = crownR * 1.8;
+          geometries += cylinderGeometry(crownId, crownR, crownH, 16);
+          
+          visualScenes += `
+        <node id="${trunkId}-node" name="${piece.name}_Stamm" type="NODE">
+          <translate>${piece.position[0]} 0 ${piece.position[1]}</translate>
+          <instance_geometry url="#${trunkId}-mesh">
+            <bind_material><technique_common><instance_material symbol="material0" target="#${trunkMatId}"/></technique_common></bind_material>
+          </instance_geometry>
+        </node>
+        <node id="${crownId}-node" name="${piece.name}_Krone" type="NODE">
+          <translate>${piece.position[0]} ${piece.height * 0.35} ${piece.position[1]}</translate>
+          <instance_geometry url="#${crownId}-mesh">
+            <bind_material><technique_common><instance_material symbol="material0" target="#${crownMatId}"/></technique_common></bind_material>
+          </instance_geometry>
+        </node>`;
+        }
+      }
+
+      for (const [color, id] of materialMap) {
+        const rgb = hexToRgb(color);
+        effects += `
+      <effect id="${id}-effect">
+        <profile_COMMON>
+          <technique sid="common">
+            <phong>
+              <diffuse><color>${rgb.r} ${rgb.g} ${rgb.b} 1</color></diffuse>
+              <specular><color>0.1 0.1 0.1 1</color></specular>
+              <shininess><float>20</float></shininess>
+            </phong>
+          </technique>
+        </profile_COMMON>
+      </effect>`;
+        materials += `
+      <material id="${id}" name="${id}">
+        <instance_effect url="#${id}-effect"/>
+      </material>`;
+      }
+
+      return `<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <authoring_tool>Mustergrundstück Baukasten</authoring_tool>
+    </contributor>
+    <created>${timestamp}</created>
+    <modified>${timestamp}</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Y_UP</up_axis>
+    <title>${data.meta.name} - NUR MUSTER</title>
+  </asset>
+  <library_effects>${effects}
+  </library_effects>
+  <library_materials>${materials}
+  </library_materials>
+  <library_geometries>${geometries}
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="${data.meta.name}">
+      <!-- HINWEIS: Dies ist ein MUSTER - reale Geometrie aus Kundenplänen -->${visualScenes}
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>`;
     }
 
     function resize() {
