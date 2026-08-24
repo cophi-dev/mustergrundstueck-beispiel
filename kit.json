@@ -151,10 +151,10 @@
       "layer": "OPTION_EFH",
       "type": "box",
       "draggable": true,
-      "position": [6, 14],
+      "position": [72, 18],
       "size": [10, 8, 7],
       "color": "#3a7ca5",
-      "parked": false
+      "parked": true
     },
     {
       "id": "option_mfh",

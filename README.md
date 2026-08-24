@@ -14,11 +14,11 @@ Zwei Browser mit derselben URL sehen synchronisierte Positionen (via Yjs). Sonne
 
 ## Features
 
-- **Shared Kit List**: Eine JSON-Datei (`kit.json`) definiert alle Geometrien — eine Quelle für HTML-Viewer, DXF, STL und DAE
+- **Shared Kit List**: Eine JSON-Datei (`kit.json`) definiert alle Geometrien
 - **3D Viewer**: Three.js-basierter Viewer mit Orbit-Steuerung und Drag-and-Drop
-- **DXF Export**: AutoCAD-kompatibler Export (R2010, Meter, benannte Layer/Blöcke)
-- **STL Export**: Für SketchUp Free (Web) — STL importieren, dann als .skp speichern
-- **DAE Export**: Für SketchUp Pro/Go/Studio — Collada importieren, dann als .skp speichern
+- **Varianten-Auswahl**: Schnelles Umschalten zwischen Bungalow, EFH, MFH und Ersatzneubau
+- **Sonnenstands-Simulation**: Einstellbarer Sonnenstand nach Uhrzeit und Monat
+- **Live-Sync**: Mehrere Browser sehen synchronisierte Positionen (Yjs)
 - **Deutsche UI**: Alle Labels und Beschriftungen auf Deutsch
 
 ## Das Demo-Szenario
@@ -52,7 +52,6 @@ Das Muster zeigt ein fiktives Grundstück mit ähnlichen Eigenschaften wie reale
 ```
 ├── index.html        # 3D-Viewer (öffnet direkt im Browser)
 ├── kit.json          # Shared Kit Definition (Geometrie-Daten)
-├── generate-dxf.js   # Node.js Script für DXF-Export
 └── README.md         # Diese Datei
 ```
 
@@ -69,36 +68,11 @@ Einfach `index.html` öffnen:
 - Linksklick + Ziehen: Kit-Teile verschieben
 - Rechte Maustaste: Orbit
 - Mausrad: Zoom
-- Button "DXF exportieren": Lädt aktuelle Konfiguration als DXF-Datei
-- Button "Für SketchUp exportieren": Lädt aktuelle Konfiguration als Collada DAE
+- Varianten-Buttons: Schnelles Umschalten zwischen Bebauungsoptionen
+- Sonne-Slider: Sonnenstand einstellen (Uhrzeit, Monat)
 
 **Parkplatz:**
-Die graue Fläche rechts neben dem Grundstück ist ein Parkplatz für ungenutzte Baukasten-Teile. Ziehen Sie Optionen vom Parkplatz auf das Baufenster (gelb), um sie zu platzieren. Ziehen Sie sie zurück auf den Parkplatz, um sie aus der Planung zu nehmen. Geparkte Teile werden im DXF/DAE-Export auf einem separaten PARKPLATZ-Layer abgelegt.
-
-### DXF-Export (Kommandozeile)
-
-```bash
-node generate-dxf.js                    # Erzeugt muster_oberhofer.dxf
-node generate-dxf.js ausgabe.dxf        # Erzeugt ausgabe.dxf
-```
-
-### SketchUp-Export (STL oder DAE → SKP)
-
-Der Browser exportiert STL oder Collada (.dae), nicht natives SketchUp (.skp). Das .skp-Format ist proprietär und kann im Browser nicht geschrieben werden.
-
-**SketchUp Free (Web) — STL:**
-1. Im Browser: Teile verschieben bis die Konfiguration passt
-2. Button "STL für SketchUp Free" klicken → lädt `muster_oberhofer_export.stl`
-3. In SketchUp for Web (app.sketchup.com): Datei → Importieren → STL-Datei wählen
-4. In SketchUp: Datei → Speichern unter → als .skp speichern
-
-**SketchUp Pro/Go/Studio — DAE:**
-1. Im Browser: Teile verschieben bis die Konfiguration passt
-2. Button "DAE für SketchUp Pro" klicken → lädt `muster_oberhofer_export.dae`
-3. In SketchUp Desktop: Datei → Importieren → DAE-Datei wählen
-4. In SketchUp: Datei → Speichern unter → als .skp speichern
-
-> **Hinweis:** Alle Exporte (DXF, STL, DAE) verwenden dieselbe Datenquelle (kit.json + aktuelle verschobene Positionen). Geparkte Teile sind im STL/DAE enthalten, aber räumlich getrennt vom Grundstück.
+Die graue Fläche rechts neben dem Grundstück ist ein Parkplatz für ungenutzte Baukasten-Teile. Wählen Sie eine Variante über die Buttons oben — die gewählte Option erscheint auf dem Baufenster (gelb), alle anderen Optionen werden auf den Parkplatz verschoben. Teile können auch manuell per Drag-and-Drop verschoben werden.
 
 ### Kit-Definition anpassen
 
@@ -138,49 +112,9 @@ Die Datei `kit.json` enthält alle Geometrien:
 - Three.js 0.160
 - CSS2DRenderer für Labels
 - OrbitControls für Navigation
-- Keine externen Abhängigkeiten außer Three.js CDN
-
-### DXF-Export
-- Format: AutoCAD R2010 (AC1024)
-- Einheiten: Meter
-- Benannte Layer für jede Kategorie
-- Benannte Blöcke für verschiebbare Elemente
-- 3D-Flächen für Volumenblöcke
-- Exportiert aktuelle Drag-Positionen
-
-### STL-Export (für SketchUp Free)
-- Format: ASCII STL
-- Einheiten: Meter
-- 3D-Meshes für alle Volumenkörper (Boxen, Zylinder, Bäume)
-- Für SketchUp for Web (app.sketchup.com) — Free-Plan unterstützt STL-Import
-- **Kein natives .skp** — in SketchUp importieren und als .skp speichern
-- Exportiert aktuelle Drag-Positionen (inkl. geparkte Teile)
-
-### DAE-Export (für SketchUp Pro/Go/Studio)
-- Format: Collada 1.4.1
-- Einheiten: Meter (Y-up)
-- Farbige Materialien pro Stück
-- 3D-Meshes für alle Volumenkörper
-- Für SketchUp Desktop mit Pro/Go/Studio-Lizenz (DAE-Import nicht im Free-Plan)
-- **Kein natives .skp** — in SketchUp importieren und als .skp speichern
-- Exportiert aktuelle Drag-Positionen
-
-### Layer im DXF
-
-| Layer | DXF-Farbe | Inhalt |
-|-------|-----------|--------|
-| SITE_BOUNDARY | 3 (grün) | Grundstücksgrenze |
-| BESTAND | 30 (orange) | Bestandsgebäude |
-| BAUFENSTER | 2 (gelb) | Bebaubare Fläche |
-| ABSTAND | 52 | Grenzabstände |
-| LAERMSTREIFEN | 1 (rot) | Lärmschutzzone |
-| OPTION_BUNGALOW | 82 (grün) | Bungalow-Option |
-| OPTION_EFH | 150 (blau) | EFH-Option |
-| OPTION_MFH | 200 (magenta) | MFH-Option |
-| OPTION_ERSATZ | 30 | Ersatzneubau |
-| TECHNIK | 9 | PV, Zisterne |
-| BAEUME | 84 | Bestandsbäume |
-| PARKPLATZ | 8 | Geparkte/ungenutzte Teile |
+- SunCalc für realistische Sonnenstände
+- Yjs für Echtzeit-Synchronisation
+- Keine externen Abhängigkeiten außer CDNs
 
 ## Hinweise zur Methodik
 
@@ -189,8 +123,6 @@ Dieser Baukasten dient als **erste Gesprächsgrundlage** mit dem Auftraggeber:
 1. **Keine echten Daten**: Alle Maße sind fiktiv
 2. **Keine Detailplanung**: Nur Massen/Volumen, keine Innenräume
 3. **Keine Simulation**: Lärmstreifen ist schematisch, keine Akustikberechnung
-4. **Kein Ersatz für CAD**: DXF/STL/DAE-Exporte sind Ausgangspunkte, keine finale Planung
-5. **Kein natives .skp**: Browser kann kein SketchUp-Format schreiben — STL (Free) oder DAE (Pro) importieren
 
 **Nächste Schritte für echtes Projekt:**
 - Vermessungsplan einlesen
