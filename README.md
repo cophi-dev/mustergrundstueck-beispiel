@@ -6,9 +6,11 @@
 
 ## Übersicht
 
-Interaktiver 3D-Baukasten für ein fiktives Mustergrundstück (ca. 2400 m²). Der Viewer ermöglicht das Verschieben von Bebauungsoptionen im Browser – ohne CAD-Software. Ein DXF-Export erlaubt die Weiterverarbeitung in AutoCAD oder anderen CAD-Programmen.
+Interaktiver 3D-Baukasten für ein fiktives Mustergrundstück (ca. 2400 m²). Der Viewer ermöglicht das Verschieben von Bebauungsoptionen im Browser – ohne CAD-Software.
 
-**Live Demo:** Öffnen Sie `index.html` direkt im Browser oder via GitHub Pages / raw.githack.
+**🔗 Live Demo:** **https://cophi-dev.github.io/mustergrundstueck-beispiel/**
+
+Zwei Browser mit derselben URL sehen synchronisierte Positionen (via Yjs). Sonnenstands-Slider, Varianten-Buttons und Objekt-Erstellung direkt im Viewer.
 
 ## Features
 
