@@ -190,7 +190,8 @@
       "position": [45, -8],
       "size": [8, 5, 0.5],
       "color": "#1a3a6b",
-      "parked": true
+      "parked": true,
+      "isPV": true
     },
     {
       "id": "zisterne",

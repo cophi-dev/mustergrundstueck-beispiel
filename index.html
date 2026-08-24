@@ -279,6 +279,8 @@
     function registerKit(group, piece) {
       group.userData.draggable = true;
       group.userData.pieceId = piece.id;
+      group.userData.isPV = piece.isPV || false;
+      group.userData.pieceHeight = piece.type === 'box' ? piece.size[2] : (piece.height || 0.5);
       if (piece.label) {
         const labelY = piece.type === 'box' ? (piece.size[2] + 1) : (piece.height + 0.8);
         group.add(makeLabel(piece.label, labelY));
@@ -563,11 +565,33 @@
     }
 
     const raycaster = new THREE.Raycaster();
+    const roofRaycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     const hit = new THREE.Vector3();
     let dragging = null;
     let offset = new THREE.Vector3();
+
+    function findRoofHeight(x, z, excludeGroup) {
+      roofRaycaster.set(new THREE.Vector3(x, 50, z), new THREE.Vector3(0, -1, 0));
+      const candidates = [...context.children, ...kit.children].filter(obj => obj !== excludeGroup);
+      const hits = roofRaycaster.intersectObjects(candidates, true);
+      
+      for (const h of hits) {
+        if (h.object.name === "Rasen" || h.object.name === "Umgebung" || h.object.name === "Parkplatz_Fläche") continue;
+        let parent = h.object;
+        while (parent && parent !== excludeGroup) {
+          if (parent.userData.draggable && parent === excludeGroup) break;
+          parent = parent.parent;
+        }
+        if (parent === excludeGroup) continue;
+        
+        if (h.point.y > 0.1) {
+          return h.point.y;
+        }
+      }
+      return null;
+    }
 
     function ndc(ev) {
       const r = renderer.domElement.getBoundingClientRect();
@@ -585,7 +609,7 @@
       return obj;
     }
 
-    function clampToBounds(v) {
+    function clampToBounds(v, isPV = false, excludeGroup = null) {
       const inSite = v.x >= -HALF_W && v.x <= HALF_W && v.z >= -HALF_D && v.z <= HALF_D;
       const parkLeft = PARK_X - PARK_W / 2;
       const parkRight = PARK_X + PARK_W / 2;
@@ -609,7 +633,16 @@
         }
       }
       
-      v.y = 0;
+      if (isPV) {
+        const roofY = findRoofHeight(v.x, v.z, excludeGroup);
+        if (roofY !== null) {
+          v.y = roofY;
+        } else {
+          v.y = 0;
+        }
+      } else {
+        v.y = 0;
+      }
       return v;
     }
 
@@ -621,7 +654,7 @@
       raycaster.setFromCamera(pointer, camera);
       if (!raycaster.ray.intersectPlane(groundPlane, hit)) return;
       dragging = obj;
-      offset.copy(obj.position).sub(hit);
+      offset.set(obj.position.x - hit.x, 0, obj.position.z - hit.z);
       controls.enabled = false;
       statusEl.textContent = "Verschieben: " + (obj.name || "Teil");
     });
@@ -631,7 +664,8 @@
       ndc(ev);
       raycaster.setFromCamera(pointer, camera);
       if (!raycaster.ray.intersectPlane(groundPlane, hit)) return;
-      dragging.position.copy(clampToBounds(hit.add(offset)));
+      const isPV = dragging.userData.isPV || false;
+      dragging.position.copy(clampToBounds(hit.add(offset), isPV, dragging));
     });
 
     function endDrag() {
