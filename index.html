@@ -569,9 +569,40 @@
       const layerDef = layers[piece.layer] || {};
       const color = piece.color || layerDef.color || "#888888";
 
+      if (piece.layer === "ABSTAND" || piece.layer === "STRASSE" || piece.layer === "LAERMSTREIFEN") {
+        return;
+      }
+
       if (piece.type === "polygon" && !piece.draggable) {
         const verts = piece.vertices;
         const offsetVerts = piece.position ? verts.map(v => [v[0] + piece.position[0], v[1] + piece.position[1]]) : verts;
+        
+        if (piece.layer === "BAUFENSTER") {
+          const lineVerts = [...offsetVerts, offsetVerts[0]];
+          const lineGeom = new THREE.BufferGeometry().setFromPoints(lineVerts.map(v => new THREE.Vector3(v[0], 0.08, v[1])));
+          const baufensterLine = new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ color: 0xd4a017, linewidth: 2 }));
+          baufensterLine.name = piece.name;
+          context.add(baufensterLine);
+          
+          if (piece.label) {
+            const centroid = offsetVerts.reduce((acc, v) => [acc[0] + v[0], acc[1] + v[1]], [0, 0]);
+            centroid[0] /= offsetVerts.length;
+            centroid[1] /= offsetVerts.length;
+            const labelGroup = new THREE.Group();
+            labelGroup.position.set(centroid[0], 0, centroid[1]);
+            labelGroup.add(makeLabel(piece.label, 0.5));
+            context.add(labelGroup);
+          }
+          return;
+        }
+        
+        if (piece.layer === "SITE_BOUNDARY") {
+          const lineVerts = [...offsetVerts, offsetVerts[0]];
+          const lineGeom = new THREE.BufferGeometry().setFromPoints(lineVerts.map(v => new THREE.Vector3(v[0], 0.04, v[1])));
+          context.add(new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ color })));
+          return;
+        }
+        
         const mesh = polygon(offsetVerts, piece.height || 0, color, piece.fillOpacity || 0.6);
         mesh.name = piece.name;
         context.add(mesh);
