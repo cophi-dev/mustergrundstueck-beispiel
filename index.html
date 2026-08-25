@@ -506,44 +506,35 @@
 
     function createSaddleRoof(w, d, roofHeight, overhang, color) {
       const g = new THREE.Group();
-      const halfW = w / 2 + overhang;
-      const halfD = d / 2 + overhang;
+      const hw = w / 2 + overhang;
+      const hd = d / 2 + overhang;
+      
+      const vertices = new Float32Array([
+        -hw, 0, -hd,   hw, 0, -hd,   0, roofHeight, -hd,
+        -hw, 0,  hd,   0, roofHeight,  hd,   hw, 0,  hd,
+        -hw, 0, -hd,   0, roofHeight, -hd,   0, roofHeight,  hd,   -hw, 0,  hd,
+         hw, 0, -hd,    hw, 0,  hd,   0, roofHeight,  hd,   0, roofHeight, -hd,
+        -hw, 0, -hd,   -hw, 0,  hd,    hw, 0,  hd,    hw, 0, -hd,
+      ]);
+      
+      const indices = [
+        0, 1, 2,
+        3, 4, 5,
+        6, 7, 8,  6, 8, 9,
+        10, 11, 12,  10, 12, 13,
+        14, 15, 16,  14, 16, 17,
+      ];
+      
+      const geom = new THREE.BufferGeometry();
+      geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+      geom.setIndex(indices);
+      geom.computeVertexNormals();
+      
       const roofMat = new THREE.MeshStandardMaterial({ color, roughness: 0.85, metalness: 0.1, side: THREE.DoubleSide });
-      
-      const slopeLength = Math.sqrt(halfW * halfW + roofHeight * roofHeight);
-      const roofAngle = Math.atan2(roofHeight, halfW);
-      
-      const leftRoof = new THREE.Mesh(new THREE.PlaneGeometry(slopeLength, d + overhang * 2), roofMat);
-      leftRoof.rotation.z = roofAngle;
-      leftRoof.rotation.y = Math.PI / 2;
-      leftRoof.position.set(-halfW / 2, roofHeight / 2, 0);
-      leftRoof.castShadow = true;
-      leftRoof.receiveShadow = true;
-      g.add(leftRoof);
-      
-      const rightRoof = new THREE.Mesh(new THREE.PlaneGeometry(slopeLength, d + overhang * 2), roofMat);
-      rightRoof.rotation.z = -roofAngle;
-      rightRoof.rotation.y = Math.PI / 2;
-      rightRoof.position.set(halfW / 2, roofHeight / 2, 0);
-      rightRoof.castShadow = true;
-      rightRoof.receiveShadow = true;
-      g.add(rightRoof);
-      
-      const gableShape = new THREE.Shape();
-      gableShape.moveTo(-halfW, 0);
-      gableShape.lineTo(0, roofHeight);
-      gableShape.lineTo(halfW, 0);
-      gableShape.closePath();
-      const gableMat = new THREE.MeshStandardMaterial({ color: 0xd4c4a8, roughness: 0.9 });
-      const gableFront = new THREE.Mesh(new THREE.ShapeGeometry(gableShape), gableMat);
-      gableFront.position.set(0, 0, halfD);
-      gableFront.castShadow = true;
-      g.add(gableFront);
-      const gableBack = new THREE.Mesh(new THREE.ShapeGeometry(gableShape), gableMat);
-      gableBack.position.set(0, 0, -halfD);
-      gableBack.rotation.y = Math.PI;
-      gableBack.castShadow = true;
-      g.add(gableBack);
+      const roof = new THREE.Mesh(geom, roofMat);
+      roof.castShadow = true;
+      roof.receiveShadow = true;
+      g.add(roof);
       
       return g;
     }
