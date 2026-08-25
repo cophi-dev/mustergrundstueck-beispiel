@@ -46,13 +46,29 @@
     {
       "id": "bestand_wohnhaus",
       "name": "Bestand: Wohnhaus",
-      "label": "Bestand: Wohnhaus 12×10 m, 2 Geschosse",
+      "label": "Bestand: Wohnhaus 12×10 m, 2 Geschosse + Satteldach",
       "layer": "BESTAND",
       "type": "box",
       "draggable": false,
       "position": [-6, -16],
-      "size": [12, 10, 6.5],
-      "color": "#c9b8a0"
+      "size": [12, 10, 9.5],
+      "wallHeight": 6.0,
+      "roofHeight": 3.5,
+      "detailed": true,
+      "brick": true,
+      "roofColor": "#8b4513",
+      "windows": [
+        { "x": -4, "y": 2.0, "z": 5.05, "w": 1.2, "h": 1.4 },
+        { "x": -1, "y": 2.0, "z": 5.05, "w": 1.2, "h": 1.4 },
+        { "x": 2, "y": 2.0, "z": 5.05, "w": 1.2, "h": 1.4 },
+        { "x": -4, "y": 4.8, "z": 5.05, "w": 1.0, "h": 1.0 },
+        { "x": -1, "y": 4.8, "z": 5.05, "w": 1.0, "h": 1.0 },
+        { "x": 2, "y": 4.8, "z": 5.05, "w": 1.0, "h": 1.0 },
+        { "x": 6.05, "y": 2.0, "z": -2, "w": 1.2, "h": 1.4, "rotY": 1.5708 },
+        { "x": 6.05, "y": 2.0, "z": 2, "w": 1.2, "h": 1.4, "rotY": 1.5708 },
+        { "x": 6.05, "y": 4.8, "z": 0, "w": 1.0, "h": 1.0, "rotY": 1.5708 }
+      ],
+      "door": { "x": 4.5, "y": 1.1, "z": 5.05, "w": 1.1, "h": 2.2 }
     },
     {
       "id": "bestand_schuppen",
