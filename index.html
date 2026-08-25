@@ -517,8 +517,8 @@
       const roofGeom = new THREE.ExtrudeGeometry(shape, extrudeSettings);
       const roofMat = new THREE.MeshStandardMaterial({ color, roughness: 0.85, metalness: 0.1 });
       const roof = new THREE.Mesh(roofGeom, roofMat);
-      roof.rotation.x = -Math.PI / 2;
-      roof.position.set(0, 0, -halfD);
+      roof.rotation.x = Math.PI / 2;
+      roof.position.set(0, roofHeight, halfD);
       roof.castShadow = true;
       roof.receiveShadow = true;
       g.add(roof);
