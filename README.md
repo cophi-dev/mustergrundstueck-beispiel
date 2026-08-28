@@ -23,7 +23,7 @@ Die Katastergeometrie bleibt in `kit.json` (Meter, lokal). Die Original-Liegensc
 | **121/1** | 1.532 m², Bestand Wohnhaus Nr. 12 + Garage, Zugang Ashausener Straße |
 | **121/2** | 719 m², unbebauter Gartenteil, Front **Am Osterfeld** |
 | **Gesamt** | **2.251 m²** |
-| **Baufenster** | ca. 417 m² auf 121/2 (3 m Grenzabstand, schematisch — Baugrenze am B-Plan prüfen) |
+| **Baufenster 121/2** | **293 m²** — Baugrenze aus B-Plan-Bemaßung: **7 m** von Am Osterfeld, **3 m** seitlich und zur Grenze 121/1 (ca. 30,9 × 9,5 m) |
 | **B-Plan** | WA I, 1 Vollgeschoss, GRZ 0,25 → max. ca. 180 m² Grundfläche auf 121/2 |
 
 Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung = Flächenschwerpunkt beider Flurstücke.
@@ -38,9 +38,9 @@ Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung = Flächenschwerpunk
 
 Passend zu WA I / GRZ 0,25 / nur Einzel- und Doppelhäuser:
 
-1. **Seniorengerechter Bungalow** — 14×12 m, 1 VG, 168 m² (GRZ 0,23)
+1. **Seniorengerechter Bungalow** — 18×9 m, 1 VG, 162 m² (passt in 9,5 m Baufenstertiefe)
 2. **Kompaktes EFH mit Dachgeschoss** — 10×8,5 m, 1 VG + DG
-3. **Doppelhaus** — 16×10 m, 1 VG + DG (statt 3-Familien-Haus, das der B-Plan nicht vorsieht)
+3. **Doppelhaus** — 16×9 m, 1 VG + DG (statt 3-Familien-Haus, das der B-Plan nicht vorsieht)
 4. **Ersatzneubau** — 12×10 m anstelle des Bestands auf 121/1
 
 Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der Ersatzneubau sitzt auf **121/1** und blendet den Bestand (Wohnhaus + Garage) aus.
@@ -62,7 +62,7 @@ Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der
 
 ## Hinweise
 
-- Baufenster ist ein **3 m-Abstand** nach NBauO, keine abgezeichnete Baugrenze.
+- Baufenster auf 121/2 ist die **Baugrenze** aus den gedruckten WA-I-Maßen (7 m / 3 m), nicht ein pauschaler 3 m-Abstand. Die Strichpunktlinie im Scan 1:1000 lässt sich nicht sauber vektorisieren; die Maße sitzen auf den Katastergrenzen.
 - GRZ 0,25 und 1 Vollgeschoss stammen aus der Planzeichenerklärung / den Nutzungsschablonen (WA I) im B-Plan Osterfeld West.
 - Keine Innenräume, keine verbindliche Bauvoranfrage.
 

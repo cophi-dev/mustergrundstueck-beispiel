@@ -4,7 +4,7 @@
     "description": "Flur 6, Flurstücke 121/1 (Bestand Wohnhaus) und 121/2 (Garten / Am Osterfeld). Geometrie aus Liegenschaftsgrafik 1:500 (LGLN, 28.01.2026) und B-Plan Osterfeld West, Neufassung 1980.",
     "address": "Ashausener Straße 12, 21435 Stelle",
     "units": "meters",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "crs": "local meters, +X Ost, +Z Nord, Ursprung = Flächenschwerpunkt 121/1+121/2",
     "sources": [
       "Liegenschaftsgrafik 1:500, Gemarkung Stelle, Flur 6, Flst. 121/2, LGLN Katasteramt Winsen, erstellt 28.01.2026, Zeichen 090-A-00084/2026",
@@ -16,7 +16,13 @@
       "grz": 0.25,
       "gfz": 0.25,
       "bauweise": "offen, nur Einzel- und Doppelhäuser",
-      "hinweis": "Baufenster = 3 m Grenzabstand (NBauO, schematisch). Exakte Baugrenze am Originalplan prüfen. 3-Familien-Haus ist nach B-Plan nicht vorgesehen."
+      "hinweis": "Baugrenze auf 121/2 rekonstruiert aus den Bemaßungen der WA-I-Zeile südlich Am Osterfeld: 7 m Straßenabstand, 3 m seitlich und hinten, angewandt auf die Katastergrenzen. Strichpunktlinie im Scan 1:1000 nicht zuverlässig vektorisierbar.",
+      "baugrenze_121_2": {
+        "strasse_am_osterfeld_m": 7,
+        "seite_m": 3,
+        "hinten_m": 3,
+        "area_m2": 293
+      }
     }
   },
   "site": {
@@ -94,15 +100,15 @@
     },
     {
       "id": "baufenster",
-      "name": "Baufenster 121/2",
-      "label": "Baufenster ca. 417 m² (3 m Abstand, schematisch)",
+      "name": "Baugrenze 121/2",
+      "label": "Baugrenze 121/2 · 293 m² (7 m Am Osterfeld, 3 m Seite/hinten)",
       "layer": "BAUFENSTER",
       "type": "polygon",
       "draggable": false,
       "vertices": [
         [-10.979, 22.245],
-        [-6.341, 34.914],
-        [22.686, 24.467],
+        [-7.716, 31.158],
+        [21.311, 20.711],
         [18.081, 11.77]
       ],
       "height": 0.1,
@@ -221,12 +227,13 @@
     {
       "id": "option_bungalow",
       "name": "Option 1: Seniorengerechter Bungalow",
-      "label": "Bungalow 14×12 m, 1 VG (168 m², GRZ 0,23)",
+      "label": "Bungalow 18×9 m, 1 VG (162 m², GRZ 0,23)",
       "layer": "OPTION_BUNGALOW",
       "type": "box",
       "draggable": true,
       "position": [48, 22],
-      "size": [14, 12, 3.5],
+      "size": [18, 9, 3.5],
+      "rotation": 0.346,
       "color": "#4a9f4a",
       "parked": true
     },
@@ -239,18 +246,20 @@
       "draggable": true,
       "position": [64, 22],
       "size": [10, 8.5, 7.2],
+      "rotation": 0.346,
       "color": "#3a7ca5",
       "parked": true
     },
     {
       "id": "option_doppelhaus",
       "name": "Option 3: Doppelhaus",
-      "label": "Doppelhaus 16×10 m, 1 VG + DG (160 m² Grund)",
+      "label": "Doppelhaus 16×9 m, 1 VG + DG (144 m² Grund)",
       "layer": "OPTION_DOPPELHAUS",
       "type": "box",
       "draggable": true,
       "position": [48, 4],
-      "size": [16, 10, 7.5],
+      "size": [16, 9, 7.5],
+      "rotation": 0.346,
       "color": "#9f4a9f",
       "parked": true
     },
