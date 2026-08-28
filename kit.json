@@ -4,19 +4,40 @@
     "description": "Flur 6, Flurstücke 121/1 (Bestand Wohnhaus) und 121/2 (Garten / Am Osterfeld). Geometrie aus Liegenschaftsgrafik 1:500 (LGLN, 28.01.2026) und B-Plan Osterfeld West, Neufassung 1980.",
     "address": "Ashausener Straße 12, 21435 Stelle",
     "units": "meters",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "crs": "local meters, +X Ost, +Z Nord, Ursprung = Flächenschwerpunkt 121/1+121/2",
     "sources": [
       "Liegenschaftsgrafik 1:500, Gemarkung Stelle, Flur 6, Flst. 121/2, LGLN Katasteramt Winsen, erstellt 28.01.2026, Zeichen 090-A-00084/2026",
-      "Bebauungsplan Osterfeld West, Neufassung 1980 (rechtskräftig 1982), Gemeinde Stelle, Flur 6 und 7"
+      "Bebauungsplan Osterfeld West, Neufassung 1980 (rechtskräftig 1982), Gemeinde Stelle, Flur 6 und 7",
+      "ALKIS amtliche Fläche: LGLN WFS NI ALKIS Vereinfacht, abgerufen 2026-08-29 (CC BY 4.0 LGLN)"
     ],
+    "alkis": {
+      "retrieved": "2026-08-29",
+      "service": "https://opendata.lgln.niedersachsen.de/doorman/noauth/alkis_wfs_einfach",
+      "gemarkung": "Stelle",
+      "flur": "6",
+      "flst_121_1": {
+        "flaeche_m2": 1497,
+        "lage": "Ashausener Straße 12",
+        "nutzung": "Wohnbaufläche",
+        "aktualit": "2019-08-29"
+      },
+      "flst_121_2": {
+        "flaeche_m2": 702,
+        "lage": "Am Osterfeld",
+        "nutzung": "Wohnbaufläche",
+        "aktualit": "2025-10-01"
+      },
+      "hinweis": "Die ~700 m² vom Telefon sind die amtliche Grundstücksfläche von 121/2 (702 m²), nicht die überbaubare Fläche innerhalb der Baugrenze."
+    },
+    "geoportal_hamburg": "Geo-Online Hamburg / HH-B-Plan-WMS decken Stelle nicht ab (WMS-Südgrenze ca. 53,394°N, Grundstück bei 53,384°N). Stelle liegt in Niedersachsen, Landkreis Harburg — Kataster über LGLN ALKIS, B-Plan über LK Harburg (Osterfeld West, 32_50).",
     "bplan": {
       "name": "Osterfeld West, Neufassung 1980",
       "gebiet": "WA I — Allgemeines Wohngebiet, max. 1 Vollgeschoss",
       "grz": 0.25,
       "gfz": 0.25,
       "bauweise": "offen, nur Einzel- und Doppelhäuser",
-      "hinweis": "Baugrenze auf 121/2 rekonstruiert aus den Bemaßungen der WA-I-Zeile südlich Am Osterfeld: 7 m Straßenabstand, 3 m seitlich und hinten, angewandt auf die Katastergrenzen. Strichpunktlinie im Scan 1:1000 nicht zuverlässig vektorisierbar.",
+      "hinweis": "Baugrenze auf 121/2 rekonstruiert aus den Bemaßungen der WA-I-Zeile südlich Am Osterfeld: 7 m Straßenabstand, 3 m seitlich und hinten, angewandt auf die Katastergrenzen. Strichpunktlinie im Scan 1:1000 nicht zuverlässig vektorisierbar. Die gelbe Fläche (~293 m²) ist die überbaubare Fläche, nicht das Grundstück.",
       "baugrenze_121_2": {
         "strasse_am_osterfeld_m": 7,
         "seite_m": 3,
@@ -28,9 +49,9 @@
   "site": {
     "width": 55,
     "depth": 82,
-    "area_m2": 2251,
-    "area_121_1_m2": 1532,
-    "area_121_2_m2": 719,
+    "area_m2": 2199,
+    "area_121_1_m2": 1497,
+    "area_121_2_m2": 702,
     "origin": [0, 0],
     "bbox": [-29, -44, 27, 40],
     "lat": 53.384,
@@ -84,7 +105,7 @@
     {
       "id": "parcel_121_2",
       "name": "Flurstück 121/2",
-      "label": "Flst. 121/2 · 719 m² · Am Osterfeld",
+      "label": "Grundstück 121/2 · 702 m² ALKIS · Am Osterfeld",
       "layer": "PARCEL",
       "type": "polygon",
       "draggable": false,
@@ -95,13 +116,13 @@
         [19.873, 7.937]
       ],
       "height": 0.04,
-      "fillOpacity": 0.12,
+      "fillOpacity": 0.28,
       "color": "#c4b45a"
     },
     {
       "id": "baufenster",
       "name": "Baugrenze 121/2",
-      "label": "Baugrenze 121/2 · 293 m² (7 m Am Osterfeld, 3 m Seite/hinten)",
+      "label": "Baugrenze · 293 m² (nicht die 702 m² Grundstücksfläche)",
       "layer": "BAUFENSTER",
       "type": "polygon",
       "draggable": false,
