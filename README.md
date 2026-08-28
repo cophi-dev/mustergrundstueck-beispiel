@@ -43,7 +43,7 @@ Passend zu WA I / GRZ 0,25 / nur Einzel- und Doppelhäuser:
 3. **Doppelhaus** — 16×10 m, 1 VG + DG (statt 3-Familien-Haus, das der B-Plan nicht vorsieht)
 4. **Ersatzneubau** — 12×10 m anstelle des Bestands auf 121/1
 
-Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt, der Ersatzneubau auf **121/1**.
+Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der Ersatzneubau sitzt auf **121/1** und blendet den Bestand (Wohnhaus + Garage) aus.
 
 ## Dateien
 

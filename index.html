@@ -1087,10 +1087,20 @@
       statusEl.textContent = "Zurückgesetzt";
     }
 
+    function setBestandVisible(visible) {
+      context.traverse((obj) => {
+        if (obj.name === "bestand_wohnhaus" || obj.name === "bestand_garage") {
+          obj.visible = visible;
+        }
+      });
+    }
+
     function selectVariant(variantKey) {
       document.querySelectorAll(".variant-btn").forEach(btn => btn.classList.remove("active"));
       const activeBtn = document.querySelector(`[data-variant="${variantKey}"]`);
       if (activeBtn) activeBtn.classList.add("active");
+
+      setBestandVisible(variantKey !== "ersatz");
 
       for (const [vk, vId] of Object.entries(variantIds)) {
         const group = pieceGroups.get(vId);
