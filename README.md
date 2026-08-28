@@ -1,139 +1,75 @@
-# Mustergrundstück Oberhofer — Baukasten Demo
+# Ashausener Straße 12, Stelle — Baukasten
 
-> **WICHTIG: Dies ist ein MUSTER / SAMPLE** — nicht das echte Grundstück.  
-> Alle Geometrien sind fiktiv und dienen nur zur Demonstration der Methodik.  
-> Reale Geometrie kommt aus den Plänen des Auftraggebers.
-
-## Übersicht
-
-Interaktiver 3D-Baukasten für ein fiktives Mustergrundstück (ca. 2400 m²). Der Viewer ermöglicht das Verschieben von Bebauungsoptionen im Browser – ohne CAD-Software.
+Interaktiver 3D-Baukasten für **Ashausener Str. 12, 21435 Stelle** (Gemarkung Stelle, Flur 6, Flurstücke **121/1** und **121/2**).
 
 **🔗 Live Demo:** **https://cophi-dev.github.io/mustergrundstueck-beispiel/**
 
 Zwei Browser mit derselben URL sehen synchronisierte Positionen (via Yjs). Sonnenstands-Slider, Varianten-Buttons und Objekt-Erstellung direkt im Viewer.
 
-## Features
+## Quellen
 
-- **Shared Kit List**: Eine JSON-Datei (`kit.json`) definiert alle Geometrien
-- **3D Viewer**: Three.js-basierter Viewer mit Orbit-Steuerung und Drag-and-Drop
-- **Varianten-Auswahl**: Schnelles Umschalten zwischen Bungalow, EFH, MFH und Ersatzneubau
-- **Sonnenstands-Simulation**: Einstellbarer Sonnenstand nach Uhrzeit und Monat
-- **Live-Sync**: Mehrere Browser sehen synchronisierte Positionen (Yjs)
-- **Deutsche UI**: Alle Labels und Beschriftungen auf Deutsch
+| Unterlage | Inhalt |
+|-----------|--------|
+| **Liegenschaftsgrafik 1:500** | LGLN Katasteramt Winsen, erstellt 28.01.2026 (Zeichen 090-A-00084/2026). Grundstücksgrenzen, Gebäudegrundrisse, Hausnummern. |
+| **Bebauungsplan Osterfeld West** | Neufassung 1980, rechtskräftig 1982. WA I, GRZ 0,25, offene Bauweise, nur Einzel- und Doppelhäuser. |
+| **Bestandspläne** | Wohnhaus H. Burmeister (1:100) und Anbau Geräteschuppen (Gisela Burmester). |
 
-## Das Demo-Szenario
+Die Katastergeometrie bleibt in `kit.json` (Meter, lokal). Die Original-Liegenschaftsgrafik wird wegen der LGLN-Nutzungsbedingungen **nicht** mitversioniert.
 
-Das Muster zeigt ein fiktives Grundstück mit ähnlichen Eigenschaften wie reale Projekte:
+## Grundstück
 
-| Element | Beschreibung |
-|---------|-------------|
-| **Grundstück** | ca. 2400 m² (40×60 m), unregelmäßige Parzellen |
-| **Bestand** | Wohnhaus, Schuppen, Garage als einfache Volumenblöcke |
-| **Baufenster** | ca. 700 m² bebaubare Fläche (gelb markiert) |
-| **Grenzabstände** | 3 m Abstandsflächen (schematisch) |
-| **Durchfahrt** | Zufahrtsstraße mit Lärmschutzstreifen |
-| **Bäume** | Bestandsbäume als Kronenradien |
+| Element | Wert |
+|---------|------|
+| **121/1** | 1.532 m², Bestand Wohnhaus Nr. 12 + Garage, Zugang Ashausener Straße |
+| **121/2** | 719 m², unbebauter Gartenteil, Front **Am Osterfeld** |
+| **Gesamt** | **2.251 m²** |
+| **Baufenster** | ca. 417 m² auf 121/2 (3 m Grenzabstand, schematisch — Baugrenze am B-Plan prüfen) |
+| **B-Plan** | WA I, 1 Vollgeschoss, GRZ 0,25 → max. ca. 180 m² Grundfläche auf 121/2 |
+
+Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung = Flächenschwerpunkt beider Flurstücke.
+
+### Bestand
+
+- Wohnhaus Nr. 12: ca. 11,5 × 8,9 m, EG + Dachgeschoss, Satteldach (aus Kataster + Bestandsplan)
+- Garage / Nebengebäude: ca. 6,4 × 4,0 m
+- Nachbarn als Kontext: Nr. 1, Nr. 7 (Am Osterfeld), Nr. 14
 
 ### Bebauungsoptionen (verschiebbar)
 
-1. **Seniorengerechter Bungalow** — 16×12 m, 1 Geschoss, große Grundfläche (grün)
-2. **Kompaktes 2-geschossiges EFH** — 10×8 m, 2 Geschosse (blau)
-3. **3-Familien-Haus** — 14×10 m, 3 Geschosse (lila)
-4. **Ersatzneubau** — Ersetzt Bestandsvolumen, 14×11 m (orange)
+Passend zu WA I / GRZ 0,25 / nur Einzel- und Doppelhäuser:
 
-### Zusätzliche Kit-Teile
+1. **Seniorengerechter Bungalow** — 14×12 m, 1 VG, 168 m² (GRZ 0,23)
+2. **Kompaktes EFH mit Dachgeschoss** — 10×8,5 m, 1 VG + DG
+3. **Doppelhaus** — 16×10 m, 1 VG + DG (statt 3-Familien-Haus, das der B-Plan nicht vorsieht)
+4. **Ersatzneubau** — 12×10 m anstelle des Bestands auf 121/1
 
-- PV-Anlage (Platzhalter)
-- Zisterne / Regenwassertank
-- Grünfläche / Bepflanzung
+Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt, der Ersatzneubau auf **121/1**.
 
 ## Dateien
 
 ```
-├── index.html        # 3D-Viewer (öffnet direkt im Browser)
-├── kit.json          # Shared Kit Definition (Geometrie-Daten)
-└── README.md         # Diese Datei
+├── index.html              # 3D-Viewer
+├── kit.json                # Geometrie aus Lageplan + B-Plan
+├── generate-dxf.js         # DXF-Export
+└── README.md
 ```
 
 ## Nutzung
 
-### Browser-Viewer
+`index.html` öffnen (lokal, `npx serve .`, oder GitHub Pages).
 
-Einfach `index.html` öffnen:
-- Direkt als lokale Datei (funktioniert mit CORS-Einschränkungen bei manchen Browsern)
-- Via lokalem Server: `npx serve .` oder `python -m http.server`
-- Via GitHub Pages oder raw.githack für öffentlichen Zugang
+**Steuerung:** Linksklick verschiebt Kit-Teile · rechte Maustaste Orbit · Mausrad Zoom · Varianten-Buttons · Sonne nach Uhrzeit und Monat (Standort Stelle).
 
-**Steuerung:**
-- Linksklick + Ziehen: Kit-Teile verschieben
-- Rechte Maustaste: Orbit
-- Mausrad: Zoom
-- Varianten-Buttons: Schnelles Umschalten zwischen Bebauungsoptionen
-- Sonne-Slider: Sonnenstand einstellen (Uhrzeit, Monat)
+## Hinweise
 
-**Parkplatz:**
-Die graue Fläche rechts neben dem Grundstück ist ein Parkplatz für ungenutzte Baukasten-Teile. Wählen Sie eine Variante über die Buttons oben — die gewählte Option erscheint auf dem Baufenster (gelb), alle anderen Optionen werden auf den Parkplatz verschoben. Teile können auch manuell per Drag-and-Drop verschoben werden.
-
-### Kit-Definition anpassen
-
-Die Datei `kit.json` enthält alle Geometrien:
-
-```json
-{
-  "meta": { "name": "...", "units": "meters" },
-  "site": { "width": 40, "depth": 60, "area_m2": 2400 },
-  "layers": {
-    "BAUFENSTER": { "color": "#d4a017", "dxfColor": 2 }
-  },
-  "pieces": [
-    {
-      "id": "option_bungalow",
-      "name": "Option 1: Seniorengerechter Bungalow",
-      "layer": "OPTION_BUNGALOW",
-      "type": "box",
-      "draggable": true,
-      "position": [6, 14],
-      "size": [16, 12, 3.5],
-      "color": "#4a9f4a"
-    }
-  ]
-}
-```
-
-**Piece-Typen:**
-- `box`: Quader (size: [Breite, Tiefe, Höhe])
-- `cylinder`: Zylinder (radius, height)
-- `polygon`: Polygon (vertices: [[x,y], ...])
-- `tree`: Baummassen (radius, height)
-
-## Technische Details
-
-### HTML-Viewer
-- Three.js 0.160
-- CSS2DRenderer für Labels
-- OrbitControls für Navigation
-- SunCalc für realistische Sonnenstände
-- Yjs für Echtzeit-Synchronisation
-- Keine externen Abhängigkeiten außer CDNs
-
-## Hinweise zur Methodik
-
-Dieser Baukasten dient als **erste Gesprächsgrundlage** mit dem Auftraggeber:
-
-1. **Keine echten Daten**: Alle Maße sind fiktiv
-2. **Keine Detailplanung**: Nur Massen/Volumen, keine Innenräume
-3. **Keine Simulation**: Lärmstreifen ist schematisch, keine Akustikberechnung
-
-**Nächste Schritte für echtes Projekt:**
-- Vermessungsplan einlesen
-- Bebauungsplan-Vorgaben prüfen
-- Echte Grundstücksgrenzen übernehmen
-- Detaillierte Massenmodelle erstellen
+- Baufenster ist ein **3 m-Abstand** nach NBauO, keine abgezeichnete Baugrenze.
+- GRZ 0,25 und 1 Vollgeschoss stammen aus der Planzeichenerklärung / den Nutzungsschablonen (WA I) im B-Plan Osterfeld West.
+- Keine Innenräume, keine verbindliche Bauvoranfrage.
 
 ## Lizenz
 
-Dieses Muster ist für interne Demonstrationszwecke. Keine Garantie für Richtigkeit oder Vollständigkeit.
+Interne Planungsgrundlage. Katasterdaten: LGLN, AGNB beachten. Keine Garantie für Vollständigkeit gegenüber dem Originalplan.
 
 ---
 
-*Erstellt als Sample für Planspiele. Reale Geometrie kommt aus den Plänen des Auftraggebers.*
+*Baukasten entwickelt von Phillipp Zarindast.*
