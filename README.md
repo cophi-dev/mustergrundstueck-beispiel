@@ -18,13 +18,17 @@ Die Katastergeometrie bleibt in `kit.json` (Meter, lokal). Die Original-Liegensc
 
 ## Grundstück
 
+Amtliche Flächen aus **LGLN ALKIS** (WFS, 2026-08-29). Die ~700 m² vom Telefon sind die **Grundstücksfläche von 121/2**, nicht die überbaubare Fläche.
+
 | Element | Wert |
 |---------|------|
-| **121/1** | 1.532 m², Bestand Wohnhaus Nr. 12 + Garage, Zugang Ashausener Straße |
-| **121/2** | 719 m², unbebauter Gartenteil, Front **Am Osterfeld** |
-| **Gesamt** | **2.251 m²** |
-| **Baufenster 121/2** | **293 m²** — Baugrenze aus B-Plan-Bemaßung: **7 m** von Am Osterfeld, **3 m** seitlich und zur Grenze 121/1 (ca. 30,9 × 9,5 m) |
-| **B-Plan** | WA I, 1 Vollgeschoss, GRZ 0,25 → max. ca. 180 m² Grundfläche auf 121/2 |
+| **121/1** | **1.497 m²** ALKIS, Bestand Wohnhaus Nr. 12 + Garage, Ashausener Straße |
+| **121/2** | **702 m²** ALKIS, unbebauter Gartenteil, Front **Am Osterfeld** |
+| **Gesamt** | **2.199 m²** |
+| **Baugrenze 121/2** | **293 m²** — 7 m von Am Osterfeld, 3 m seitlich und zur Grenze 121/1 (ca. 30,9 × 9,5 m). Das ist **nicht** die 702 m². |
+| **GRZ 0,25** | max. ca. **176 m²** Grundfläche auf 121/2 (0,25 × 702) |
+
+**Geoportal Hamburg:** Geo-Online / der Hamburger B-Plan-WMS decken Stelle **nicht** ab (Südgrenze ca. 53,394°N, Grundstück bei 53,384°N). Stelle liegt in Niedersachsen, Landkreis Harburg. Kataster: [LGLN ALKIS](https://opendata.lgln.niedersachsen.de/doorman/noauth/alkis_wfs_einfach). B-Plan: LK Harburg, Osterfeld West (`32_50`).
 
 Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung = Flächenschwerpunkt beider Flurstücke.
 
@@ -62,7 +66,8 @@ Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der
 
 ## Hinweise
 
-- Baufenster auf 121/2 ist die **Baugrenze** aus den gedruckten WA-I-Maßen (7 m / 3 m), nicht ein pauschaler 3 m-Abstand. Die Strichpunktlinie im Scan 1:1000 lässt sich nicht sauber vektorisieren; die Maße sitzen auf den Katastergrenzen.
+- Die gelbe Fläche im Viewer ist die **Baugrenze** (~293 m²), nicht das Grundstück. 121/2 ist amtlich **702 m²** (ALKIS).
+- Baugrenze aus den gedruckten WA-I-Maßen (7 m / 3 m), nicht ein pauschaler 3 m-Abstand. Die Strichpunktlinie im Scan 1:1000 lässt sich nicht sauber vektorisieren.
 - GRZ 0,25 und 1 Vollgeschoss stammen aus der Planzeichenerklärung / den Nutzungsschablonen (WA I) im B-Plan Osterfeld West.
 - Keine Innenräume, keine verbindliche Bauvoranfrage.
 
