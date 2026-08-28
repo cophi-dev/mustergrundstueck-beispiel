@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * DXF Generator for Mustergrundstück Kit
- * 
+ * DXF Generator for Ashausener Str. 12 kit
+ *
  * Generates AutoCAD-compatible DXF (R2010) from kit.json
  * Units: meters, named layers and blocks
- * 
+ *
  * Usage: node generate-dxf.js [output.dxf]
  */
 
@@ -12,7 +12,7 @@ const fs = require('fs');
 const path = require('path');
 
 const kitPath = path.join(__dirname, 'kit.json');
-const outputPath = process.argv[2] || path.join(__dirname, 'muster_oberhofer.dxf');
+const outputPath = process.argv[2] || path.join(__dirname, 'ashausener_str_12.dxf');
 
 function generateDXF(data, positions = {}) {
   let dxf = "";
@@ -136,14 +136,24 @@ function generateDXF(data, positions = {}) {
   dxf += "0\nSECTION\n2\nENTITIES\n";
   
   const hw = data.site.width / 2, hd = data.site.depth / 2;
-  dxf += "0\nLWPOLYLINE\n8\nSITE_BOUNDARY\n";
-  dxf += "90\n4\n70\n1\n";
-  dxf += "10\n" + (-hw) + "\n20\n" + (-hd) + "\n";
-  dxf += "10\n" + hw + "\n20\n" + (-hd) + "\n";
-  dxf += "10\n" + hw + "\n20\n" + hd + "\n";
-  dxf += "10\n" + (-hw) + "\n20\n" + hd + "\n";
+  const boundary = data.pieces.find(p => p.id === "site_boundary");
+  if (boundary && boundary.vertices) {
+    dxf += "0\nLWPOLYLINE\n8\nSITE_BOUNDARY\n";
+    dxf += "90\n" + boundary.vertices.length + "\n70\n1\n";
+    for (const v of boundary.vertices) {
+      dxf += "10\n" + v[0] + "\n20\n" + v[1] + "\n";
+    }
+  } else {
+    dxf += "0\nLWPOLYLINE\n8\nSITE_BOUNDARY\n";
+    dxf += "90\n4\n70\n1\n";
+    dxf += "10\n" + (-hw) + "\n20\n" + (-hd) + "\n";
+    dxf += "10\n" + hw + "\n20\n" + (-hd) + "\n";
+    dxf += "10\n" + hw + "\n20\n" + hd + "\n";
+    dxf += "10\n" + (-hw) + "\n20\n" + hd + "\n";
+  }
   
   for (const piece of data.pieces) {
+    if (piece.id === "site_boundary") continue;
     if (piece.type === "polygon") {
       let verts = piece.vertices;
       const pos = positions[piece.id];
@@ -177,7 +187,8 @@ function generateDXF(data, positions = {}) {
       dxf += "0\nINSERT\n8\n" + piece.layer + "\n";
       dxf += "2\n" + blockName + "\n";
       dxf += "10\n" + x + "\n20\n" + z + "\n30\n0\n";
-      dxf += "41\n1\n42\n1\n43\n1\n50\n0\n";
+      const rotDeg = ((piece.rotation || 0) * 180) / Math.PI;
+      dxf += "41\n1\n42\n1\n43\n1\n50\n" + rotDeg + "\n";
     }
     else if (piece.type === "tree") {
       dxf += "0\nCIRCLE\n8\n" + piece.layer + "\n";
@@ -200,7 +211,7 @@ function generateDXF(data, positions = {}) {
   
   dxf += "0\nTEXT\n8\nSITE_BOUNDARY\n";
   dxf += "10\n0\n20\n" + (-hd - 5) + "\n30\n0\n";
-  dxf += "40\n0.7\n1\nNUR MUSTER - Reale Geometrie aus Kundenplaenen\n";
+  dxf += "40\n0.7\n1\nLiegenschaftsgrafik 1:500 (LGLN 28.01.2026) + B-Plan Osterfeld West 1980\n";
   dxf += "72\n1\n11\n0\n21\n" + (-hd - 5) + "\n31\n0\n";
   
   dxf += "0\nTEXT\n8\nSITE_BOUNDARY\n";
@@ -218,8 +229,8 @@ try {
   const kitJson = fs.readFileSync(kitPath, 'utf8');
   const kitData = JSON.parse(kitJson);
   
-  console.log('Mustergrundstück DXF Generator');
-  console.log('==============================');
+  console.log('Ashausener Str. 12 DXF Generator');
+  console.log('================================');
   console.log('Kit:', kitData.meta.name);
   console.log('Fläche:', kitData.site.area_m2, 'm²');
   console.log('Teile:', kitData.pieces.length);
@@ -230,9 +241,6 @@ try {
   fs.writeFileSync(outputPath, dxfContent);
   
   console.log('DXF exportiert:', outputPath);
-  console.log('');
-  console.log('Hinweis: Dies ist ein MUSTER - reale Geometrie');
-  console.log('         kommt aus den Plänen des Auftraggebers.');
   
 } catch (err) {
   console.error('Fehler:', err.message);
