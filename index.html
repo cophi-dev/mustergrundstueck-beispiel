@@ -307,10 +307,18 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     // X-Spiegelung der Projektion dreht die Winding-Order um. Ohne CW als
-    // Vorderseite verschwinden Hauswände (FrontSide wird weggecullt).
+    // Vorderseite verschwinden Hauswände. Die Shadow-Map nutzt eine normale
+    // Projektion — dort darf die Winding nicht mitgedreht werden.
     {
+      let mirrorWinding = true;
       const setFlipSided = renderer.state.setFlipSided.bind(renderer.state);
-      renderer.state.setFlipSided = (flipSided) => setFlipSided(!flipSided);
+      renderer.state.setFlipSided = (flipSided) => setFlipSided(mirrorWinding ? !flipSided : flipSided);
+      const shadowRender = renderer.shadowMap.render.bind(renderer.shadowMap);
+      renderer.shadowMap.render = (lights, scene, camera) => {
+        mirrorWinding = false;
+        shadowRender(lights, scene, camera);
+        mirrorWinding = true;
+      };
     }
     wrap.appendChild(renderer.domElement);
     
@@ -346,8 +354,12 @@
     sun.shadow.camera.right = 80;
     sun.shadow.camera.top = 60;
     sun.shadow.camera.bottom = -60;
-    sun.shadow.bias = -0.0001;
+    sun.shadow.camera.near = 1;
+    sun.shadow.camera.far = 160;
+    sun.shadow.bias = -0.0008;
+    sun.target.position.set(2, 0, 6);
     scene.add(sun);
+    scene.add(sun.target);
     const hemi = new THREE.HemisphereLight(0xb8d4e8, 0x4a5a3a, 0.25);
     scene.add(hemi);
     const topFill = new THREE.DirectionalLight(0xfff6ea, 0.2);
@@ -1117,8 +1129,12 @@
       under.renderOrder = -2;
       satUnderlay = under;
       context.add(under);
+      const satGeom = new THREE.PlaneGeometry(w, d);
+      const satN = satGeom.attributes.normal;
+      for (let i = 0; i < satN.count; i++) satN.setXYZ(i, 0, 0, -1);
+      satN.needsUpdate = true;
       const mesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(w, d),
+        satGeom,
         new THREE.MeshStandardMaterial({
           map: tex, roughness: 1, metalness: 0, depthWrite: false, side: THREE.DoubleSide
         })
