@@ -306,6 +306,12 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    // X-Spiegelung der Projektion dreht die Winding-Order um. Ohne CW als
+    // Vorderseite verschwinden Hauswände (FrontSide wird weggecullt).
+    {
+      const setFlipSided = renderer.state.setFlipSided.bind(renderer.state);
+      renderer.state.setFlipSided = (flipSided) => setFlipSided(!flipSided);
+    }
     wrap.appendChild(renderer.domElement);
     
     hideLoading();
@@ -1102,115 +1108,44 @@
       tex.flipY = true;
       const under = new THREE.Mesh(
         new THREE.PlaneGeometry(240, 240),
-        new THREE.MeshBasicMaterial({ color: 0x3a4034, depthWrite: false })
+        new THREE.MeshStandardMaterial({ color: 0x3a4034, roughness: 1, metalness: 0, depthWrite: false })
       );
       under.rotation.x = -Math.PI / 2;
       under.position.set(cx, -0.03, cz);
       under.name = "Satellit_Rahmen";
+      under.receiveShadow = true;
       under.renderOrder = -2;
       satUnderlay = under;
       context.add(under);
       const mesh = new THREE.Mesh(
         new THREE.PlaneGeometry(w, d),
-        new THREE.MeshBasicMaterial({ map: tex, depthWrite: false, side: THREE.DoubleSide })
+        new THREE.MeshStandardMaterial({
+          map: tex, roughness: 1, metalness: 0, depthWrite: false, side: THREE.DoubleSide
+        })
       );
       mesh.rotation.x = Math.PI / 2;
       mesh.position.set(cx, 0.008, cz);
       mesh.name = "Satellit_DOP20";
+      mesh.receiveShadow = true;
       mesh.renderOrder = -1;
       satelliteMesh = mesh;
       context.add(mesh);
       setSatelliteVisible(true);
     }
 
-    function applyBuildingOverlay() {
-      const overlay = satelliteOn && northUpMode;
-      context.traverse((obj) => {
-        if (!obj.isMesh || !obj.material) return;
-        let p = obj;
-        let isBldg = false;
-        while (p) {
-          const n = p.name || "";
-          if (n.startsWith("bestand_") || n.startsWith("option_") || n.startsWith("nachbar_")) {
-            isBldg = true;
-            break;
-          }
-          p = p.parent;
-        }
-        if (!isBldg) return;
-        const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-        for (const m of mats) {
-          if (!m.color) continue;
-          if (m.userData._base == null) {
-            m.userData._base = {
-              transparent: m.transparent,
-              opacity: m.opacity,
-              emissive: m.emissive ? m.emissive.getHex() : 0,
-              emissiveIntensity: m.emissiveIntensity || 0
-            };
-          }
-          const base = m.userData._base;
-          if (overlay) {
-            if (m.emissive) {
-              m.emissive.setHex(0x5a4e42);
-              m.emissiveIntensity = 0.7;
-            }
-            m.transparent = true;
-            m.opacity = Math.min(base.opacity, 0.82);
-          } else {
-            if (m.emissive) {
-              m.emissive.setHex(base.emissive);
-              m.emissiveIntensity = base.emissiveIntensity;
-            }
-            m.transparent = base.transparent;
-            m.opacity = base.opacity;
-          }
-          m.needsUpdate = true;
-        }
-      });
-      kit.traverse((obj) => {
-        if (!obj.isMesh || !obj.material) return;
-        const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-        for (const m of mats) {
-          if (!m.emissive) continue;
-          if (overlay) {
-            m.emissive.setHex(0x334455);
-            m.emissiveIntensity = 0.45;
-          } else {
-            m.emissive.setHex(0x000000);
-            m.emissiveIntensity = 0;
-          }
-        }
-      });
-    }
-
     function applySceneChrome() {
-      renderer.shadowMap.enabled = !northUpMode;
       if (satelliteOn) {
         scene.background = new THREE.Color(BG_SAT);
         scene.fog = null;
-        ambient.intensity = northUpMode ? 1.35 : 0.7;
-        hemi.intensity = northUpMode ? 0.7 : 0.3;
-        topFill.intensity = northUpMode ? 1.4 : 0.25;
-        sun.intensity = northUpMode ? 0.35 : 1.0;
       } else if (northUpMode) {
         scene.background = new THREE.Color(BG_PLAN);
         scene.fog = null;
-        ambient.intensity = 1.05;
-        hemi.intensity = 0.55;
-        topFill.intensity = 1.0;
-        sun.intensity = 0.45;
       } else {
         scene.background = new THREE.Color(BG_3D);
         scene.fog = new THREE.Fog(BG_3D, 220, 420);
-        ambient.intensity = 0.42;
-        hemi.intensity = 0.25;
-        topFill.intensity = 0.12;
-        sun.intensity = 1.2;
       }
       planLabels.visible = northUpMode;
       document.body.classList.toggle("iso-view", !northUpMode);
-      applyBuildingOverlay();
     }
 
     function setSatelliteVisible(on) {
@@ -1440,7 +1375,6 @@
         }
         broadcastPosition(vId, group.position.x, group.position.y, group.position.z);
       }
-      applyBuildingOverlay();
     }
 
     function placeExtra(pieceId) {
@@ -1661,6 +1595,11 @@
     function updateSun() {
       if (!suncalcLoaded || typeof SunCalc === "undefined") {
         sun.position.set(50, 50, 25);
+        sun.castShadow = true;
+        sun.intensity = 1.15;
+        ambient.intensity = 0.52;
+        hemi.intensity = 0.22;
+        topFill.intensity = 0.08;
         return;
       }
       const hourSlider = document.getElementById("sun-hour");
@@ -1687,12 +1626,20 @@
         const y = dist * Math.sin(altitude);
         const z = dist * Math.cos(azimuth) * Math.cos(altitude);
         sun.position.set(x, Math.max(y, 5), z);
-        sun.castShadow = !northUpMode;
+        sun.castShadow = true;
+        const elev = Math.max(0.18, Math.sin(altitude));
+        sun.intensity = 0.45 + 1.05 * elev;
+        ambient.intensity = 0.38 + 0.22 * elev;
+        hemi.intensity = 0.16 + 0.12 * elev;
+        topFill.intensity = 0.08;
       } else {
-        sun.position.set(0, 5, 0);
+        sun.position.set(0, 8, 0);
         sun.castShadow = false;
+        sun.intensity = 0.08;
+        ambient.intensity = 0.2;
+        hemi.intensity = 0.08;
+        topFill.intensity = 0.04;
       }
-      applySceneChrome();
     }
 
     document.getElementById("sun-hour").addEventListener("input", updateSun);
