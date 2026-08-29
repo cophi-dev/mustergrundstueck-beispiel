@@ -2,7 +2,7 @@
 
 Interaktiver 3D-Baukasten für **Ashausener Str. 12, 21435 Stelle** (Gemarkung Stelle, Flur 6, Flurstücke **121/1** und **121/2**).
 
-**🔗 Live Demo:** **https://cophi-dev.github.io/mustergrundstueck-beispiel/**
+**🔗 Live Demo:** **https://mustergrundstueck-beispiel.vercel.app/**
 
 Zwei Browser mit derselben URL sehen synchronisierte Positionen (via Yjs). Sonnenstands-Slider, Varianten-Buttons und Objekt-Erstellung direkt im Viewer.
 
@@ -69,9 +69,9 @@ Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der
 
 ## Nutzung
 
-`index.html` öffnen (lokal, `npx serve .`, oder GitHub Pages).
+`index.html` öffnen (lokal, `npx serve .`, oder die Vercel-URL).
 
-**Steuerung:** Linksklick verschiebt Kit-Teile · rechte Maustaste Orbit · Mausrad Zoom · Varianten-Buttons · Sonne nach Uhrzeit und Monat (Standort Stelle).
+**Steuerung:** Ziehen neigt von der Aufsicht in die 3D-Ansicht · Linksklick auf Kit-Teile verschiebt sie · rechte Maustaste verschiebt die Karte · Mausrad Zoom · Varianten-Buttons · Sonne nach Uhrzeit und Monat (Standort Stelle).
 
 ## Hinweise
 
