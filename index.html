@@ -194,7 +194,6 @@
       <div class="seg">
         <span class="seg-label">Ansicht</span>
         <button id="btn-top" class="view-btn" type="button">Aufsicht</button>
-        <button id="btn-iso" class="view-btn" type="button">3D</button>
         <button id="btn-sat" class="view-btn" type="button">Satellit</button>
         <span class="seg-hint">Ziehen neigt</span>
       </div>
@@ -802,13 +801,21 @@
       shape.moveTo(vertices[0][0], -vertices[0][1]);
       for (let i = 1; i < vertices.length; i++) shape.lineTo(vertices[i][0], -vertices[i][1]);
       shape.closePath();
-      const geometry = height > 0 
+      const geometry = height > 0
         ? new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false })
         : new THREE.ShapeGeometry(shape);
-      const mesh = new THREE.Mesh(geometry, mat(color, { opacity, doubleSide: true }));
+      const material = mat(color, { opacity });
+      if (opacity < 0.99) {
+        material.transparent = true;
+        material.depthWrite = false;
+        material.polygonOffset = true;
+        material.polygonOffsetFactor = -2;
+        material.polygonOffsetUnits = -2;
+      }
+      const mesh = new THREE.Mesh(geometry, material);
       mesh.rotation.x = -Math.PI / 2;
-      mesh.position.y = height > 0 ? 0 : 0.02;
-      mesh.receiveShadow = true;
+      mesh.position.y = height > 0 ? 0 : 0;
+      mesh.receiveShadow = opacity >= 0.99;
       return mesh;
     }
 
@@ -925,6 +932,7 @@
 
       const lawn = polygon(SITE_POLY, 0, "#6b8f4e", 1);
       lawn.name = "Rasen";
+      lawn.position.y = 0;
       lawn.userData.satHide = true;
       context.add(lawn);
       addSatelliteLayer(data, lawn);
@@ -952,10 +960,15 @@
         const offsetVerts = piece.position ? verts.map(v => [v[0] + piece.position[0], v[1] + piece.position[1]]) : verts;
         
         if (piece.layer === "BAUFENSTER") {
+          const fill = polygon(offsetVerts, 0, "#d4a017", 0.4);
+          fill.name = piece.name;
+          fill.position.y = 0.05;
+          fill.userData.satHide = true;
+          context.add(fill);
           const lineVerts = [...offsetVerts, offsetVerts[0]];
           const lineGeom = new THREE.BufferGeometry().setFromPoints(lineVerts.map(v => new THREE.Vector3(v[0], 0.08, v[1])));
           const baufensterLine = new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ color: 0xd4a017, linewidth: 2 }));
-          baufensterLine.name = piece.name;
+          baufensterLine.name = piece.name + "_Linie";
           context.add(baufensterLine);
           const centroid = offsetVerts.reduce((acc, v) => [acc[0] + v[0], acc[1] + v[1]], [0, 0]);
           centroid[0] /= offsetVerts.length;
@@ -975,8 +988,9 @@
         }
 
         if (piece.layer === "PARCEL") {
-          const mesh = polygon(offsetVerts, piece.height || 0.03, color, piece.fillOpacity || 0.15);
+          const mesh = polygon(offsetVerts, 0, color, piece.fillOpacity || 0.18);
           mesh.name = piece.name;
+          mesh.position.y = 0.025;
           mesh.userData.satHide = true;
           parcelFill = mesh;
           context.add(mesh);
@@ -1522,8 +1536,6 @@
     const MAP_POLAR = 0.36;
     const TOP_POS = new THREE.Vector3(2, 52, -10);
     const TOP_TARGET = new THREE.Vector3(2, 0, 6);
-    const STREET_POS = new THREE.Vector3(-20.8, 9, -17.5);
-    const STREET_TARGET = new THREE.Vector3(-6.75, 3.2, -7.03);
     const _viewOffset = new THREE.Vector3();
     let camAnimating = false;
     let viewPointerDown = false;
@@ -1554,7 +1566,6 @@
       const polar = currentPolar();
       const wantMap = polar < MAP_POLAR;
       document.getElementById("btn-top").classList.toggle("active", wantMap);
-      document.getElementById("btn-iso").classList.toggle("active", !wantMap);
       if (wantMap === northUpMode) return;
       if (viewPointerDown && !force && !camAnimating) return;
       northUpMode = wantMap;
@@ -1615,14 +1626,8 @@
       animateCamera(TOP_POS, TOP_TARGET, true);
     }
 
-    function applyStreetView() {
-      camera.up.set(0, 1, 0);
-      animateCamera(STREET_POS, STREET_TARGET, false);
-    }
-
     document.getElementById("btn-reset").addEventListener("click", resetKit);
     document.getElementById("btn-top").addEventListener("click", applyNorthUpView);
-    document.getElementById("btn-iso").addEventListener("click", applyStreetView);
     document.getElementById("btn-sat").addEventListener("click", () => setSatelliteVisible(!satelliteOn));
 
     let suncalcLoaded = false;
