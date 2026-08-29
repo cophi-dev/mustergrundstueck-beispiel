@@ -299,20 +299,22 @@
 
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
     camera.up.set(0, 1, 0);
-    camera.position.set(2, 92, -10);
+    camera.position.set(2, 52, -10);
     window.__camera = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    // X-Spiegelung der Projektion dreht die Winding-Order um. Ohne CW als
-    // Vorderseite verschwinden Hauswände. Die Shadow-Map nutzt eine normale
-    // Projektion — dort darf die Winding nicht mitgedreht werden.
+    // X-Spiegelung der Projektion dreht die Winding-Order. Three.js ruft
+    // state.setMaterial auf — frontFaceCW umkehren macht Wände wieder sichtbar.
+    // Die Shadow-Map hat keine X-Spiegelung, dort bleibt die Winding normal.
     {
       let mirrorWinding = true;
-      const setFlipSided = renderer.state.setFlipSided.bind(renderer.state);
-      renderer.state.setFlipSided = (flipSided) => setFlipSided(mirrorWinding ? !flipSided : flipSided);
+      const setMaterial = renderer.state.setMaterial.bind(renderer.state);
+      renderer.state.setMaterial = (material, frontFaceCW) => {
+        setMaterial(material, mirrorWinding ? !frontFaceCW : frontFaceCW);
+      };
       const shadowRender = renderer.shadowMap.render.bind(renderer.shadowMap);
       renderer.shadowMap.render = (lights, scene, camera) => {
         mirrorWinding = false;
@@ -1149,7 +1151,7 @@
       context.add(mesh);
       const catcher = new THREE.Mesh(
         new THREE.PlaneGeometry(240, 240),
-        new THREE.ShadowMaterial({ opacity: 0.42 })
+        new THREE.ShadowMaterial({ opacity: 0.45, side: THREE.DoubleSide })
       );
       catcher.rotation.x = -Math.PI / 2;
       catcher.position.set(cx, 0.03, cz);
@@ -1515,7 +1517,7 @@
     }
 
     const MAP_POLAR = 0.36;
-    const TOP_POS = new THREE.Vector3(2, 92, -10);
+    const TOP_POS = new THREE.Vector3(2, 52, -10);
     const TOP_TARGET = new THREE.Vector3(2, 0, 6);
     const STREET_POS = new THREE.Vector3(-20.8, 9, -17.5);
     const STREET_TARGET = new THREE.Vector3(-6.75, 3.2, -7.03);
