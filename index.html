@@ -698,17 +698,18 @@
       const useBrick = config.brick !== false;
       const wallMat = useBrick ? matBrick(w/3, wallHeight/2) : matPlaster(config.wallColor || 0xf5f0e6);
       const roofCol = config.roofColor || "#3d383c";
+      const overhang = config.roofOverhang ?? 0.35;
       g.add(boxWithMaterial(w, wallHeight, d, wallMat, 0, 0, 0, config.name || "Haus"));
       if (roofHeight > 0) {
         const roof = (config.roofStyle === "hip")
-          ? createHipRoof(w, d, roofHeight, 0.35, roofCol)
-          : createSaddleRoof(w, d, roofHeight, 0.35, roofCol);
+          ? createHipRoof(w, d, roofHeight, overhang, roofCol)
+          : createSaddleRoof(w, d, roofHeight, overhang, roofCol);
         roof.position.y = wallHeight;
         g.add(roof);
       }
       if (config.erker) {
         const ew = config.erker.w || 3.2, ed = config.erker.d || 1.1, eh = config.erker.h || 2.4;
-        const ez = -(d / 2) - ed / 2 + 0.05;
+        const ez = -(d / 2) - ed / 2 + 0.28;
         g.add(boxWithMaterial(ew, eh, ed, wallMat, 0, 0, ez, "Erker"));
         g.add(box(ew + 0.15, 0.12, ed + 0.15, 0x2a2a2e, 0, eh, ez, "Erkerdach"));
         const bayWin = createWindow(ew - 0.4, 1.3, 0xffffff, 0x87ceeb);
@@ -784,6 +785,58 @@
         bay.position.set(0, bh / 2 + 0.08, -d / 2 - 0.03);
         g.add(bay);
       }
+      return g;
+    }
+
+    function createBestandWohnhaus12() {
+      const roofCol = "#3d383c";
+      const brick = matBrick(2.2, 1.3);
+      const g = new THREE.Group();
+
+      g.add(createDetailedHouse(11.56, 8.49, 5, 3.6, {
+        name: "Wohnhaus 12",
+        brick: true,
+        roofStyle: "hip",
+        roofColor: roofCol,
+        houseNumber: "12",
+        erker: { w: 3.4, d: 1.15, h: 2.45 },
+        dormer: { w: 3.6, d: 1.5, h: 1.7 },
+        windows: [
+          { x: 2.75, y: 1.75, z: -4.30, w: 1.25, h: 1.4, rotY: 3.1416 },
+          { x: 5.85, y: 1.85, z: -1.5, w: 1.15, h: 1.35, rotY: 1.5708 },
+          { x: 5.85, y: 1.85, z: 1.6, w: 1.15, h: 1.35, rotY: 1.5708 }
+        ],
+        door: { x: 5.85, y: 1.1, z: 0.2, w: 1.05, h: 2.15, rotY: 1.5708 }
+      }));
+
+      const wingD = 3.35;
+      const wingZ = 4.245 - 0.5 + wingD / 2;
+      const wing = createDetailedHouse(4.33, wingD, 2.7, 1.5, {
+        name: "Seitenflügel",
+        brick: true,
+        roofColor: roofCol,
+        roofOverhang: 0.12,
+        windows: [
+          { x: 0, y: 1.45, z: wingD / 2 + 0.02, w: 0.9, h: 1.05, rotY: 0 },
+          { x: 4.33 / 2 + 0.02, y: 1.45, z: 0.2, w: 0.9, h: 1.05, rotY: 1.5708 }
+        ]
+      });
+      wing.position.set(4.05, 0, wingZ);
+      g.add(wing);
+      g.add(boxWithMaterial(4.15, 2.7, 0.95, brick, 4.05, 0, 4.22, "Anschluss Flügel"));
+      g.add(box(4.35, 0.16, 1.15, 0x3d383c, 4.05, 2.7, 4.22, "Flügel-Anschlussdach"));
+
+      const anbau = createDetailedHouse(3.97, 6.45, 2.65, 1.4, {
+        name: "Anbau Hof",
+        brick: true,
+        roofColor: roofCol,
+        roofOverhang: 0.12
+      });
+      anbau.position.set(-2.478, 0, 8.05);
+      g.add(anbau);
+      g.add(boxWithMaterial(3.75, 2.65, 0.95, brick, -2.478, 0, 4.52, "Anschluss Anbau"));
+      g.add(box(4.0, 0.16, 1.15, 0x3d383c, -2.478, 2.65, 4.52, "Anbau-Anschlussdach"));
+
       return g;
     }
 
@@ -1016,10 +1069,21 @@
         context.add(new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ color })));
       }
       else if (piece.type === "box") {
+        if (piece.id === "bestand_wohnhaus_fluegel" || piece.id === "bestand_wohnhaus_anbau") {
+          return;
+        }
         const g = new THREE.Group();
         g.name = piece.id;
         const [w, d, h] = piece.size;
-        
+
+        if (piece.id === "bestand_wohnhaus") {
+          g.add(createBestandWohnhaus12());
+          g.position.set(piece.position[0], 0, piece.position[1]);
+          if (piece.rotation) g.rotation.y = piece.rotation;
+          context.add(g);
+          return;
+        }
+
         if (piece.detailed) {
           const detailedHouse = createDetailedHouse(w, d, piece.wallHeight || h, piece.roofHeight || 0, {
             name: piece.name,
