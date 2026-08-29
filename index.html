@@ -612,6 +612,28 @@
       return g;
     }
 
+    function createLeanToRoof(w, d, roofHeight, overhang, color) {
+      const g = new THREE.Group();
+      const hw = w / 2 + overhang;
+      const hd = d / 2 + overhang * 0.35;
+      const verts = new Float32Array([
+        -hw, roofHeight, -hd,
+         hw, roofHeight, -hd,
+         hw, 0, hd,
+        -hw, 0, hd
+      ]);
+      const geom = new THREE.BufferGeometry();
+      geom.setAttribute("position", new THREE.BufferAttribute(verts, 3));
+      geom.setIndex([0, 2, 1, 0, 3, 2]);
+      geom.computeVertexNormals();
+      const mesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({
+        color, roughness: 0.85, metalness: 0.08, side: THREE.DoubleSide
+      }));
+      mesh.castShadow = true;
+      g.add(mesh);
+      return g;
+    }
+
     function createHipRoof(w, d, roofHeight, overhang, color) {
       const g = new THREE.Group();
       const hw = w / 2 + overhang;
@@ -699,17 +721,19 @@
       const wallMat = useBrick ? matBrick(w/3, wallHeight/2) : matPlaster(config.wallColor || 0xf5f0e6);
       const roofCol = config.roofColor || "#3d383c";
       const overhang = config.roofOverhang ?? 0.35;
+      if (config.frontWalls) wallMat.side = THREE.FrontSide;
       g.add(boxWithMaterial(w, wallHeight, d, wallMat, 0, 0, 0, config.name || "Haus"));
       if (roofHeight > 0) {
-        const roof = (config.roofStyle === "hip")
-          ? createHipRoof(w, d, roofHeight, overhang, roofCol)
-          : createSaddleRoof(w, d, roofHeight, overhang, roofCol);
+        let roof;
+        if (config.roofStyle === "lean") roof = createLeanToRoof(w, d, roofHeight, overhang, roofCol);
+        else if (config.roofStyle === "hip") roof = createHipRoof(w, d, roofHeight, overhang, roofCol);
+        else roof = createSaddleRoof(w, d, roofHeight, overhang, roofCol);
         roof.position.y = wallHeight;
         g.add(roof);
       }
       if (config.erker) {
         const ew = config.erker.w || 3.2, ed = config.erker.d || 1.1, eh = config.erker.h || 2.4;
-        const ez = -(d / 2) - ed / 2 + 0.28;
+        const ez = -(d / 2) - ed / 2 + 0.38;
         g.add(boxWithMaterial(ew, eh, ed, wallMat, 0, 0, ez, "Erker"));
         g.add(box(ew + 0.15, 0.12, ed + 0.15, 0x2a2a2e, 0, eh, ez, "Erkerdach"));
         const bayWin = createWindow(ew - 0.4, 1.3, 0xffffff, 0x87ceeb);
@@ -809,33 +833,37 @@
         door: { x: 5.85, y: 1.1, z: 0.2, w: 1.05, h: 2.15, rotY: 1.5708 }
       }));
 
-      const wingD = 3.35;
-      const wingZ = 4.245 - 0.5 + wingD / 2;
-      const wing = createDetailedHouse(4.33, wingD, 2.7, 1.5, {
+      const wingD = 3.5;
+      const wingZ = 4.245 - 0.65 + wingD / 2;
+      const wing = createDetailedHouse(4.5, wingD, 2.75, 1.35, {
         name: "Seitenflügel",
         brick: true,
+        frontWalls: true,
+        roofStyle: "lean",
         roofColor: roofCol,
-        roofOverhang: 0.12,
+        roofOverhang: 0.1,
         windows: [
           { x: 0, y: 1.45, z: wingD / 2 + 0.02, w: 0.9, h: 1.05, rotY: 0 },
-          { x: 4.33 / 2 + 0.02, y: 1.45, z: 0.2, w: 0.9, h: 1.05, rotY: 1.5708 }
+          { x: 4.5 / 2 + 0.02, y: 1.45, z: 0.15, w: 0.9, h: 1.05, rotY: 1.5708 }
         ]
       });
-      wing.position.set(4.05, 0, wingZ);
+      wing.position.set(3.55, 0, wingZ);
       g.add(wing);
-      g.add(boxWithMaterial(4.15, 2.7, 0.95, brick, 4.05, 0, 4.22, "Anschluss Flügel"));
-      g.add(box(4.35, 0.16, 1.15, 0x3d383c, 4.05, 2.7, 4.22, "Flügel-Anschlussdach"));
 
-      const anbau = createDetailedHouse(3.97, 6.45, 2.65, 1.4, {
+      const anbauD = 5.4;
+      const anbauZ = 4.245 - 0.65 + anbauD / 2;
+      const anbau = createDetailedHouse(4.15, anbauD, 2.7, 1.25, {
         name: "Anbau Hof",
         brick: true,
+        frontWalls: true,
+        roofStyle: "lean",
         roofColor: roofCol,
-        roofOverhang: 0.12
+        roofOverhang: 0.1
       });
-      anbau.position.set(-2.478, 0, 8.05);
+      anbau.position.set(-2.35, 0, anbauZ);
       g.add(anbau);
-      g.add(boxWithMaterial(3.75, 2.65, 0.95, brick, -2.478, 0, 4.52, "Anschluss Anbau"));
-      g.add(box(4.0, 0.16, 1.15, 0x3d383c, -2.478, 2.65, 4.52, "Anbau-Anschlussdach"));
+      g.add(boxWithMaterial(3.4, 2.7, 0.7, brick, 0.55, 0, 4.2, "Anschluss Hof"));
+      g.add(box(3.6, 0.14, 0.85, 0x3d383c, 0.55, 2.7, 4.2, "Hof-Anschlussdach"));
 
       return g;
     }
