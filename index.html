@@ -113,6 +113,7 @@
     button:hover { opacity: 0.9; }
     button:active { transform: scale(0.97); }
     button.secondary { background: #3d4a40; color: var(--ink); }
+    button.secondary.active { background: var(--accent); color: #1a1400; }
     .form-row { display: flex; align-items: center; gap: 6px; margin: 5px 0; }
     .form-row label { font-size: 11px; color: var(--muted); min-width: 55px; }
     .form-row input[type="text"], .form-row input[type="number"] {
@@ -166,6 +167,11 @@
       border-left: 5px solid transparent; border-right: 5px solid transparent;
       border-bottom: 16px solid #e74c3c;
     }
+    #compass-rose .o, #compass-rose .w {
+      position: absolute; top: 22px; font-size: 10px; font-weight: 700; color: #d8ddd8;
+    }
+    #compass-rose .o { right: 6px; }
+    #compass-rose .w { left: 6px; }
     
     @media (max-width: 700px) {
       #topbar { padding: 8px 12px 10px; }
@@ -182,7 +188,7 @@
   <div id="loading-overlay">Laden…</div>
   <div id="canvas-wrap"></div>
   <div id="compass" title="Norden (+Z)">
-    <div id="compass-rose"><div class="needle"></div><div class="n">N</div></div>
+    <div id="compass-rose"><div class="needle"></div><div class="n">N</div><div class="o">O</div><div class="w">W</div></div>
   </div>
   
   <!-- TOP BAR: Variants + Sun - always visible -->
@@ -248,6 +254,7 @@
         <button id="btn-reset" type="button">Zurücksetzen</button>
         <button id="btn-top" class="secondary" type="button">Aufsicht</button>
         <button id="btn-iso" class="secondary" type="button">3D</button>
+        <button id="btn-sat" class="secondary" type="button">Satellit</button>
       </div>
       <div id="sync-status">nur lokal</div>
     </div>
@@ -256,7 +263,7 @@
   <div id="status">Laden...</div>
   <footer>Baukasten entwickelt von Phillipp Zarindast</footer>
 
-  <script id="kit-data" type="application/json">{"meta":{"name":"Ashausener Str. 12, Stelle","description":"Flur 6, Flurstücke 121/1 (Bestand Wohnhaus) und 121/2 (Garten / Am Osterfeld). Geometrie aus Liegenschaftsgrafik 1:500 (LGLN, 28.01.2026) und B-Plan Osterfeld West, Neufassung 1980.","address":"Ashausener Straße 12, 21435 Stelle","units":"meters","version":"2.5.0","crs":"local meters, +X Ost, +Z Nord, Ursprung = Flächenschwerpunkt 121/1+121/2","sources":["Liegenschaftsgrafik 1:500, Gemarkung Stelle, Flur 6, Flst. 121/2, LGLN Katasteramt Winsen, erstellt 28.01.2026, Zeichen 090-A-00084/2026","Bebauungsplan Osterfeld West, Neufassung 1980 (rechtskräftig 1982), Gemeinde Stelle, Flur 6 und 7","ALKIS amtliche Fläche: LGLN WFS NI ALKIS Vereinfacht, abgerufen 2026-08-29 (CC BY 4.0 LGLN)","ALKIS Gebäudegrundrisse (GebaeudeBauwerk) + DOP20, abgeglichen mit Satellitenbild Ashausener Str. 12, 2026-08-29"],"alkis":{"retrieved":"2026-08-29","service":"https://opendata.lgln.niedersachsen.de/doorman/noauth/alkis_wfs_einfach","gemarkung":"Stelle","flur":"6","flst_121_1":{"flaeche_m2":1497,"lage":"Ashausener Straße 12","nutzung":"Wohnbaufläche","aktualit":"2019-08-29"},"flst_121_2":{"flaeche_m2":702,"lage":"Am Osterfeld","nutzung":"Wohnbaufläche","aktualit":"2025-10-01"},"hinweis":"Die ~700 m² vom Telefon sind die amtliche Grundstücksfläche von 121/2 (702 m²), nicht die überbaubare Fläche innerhalb der Baugrenze."},"geoportal_hamburg":"Geo-Online Hamburg / HH-B-Plan-WMS decken Stelle nicht ab (WMS-Südgrenze ca. 53,394°N, Grundstück bei 53,384°N). Stelle liegt in Niedersachsen, Landkreis Harburg — Kataster über LGLN ALKIS, B-Plan über LK Harburg (Osterfeld West, 32_50).","bplan":{"name":"Osterfeld West, Neufassung 1980","gebiet":"WA I — Allgemeines Wohngebiet, max. 1 Vollgeschoss","grz":0.25,"gfz":0.25,"bauweise":"offen, nur Einzel- und Doppelhäuser","hinweis":"Baugrenze auf 121/2 rekonstruiert aus den Bemaßungen der WA-I-Zeile südlich Am Osterfeld: 7 m Straßenabstand, 3 m seitlich und hinten, angewandt auf die Katastergrenzen. Strichpunktlinie im Scan 1:1000 nicht zuverlässig vektorisierbar. Die gelbe Fläche (~293 m²) ist die überbaubare Fläche, nicht das Grundstück.","baugrenze_121_2":{"strasse_am_osterfeld_m":7,"seite_m":3,"hinten_m":3,"area_m2":293}}},"site":{"width":55,"depth":82,"area_m2":2199,"area_121_1_m2":1497,"area_121_2_m2":702,"origin":[0,0],"bbox":[-29,-44,27,40],"lat":53.384,"lon":10.111},"layers":{"SITE_BOUNDARY":{"color":"#2f4a28","dxfColor":3},"PARCEL":{"color":"#6a7a4a","dxfColor":4},"BESTAND":{"color":"#c9b8a0","dxfColor":30},"NACHBAR":{"color":"#b0a090","dxfColor":32},"BAUFENSTER":{"color":"#d4a017","dxfColor":2},"ABSTAND":{"color":"#8b6914","dxfColor":52},"STRASSE":{"color":"#6a6a6a","dxfColor":8},"OPTION_BUNGALOW":{"color":"#4a9f4a","dxfColor":82},"OPTION_EFH":{"color":"#3a7ca5","dxfColor":150},"OPTION_DOPPELHAUS":{"color":"#9f4a9f","dxfColor":200},"OPTION_ERSATZ":{"color":"#d97b3a","dxfColor":30},"GRUENFLAECHE":{"color":"#6b8f4e","dxfColor":92},"TECHNIK":{"color":"#7f8c8d","dxfColor":9},"BAEUME":{"color":"#3f6b3a","dxfColor":84},"PARKPLATZ":{"color":"#6a6a6a","dxfColor":8}},"parkplatz":{"enabled":true,"position":[52,4],"size":[30,52],"label":"Parkplatz"},"pieces":[{"id":"site_boundary","name":"Grundstücksgrenze 121/1 + 121/2","layer":"SITE_BOUNDARY","type":"polygon","draggable":false,"vertices":[[-28.388,1.835],[-19.622,7.371],[-14.833,20.443],[-8.132,38.747],[26.54,26.268],[19.873,7.937],[15.096,-5.184],[13.482,-9.631],[8.082,-24.455],[1.399,-42.818],[-13.494,-20.491]],"height":0},{"id":"parcel_121_2","name":"Flurstück 121/2","label":"Grundstück 121/2 · 702 m² ALKIS · Am Osterfeld","layer":"PARCEL","type":"polygon","draggable":false,"vertices":[[-14.833,20.443],[-8.132,38.747],[26.54,26.268],[19.873,7.937]],"height":0.04,"fillOpacity":0.28,"color":"#c4b45a"},{"id":"baufenster","name":"Baugrenze 121/2","label":"Baugrenze · 293 m² (nicht die 702 m² Grundstücksfläche)","layer":"BAUFENSTER","type":"polygon","draggable":false,"vertices":[[-10.979,22.245],[-7.716,31.158],[21.311,20.711],[18.081,11.77]],"height":0.1,"fillOpacity":0.25},{"id":"strasse_osterfeld","name":"Am Osterfeld","label":"Am Osterfeld","layer":"STRASSE","type":"polygon","draggable":false,"vertices":[[-8.132,38.747],[26.54,26.268],[28.946,32.841],[-5.725,45.321]],"height":0.02,"color":"#6a6a6a"},{"id":"strasse_ashausen","name":"Ashausener Straße","label":"Ashausener Straße","layer":"STRASSE","type":"polygon","draggable":false,"vertices":[[1.399,-42.818],[-13.494,-20.491],[-28.388,1.835],[-36.2,-3.4],[-21.3,-25.7],[-6.4,-48.0]],"height":0.02,"color":"#6a6a6a"},{"id":"bestand_wohnhaus","name":"Bestand: Wohnhaus Nr. 12","label":"Wohnhaus 12 · Klinker · Walmdach","layer":"BESTAND","type":"box","draggable":false,"position":[-7.56,-8.56],"size":[11.56,8.49,8.5],"rotation":0.982,"wallHeight":5.0,"roofHeight":3.6,"detailed":true,"brick":true,"roofStyle":"hip","roofColor":"#3d383c","houseNumber":"12","erker":{"w":3.4,"d":1.15,"h":2.45},"dormer":{"w":3.6,"d":1.5,"h":1.7},"windows":[{"x":2.75,"y":1.75,"z":-4.3,"w":1.25,"h":1.4,"rotY":3.1416},{"x":5.85,"y":1.85,"z":-1.5,"w":1.15,"h":1.35,"rotY":1.5708},{"x":5.85,"y":1.85,"z":1.6,"w":1.15,"h":1.35,"rotY":1.5708}],"door":{"x":5.85,"y":1.1,"z":0.2,"w":1.05,"h":2.15,"rotY":1.5708}},{"id":"bestand_wohnhaus_fluegel","name":"Bestand: Wohnhaus Seitenflügel","label":"Seitenflügel EG","layer":"BESTAND","type":"box","draggable":false,"position":[-2.14,-9.81],"size":[4.33,6.54,4.4],"rotation":0.982,"wallHeight":2.7,"roofHeight":1.7,"detailed":true,"brick":true,"roofColor":"#3d383c","windows":[{"x":0.0,"y":1.45,"z":-3.33,"w":0.9,"h":1.05,"rotY":3.1416}]},{"id":"bestand_wohnhaus_anbau","name":"Bestand: Wohnhaus Anbau Hof","label":"Anbau am Hof","layer":"BESTAND","type":"box","draggable":false,"position":[-0.78,-0.34],"size":[3.97,6.45,4.2],"rotation":0.982,"wallHeight":2.65,"roofHeight":1.55,"detailed":true,"brick":true,"roofColor":"#3d383c"},{"id":"zufahrt_12","name":"Zufahrt / Hof Nr. 12","label":"Hof / Stellplatz","layer":"STRASSE","type":"polygon","draggable":false,"vertices":[[1.54,-9.95],[2.93,-0.25],[6.84,4.07],[10.05,-1.8],[8.5,-6.2]],"height":0.03,"color":"#9a8a72"},{"id":"zufahrt_strasse","name":"Zufahrt Ashausener Straße","label":"Zufahrt","layer":"STRASSE","type":"polygon","draggable":false,"vertices":[[-14.3,-6.1],[-12.3,-4.8],[-10.0,-8.2],[-16.8,-10.4],[-18.2,-8.0]],"height":0.03,"color":"#7a5a48"},{"id":"bestand_garage","name":"Bestand: Garage","label":"Garage · weißes Tor","layer":"BESTAND","type":"box","draggable":false,"position":[13.24,2.06],"size":[9.48,3.29,3.5],"rotation":-1.212,"wallHeight":2.45,"roofHeight":1.45,"detailed":true,"brick":true,"roofColor":"#3d383c","garageDoor":{"w":2.45,"h":2.05,"face":"-x"}},{"id":"bestand_neben_ost","name":"Bestand: Werkstatt L-Flügel","label":"Werkstatt · L-Flügel","layer":"BESTAND","type":"box","draggable":false,"position":[10.09,5.53],"size":[5.07,5.0,3.3],"rotation":0.356,"wallHeight":2.4,"roofHeight":1.25,"detailed":true,"brick":true,"roofColor":"#3d383c","openBay":{"w":3.4,"h":2.15}},{"id":"nachbar_7","name":"Nachbar: Am Osterfeld 7","label":"Nr. 7","layer":"NACHBAR","type":"box","draggable":false,"position":[35.46,7.78],"size":[14.23,9.76,7.5],"rotation":1.914,"color":"#b8a898"},{"id":"nachbar_14","name":"Nachbar: Ashausener Str. 14","label":"Nr. 14","layer":"NACHBAR","type":"box","draggable":false,"position":[13.36,-36.25],"size":[8.96,7.9,7.0],"rotation":0.955,"color":"#b8a898"},{"id":"nachbar_1","name":"Nachbar: Am Osterfeld 1","label":"Nr. 1","layer":"NACHBAR","type":"box","draggable":false,"position":[-37.36,36.41],"size":[10.48,10.09,7.0],"rotation":0.35,"color":"#b8a898"},{"id":"option_bungalow","name":"Option 1: Seniorengerechter Bungalow","label":"Bungalow 18×9 m, 1 VG (162 m², GRZ 0,23)","layer":"OPTION_BUNGALOW","type":"box","draggable":true,"position":[48,22],"size":[18,9,3.5],"rotation":0.346,"color":"#4a9f4a","parked":true},{"id":"option_efh","name":"Option 2: Kompaktes EFH mit Dachgeschoss","label":"EFH 10×8,5 m, 1 VG + DG (85 m² Grund)","layer":"OPTION_EFH","type":"box","draggable":true,"position":[64,22],"size":[10,8.5,7.2],"rotation":0.346,"color":"#3a7ca5","parked":true},{"id":"option_doppelhaus","name":"Option 3: Doppelhaus","label":"Doppelhaus 16×9 m, 1 VG + DG (144 m² Grund)","layer":"OPTION_DOPPELHAUS","type":"box","draggable":true,"position":[48,4],"size":[16,9,7.5],"rotation":0.346,"color":"#9f4a9f","parked":true},{"id":"option_ersatz","name":"Option 4: Ersatzneubau anstelle Nr. 12","label":"Ersatzneubau 12×10 m auf 121/1","layer":"OPTION_ERSATZ","type":"box","draggable":true,"position":[48,-16],"size":[12,10,7.2],"color":"#d97b3a","parked":true},{"id":"pv_feld","name":"PV-Anlage","label":"PV-Feld","layer":"TECHNIK","type":"box","draggable":true,"position":[40,-8],"size":[8,5,0.5],"color":"#1a3a6b","parked":true,"isPV":true},{"id":"zisterne","name":"Zisterne / Regenwasser","label":"Zisterne","layer":"TECHNIK","type":"cylinder","draggable":true,"position":[40,-18],"radius":1.5,"height":2.4,"color":"#7f8c8d","parked":true},{"id":"gruenflaeche_1","name":"Grünfläche / Bepflanzung","label":"Grünfläche","layer":"GRUENFLAECHE","type":"polygon","draggable":true,"vertices":[[0,0],[6,0],[6,4],[0,4]],"position":[40,-2],"height":0.3,"color":"#6b8f4e","parked":true},{"id":"baum_01","name":"Bestandsbaum Nord 1","layer":"BAEUME","type":"tree","draggable":false,"position":[-6.0,36.0],"radius":2.4,"height":8.0},{"id":"baum_02","name":"Bestandsbaum Nord 2","layer":"BAEUME","type":"tree","draggable":false,"position":[4.0,32.5],"radius":2.2,"height":7.5},{"id":"baum_03","name":"Bestandsbaum Nord 3","layer":"BAEUME","type":"tree","draggable":false,"position":[16.0,28.0],"radius":2.0,"height":7.0},{"id":"baum_04","name":"Bestandsbaum West","layer":"BAEUME","type":"tree","draggable":false,"position":[-16.5,16.0],"radius":2.6,"height":8.5},{"id":"baum_05","name":"Bestandsbaum am Haus","layer":"BAEUME","type":"tree","draggable":false,"position":[-14.0,-4.0],"radius":2.3,"height":7.8},{"id":"baum_07","name":"Lebensbaum an der Garage","layer":"BAEUME","type":"tree","draggable":false,"position":[6.8,6.4],"radius":1.4,"height":6.5},{"id":"baum_08","name":"Lebensbaum am Hof","layer":"BAEUME","type":"tree","draggable":false,"position":[5.4,3.1],"radius":1.2,"height":6.2},{"id":"baum_09","name":"Baum rechts vom Haus","layer":"BAEUME","type":"tree","draggable":false,"position":[-3.2,-15.4],"radius":1.1,"height":7.4},{"id":"baum_06","name":"Bestandsbaum Süd","layer":"BAEUME","type":"tree","draggable":false,"position":[-10.0,-22.0],"radius":2.1,"height":7.2}]}</script>
+  <script id="kit-data" type="application/json">{"meta":{"name":"Ashausener Str. 12, Stelle","description":"Flur 6, Flurstücke 121/1 (Bestand Wohnhaus) und 121/2 (Garten / Am Osterfeld). Geometrie aus Liegenschaftsgrafik 1:500 (LGLN, 28.01.2026) und B-Plan Osterfeld West, Neufassung 1980.","address":"Ashausener Straße 12, 21435 Stelle","units":"meters","version":"2.6.0","crs":"local meters, +X Ost, +Z Nord, Ursprung = Flächenschwerpunkt 121/1+121/2","sources":["Liegenschaftsgrafik 1:500, Gemarkung Stelle, Flur 6, Flst. 121/2, LGLN Katasteramt Winsen, erstellt 28.01.2026, Zeichen 090-A-00084/2026","Bebauungsplan Osterfeld West, Neufassung 1980 (rechtskräftig 1982), Gemeinde Stelle, Flur 6 und 7","ALKIS amtliche Fläche: LGLN WFS NI ALKIS Vereinfacht, abgerufen 2026-08-29 (CC BY 4.0 LGLN)","ALKIS Gebäudegrundrisse (GebaeudeBauwerk) + DOP20, abgeglichen mit Satellitenbild Ashausener Str. 12, 2026-08-29","LGLN DOP20 WMS ni_dop20, EPSG:25832, 2026-08-29 (satellit.jpg)"],"alkis":{"retrieved":"2026-08-29","service":"https://opendata.lgln.niedersachsen.de/doorman/noauth/alkis_wfs_einfach","gemarkung":"Stelle","flur":"6","flst_121_1":{"flaeche_m2":1497,"lage":"Ashausener Straße 12","nutzung":"Wohnbaufläche","aktualit":"2019-08-29"},"flst_121_2":{"flaeche_m2":702,"lage":"Am Osterfeld","nutzung":"Wohnbaufläche","aktualit":"2025-10-01"},"hinweis":"Die ~700 m² vom Telefon sind die amtliche Grundstücksfläche von 121/2 (702 m²), nicht die überbaubare Fläche innerhalb der Baugrenze."},"geoportal_hamburg":"Geo-Online Hamburg / HH-B-Plan-WMS decken Stelle nicht ab (WMS-Südgrenze ca. 53,394°N, Grundstück bei 53,384°N). Stelle liegt in Niedersachsen, Landkreis Harburg — Kataster über LGLN ALKIS, B-Plan über LK Harburg (Osterfeld West, 32_50).","bplan":{"name":"Osterfeld West, Neufassung 1980","gebiet":"WA I — Allgemeines Wohngebiet, max. 1 Vollgeschoss","grz":0.25,"gfz":0.25,"bauweise":"offen, nur Einzel- und Doppelhäuser","hinweis":"Baugrenze auf 121/2 rekonstruiert aus den Bemaßungen der WA-I-Zeile südlich Am Osterfeld: 7 m Straßenabstand, 3 m seitlich und hinten, angewandt auf die Katastergrenzen. Strichpunktlinie im Scan 1:1000 nicht zuverlässig vektorisierbar. Die gelbe Fläche (~293 m²) ist die überbaubare Fläche, nicht das Grundstück.","baugrenze_121_2":{"strasse_am_osterfeld_m":7,"seite_m":3,"hinten_m":3,"area_m2":293}}},"site":{"width":55,"depth":82,"area_m2":2199,"area_121_1_m2":1497,"area_121_2_m2":702,"origin":[0,0],"bbox":[-29,-44,27,40],"lat":53.384,"lon":10.111,"e0":574305.224,"n0":5914743.9615,"crs_epsg":25832},"satellite":{"url":"satellit.jpg","size":[80,100],"center":[0,0],"source":"LGLN DOP20 WMS (ni_dop20), EPSG:25832, BBOX 574265.224 5914693.9615 574345.224 5914793.9615, 2026-08-29"},"layers":{"SITE_BOUNDARY":{"color":"#2f4a28","dxfColor":3},"PARCEL":{"color":"#6a7a4a","dxfColor":4},"BESTAND":{"color":"#c9b8a0","dxfColor":30},"NACHBAR":{"color":"#b0a090","dxfColor":32},"BAUFENSTER":{"color":"#d4a017","dxfColor":2},"ABSTAND":{"color":"#8b6914","dxfColor":52},"STRASSE":{"color":"#6a6a6a","dxfColor":8},"OPTION_BUNGALOW":{"color":"#4a9f4a","dxfColor":82},"OPTION_EFH":{"color":"#3a7ca5","dxfColor":150},"OPTION_DOPPELHAUS":{"color":"#9f4a9f","dxfColor":200},"OPTION_ERSATZ":{"color":"#d97b3a","dxfColor":30},"GRUENFLAECHE":{"color":"#6b8f4e","dxfColor":92},"TECHNIK":{"color":"#7f8c8d","dxfColor":9},"BAEUME":{"color":"#3f6b3a","dxfColor":84},"PARKPLATZ":{"color":"#6a6a6a","dxfColor":8}},"parkplatz":{"enabled":true,"position":[52,4],"size":[30,52],"label":"Parkplatz"},"pieces":[{"id":"site_boundary","name":"Grundstücksgrenze 121/1 + 121/2","layer":"SITE_BOUNDARY","type":"polygon","draggable":false,"vertices":[[-28.388,1.835],[-19.622,7.371],[-14.833,20.443],[-8.132,38.747],[26.54,26.268],[19.873,7.937],[15.096,-5.184],[13.482,-9.631],[8.082,-24.455],[1.399,-42.818],[-13.494,-20.491]],"height":0},{"id":"parcel_121_2","name":"Flurstück 121/2","label":"Grundstück 121/2 · 702 m² ALKIS · Am Osterfeld","layer":"PARCEL","type":"polygon","draggable":false,"vertices":[[-14.833,20.443],[-8.132,38.747],[26.54,26.268],[19.873,7.937]],"height":0.04,"fillOpacity":0.28,"color":"#c4b45a"},{"id":"baufenster","name":"Baugrenze 121/2","label":"Baugrenze · 293 m² (nicht die 702 m² Grundstücksfläche)","layer":"BAUFENSTER","type":"polygon","draggable":false,"vertices":[[-10.979,22.245],[-7.716,31.158],[21.311,20.711],[18.081,11.77]],"height":0.1,"fillOpacity":0.25},{"id":"strasse_osterfeld","name":"Am Osterfeld","label":"Am Osterfeld","layer":"STRASSE","type":"polygon","draggable":false,"vertices":[[-8.132,38.747],[26.54,26.268],[28.946,32.841],[-5.725,45.321]],"height":0.02,"color":"#6a6a6a"},{"id":"strasse_ashausen","name":"Ashausener Straße","label":"Ashausener Straße","layer":"STRASSE","type":"polygon","draggable":false,"vertices":[[1.399,-42.818],[-13.494,-20.491],[-28.388,1.835],[-36.2,-3.4],[-21.3,-25.7],[-6.4,-48.0]],"height":0.02,"color":"#6a6a6a"},{"id":"bestand_wohnhaus","name":"Bestand: Wohnhaus Nr. 12","label":"Wohnhaus 12 · Klinker · Walmdach","layer":"BESTAND","type":"box","draggable":false,"position":[-6.75,-7.03],"size":[11.56,8.49,8.5],"rotation":0.982,"wallHeight":5.0,"roofHeight":3.6,"detailed":true,"brick":true,"roofStyle":"hip","roofColor":"#3d383c","houseNumber":"12","erker":{"w":3.4,"d":1.15,"h":2.45},"dormer":{"w":3.6,"d":1.5,"h":1.7},"windows":[{"x":2.75,"y":1.75,"z":-4.3,"w":1.25,"h":1.4,"rotY":3.1416},{"x":5.85,"y":1.85,"z":-1.5,"w":1.15,"h":1.35,"rotY":1.5708},{"x":5.85,"y":1.85,"z":1.6,"w":1.15,"h":1.35,"rotY":1.5708}],"door":{"x":5.85,"y":1.1,"z":0.2,"w":1.05,"h":2.15,"rotY":1.5708}},{"id":"bestand_wohnhaus_fluegel","name":"Bestand: Wohnhaus Seitenflügel","label":"Seitenflügel EG","layer":"BESTAND","type":"box","draggable":false,"position":[-1.33,-8.28],"size":[4.33,6.54,4.4],"rotation":0.982,"wallHeight":2.7,"roofHeight":1.7,"detailed":true,"brick":true,"roofColor":"#3d383c","windows":[{"x":0.0,"y":1.45,"z":-3.33,"w":0.9,"h":1.05,"rotY":3.1416}]},{"id":"bestand_wohnhaus_anbau","name":"Bestand: Wohnhaus Anbau Hof","label":"Anbau am Hof","layer":"BESTAND","type":"box","draggable":false,"position":[-0.7,-0.01],"size":[3.97,6.45,4.2],"rotation":0.982,"wallHeight":2.65,"roofHeight":1.55,"detailed":true,"brick":true,"roofColor":"#3d383c"},{"id":"zufahrt_12","name":"Zufahrt / Hof Nr. 12","label":"Hof / Stellplatz","layer":"STRASSE","type":"polygon","draggable":false,"vertices":[[1.54,-9.95],[2.93,-0.25],[6.84,4.07],[10.05,-1.8],[8.5,-6.2]],"height":0.03,"color":"#9a8a72"},{"id":"zufahrt_strasse","name":"Zufahrt Ashausener Straße","label":"Zufahrt","layer":"STRASSE","type":"polygon","draggable":false,"vertices":[[-14.3,-6.1],[-12.3,-4.8],[-10.0,-8.2],[-16.8,-10.4],[-18.2,-8.0]],"height":0.03,"color":"#7a5a48"},{"id":"bestand_garage","name":"Bestand: Garage","label":"Garage · weißes Tor","layer":"BESTAND","type":"box","draggable":false,"position":[12.89,3.2],"size":[9.48,3.29,3.5],"rotation":-1.212,"wallHeight":2.45,"roofHeight":1.45,"detailed":true,"brick":true,"roofColor":"#3d383c","garageDoor":{"w":2.45,"h":2.05,"face":"-x"}},{"id":"bestand_neben_ost","name":"Bestand: Werkstatt L-Flügel","label":"Werkstatt · L-Flügel","layer":"BESTAND","type":"box","draggable":false,"position":[10.03,5.77],"size":[5.07,5.0,3.3],"rotation":0.356,"wallHeight":2.4,"roofHeight":1.25,"detailed":true,"brick":true,"roofColor":"#3d383c","openBay":{"w":3.4,"h":2.15}},{"id":"nachbar_7","name":"Nachbar: Am Osterfeld 7","label":"Nr. 7","layer":"NACHBAR","type":"box","draggable":false,"position":[35.46,7.78],"size":[14.23,9.76,7.5],"rotation":1.914,"color":"#b8a898"},{"id":"nachbar_14","name":"Nachbar: Ashausener Str. 14","label":"Nr. 14","layer":"NACHBAR","type":"box","draggable":false,"position":[13.36,-36.25],"size":[8.96,7.9,7.0],"rotation":0.955,"color":"#b8a898"},{"id":"nachbar_1","name":"Nachbar: Am Osterfeld 1","label":"Nr. 1","layer":"NACHBAR","type":"box","draggable":false,"position":[-37.36,36.41],"size":[10.48,10.09,7.0],"rotation":0.35,"color":"#b8a898"},{"id":"option_bungalow","name":"Option 1: Seniorengerechter Bungalow","label":"Bungalow 18×9 m, 1 VG (162 m², GRZ 0,23)","layer":"OPTION_BUNGALOW","type":"box","draggable":true,"position":[48,22],"size":[18,9,3.5],"rotation":0.346,"color":"#4a9f4a","parked":true},{"id":"option_efh","name":"Option 2: Kompaktes EFH mit Dachgeschoss","label":"EFH 10×8,5 m, 1 VG + DG (85 m² Grund)","layer":"OPTION_EFH","type":"box","draggable":true,"position":[64,22],"size":[10,8.5,7.2],"rotation":0.346,"color":"#3a7ca5","parked":true},{"id":"option_doppelhaus","name":"Option 3: Doppelhaus","label":"Doppelhaus 16×9 m, 1 VG + DG (144 m² Grund)","layer":"OPTION_DOPPELHAUS","type":"box","draggable":true,"position":[48,4],"size":[16,9,7.5],"rotation":0.346,"color":"#9f4a9f","parked":true},{"id":"option_ersatz","name":"Option 4: Ersatzneubau anstelle Nr. 12","label":"Ersatzneubau 12×10 m auf 121/1","layer":"OPTION_ERSATZ","type":"box","draggable":true,"position":[48,-16],"size":[12,10,7.2],"color":"#d97b3a","parked":true},{"id":"pv_feld","name":"PV-Anlage","label":"PV-Feld","layer":"TECHNIK","type":"box","draggable":true,"position":[40,-8],"size":[8,5,0.5],"color":"#1a3a6b","parked":true,"isPV":true},{"id":"zisterne","name":"Zisterne / Regenwasser","label":"Zisterne","layer":"TECHNIK","type":"cylinder","draggable":true,"position":[40,-18],"radius":1.5,"height":2.4,"color":"#7f8c8d","parked":true},{"id":"gruenflaeche_1","name":"Grünfläche / Bepflanzung","label":"Grünfläche","layer":"GRUENFLAECHE","type":"polygon","draggable":true,"vertices":[[0,0],[6,0],[6,4],[0,4]],"position":[40,-2],"height":0.3,"color":"#6b8f4e","parked":true},{"id":"baum_01","name":"Bestandsbaum Nord 1","layer":"BAEUME","type":"tree","draggable":false,"position":[-6.0,36.0],"radius":2.4,"height":8.0},{"id":"baum_02","name":"Bestandsbaum Nord 2","layer":"BAEUME","type":"tree","draggable":false,"position":[4.0,32.5],"radius":2.2,"height":7.5},{"id":"baum_03","name":"Bestandsbaum Nord 3","layer":"BAEUME","type":"tree","draggable":false,"position":[16.0,28.0],"radius":2.0,"height":7.0},{"id":"baum_04","name":"Bestandsbaum West","layer":"BAEUME","type":"tree","draggable":false,"position":[-16.5,16.0],"radius":2.6,"height":8.5},{"id":"baum_05","name":"Bestandsbaum am Haus","layer":"BAEUME","type":"tree","draggable":false,"position":[-14.0,-4.0],"radius":2.3,"height":7.8},{"id":"baum_07","name":"Lebensbaum an der Garage","layer":"BAEUME","type":"tree","draggable":false,"position":[6.8,6.4],"radius":1.4,"height":6.5},{"id":"baum_08","name":"Lebensbaum am Hof","layer":"BAEUME","type":"tree","draggable":false,"position":[5.4,3.1],"radius":1.2,"height":6.2},{"id":"baum_09","name":"Baum rechts vom Haus","layer":"BAEUME","type":"tree","draggable":false,"position":[-3.2,-15.4],"radius":1.1,"height":7.4},{"id":"baum_06","name":"Bestandsbaum Süd","layer":"BAEUME","type":"tree","draggable":false,"position":[-10.0,-22.0],"radius":2.1,"height":7.2}]}</script>
 
   <script type="importmap">
   {
@@ -292,10 +299,11 @@
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x8aa3b0);
-    scene.fog = new THREE.Fog(0x8aa3b0, 100, 250);
+    scene.fog = new THREE.Fog(0x8aa3b0, 220, 420);
 
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
-    camera.position.set(-20.8, 9, -17.5);
+    camera.up.set(0, 1, 0);
+    camera.position.set(0, 155, -0.2);
     window.__camera = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -315,8 +323,11 @@
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.target.set(-7.56, 3.2, -8.56);
-    controls.maxPolarAngle = Math.PI * 0.48;
+    controls.target.set(0, 0, 0);
+    controls.minAzimuthAngle = Math.PI;
+    controls.maxAzimuthAngle = Math.PI;
+    controls.minPolarAngle = 0.04;
+    controls.maxPolarAngle = 0.7;
     controls.minDistance = 6;
     controls.maxDistance = 220;
     window.__controls = controls;
@@ -825,7 +836,7 @@
       bungalow: { x: 5.17, z: 21.47 },
       efh: { x: 5.17, z: 21.47 },
       doppelhaus: { x: 5.17, z: 21.47 },
-      ersatz: { x: -7.56, z: -8.56 }
+      ersatz: { x: -6.75, z: -7.03 }
     };
 
     function registerKit(group, piece) {
@@ -873,6 +884,7 @@
       const lawn = polygon(SITE_POLY, 0, "#6b8f4e", 1);
       lawn.name = "Rasen";
       context.add(lawn);
+      addSatelliteLayer(data, lawn);
 
       if (data.parkplatz && data.parkplatz.enabled) addParkplatz(data.parkplatz);
       addFence(SITE_POLY);
@@ -1054,21 +1066,63 @@
     function addNorthArrow() {
       const north = new THREE.Group();
       north.name = "Nordpfeil";
-      const shaft = box(0.28, 0.12, 6.5, 0x1a1a1a, 0, 0.12, 0);
-      const head = new THREE.Mesh(new THREE.ConeGeometry(0.7, 1.6, 8), mat(0xc0392b));
+      const shaft = box(0.35, 0.08, 8.0, 0x1a1a1a, 0, 0.08, 0);
+      const head = new THREE.Mesh(new THREE.ConeGeometry(0.85, 2.0, 8), mat(0xc0392b));
       head.rotation.x = Math.PI / 2;
-      head.position.set(0, 0.2, 3.8);
+      head.position.set(0, 0.18, 5.0);
       north.add(shaft, head);
-      north.position.set(0, 0, 40);
-      north.add(makeLabel("Norden", 1.6));
+      north.position.set(0, 0.02, 46);
+      north.add(makeLabel("Norden (+Z)", 1.8));
       context.add(north);
+    }
+
+    let satelliteMesh = null;
+    let lawnMesh = null;
+    let satelliteOn = true;
+
+    function addSatelliteLayer(data, lawn) {
+      lawnMesh = lawn;
+      const sat = data.satellite;
+      if (!sat || !sat.url) return;
+      const [w, d] = sat.size;
+      const [cx, cz] = sat.center || [0, 0];
+      const loader = new THREE.TextureLoader();
+      const tex = loader.load(sat.url, () => { tex.needsUpdate = true; });
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.flipY = true;
+      const mesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(w, d),
+        new THREE.MeshBasicMaterial({ map: tex, depthWrite: false, side: THREE.DoubleSide })
+      );
+      mesh.rotation.x = Math.PI / 2;
+      mesh.position.set(cx, 0.008, cz);
+      mesh.name = "Satellit_DOP20";
+      mesh.renderOrder = -1;
+      satelliteMesh = mesh;
+      context.add(mesh);
+      setSatelliteVisible(true);
+    }
+
+    function setSatelliteVisible(on) {
+      satelliteOn = on;
+      if (satelliteMesh) satelliteMesh.visible = on;
+      if (lawnMesh) lawnMesh.visible = !on;
+      const ring = context.getObjectByName("Umgebung");
+      if (ring) ring.visible = !on;
+      context.traverse((obj) => {
+        const n = obj.name || "";
+        if (n === "Am Osterfeld" || n === "Ashausener Straße") obj.visible = !on;
+      });
+      scene.fog = on ? null : new THREE.Fog(0x8aa3b0, 220, 420);
+      const btn = document.getElementById("btn-sat");
+      if (btn) btn.classList.toggle("active", on);
     }
 
     function addStreetHedge() {
       const hedgeMat = mat(0x3d6b38, { roughness: 0.95 });
       const segs = [
-        { pos: [-16.2, -7.4], size: [8.5, 1.05, 0.55], rot: 0.982 },
-        { pos: [-11.4, -12.8], size: [6.5, 1.05, 0.55], rot: 0.982 }
+        { pos: [-15.4, -5.9], size: [8.5, 1.05, 0.55], rot: 0.982 },
+        { pos: [-10.6, -11.3], size: [6.5, 1.05, 0.55], rot: 0.982 }
       ];
       for (const s of segs) {
         const m = new THREE.Mesh(new THREE.BoxGeometry(s.size[0], s.size[1], s.size[2]), hedgeMat);
@@ -1357,17 +1411,50 @@
       document.getElementById("new-height").value = "";
     }
 
-    document.getElementById("btn-reset").addEventListener("click", resetKit);
-    document.getElementById("btn-top").addEventListener("click", () => {
-      camera.position.set(0, 155, -28);
-      controls.target.set(0, 0, 4);
+    let northUpMode = true;
+
+    function applyProjection() {
+      camera.updateProjectionMatrix();
+      if (northUpMode) {
+        camera.projectionMatrix.elements[0] *= -1;
+        camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+      }
+    }
+
+    function applyNorthUpView() {
+      northUpMode = true;
+      camera.up.set(0, 1, 0);
+      controls.minAzimuthAngle = Math.PI;
+      controls.maxAzimuthAngle = Math.PI;
+      controls.minPolarAngle = 0.04;
+      controls.maxPolarAngle = 0.7;
+      camera.position.set(0, 155, -0.2);
+      controls.target.set(0, 0, 0);
+      applyProjection();
       controls.update();
-    });
-    document.getElementById("btn-iso").addEventListener("click", () => {
+      document.getElementById("btn-top").classList.add("active");
+      document.getElementById("btn-iso").classList.remove("active");
+    }
+
+    function applyStreetView() {
+      northUpMode = false;
+      camera.up.set(0, 1, 0);
+      controls.minAzimuthAngle = -Infinity;
+      controls.maxAzimuthAngle = Infinity;
+      controls.minPolarAngle = 0;
+      controls.maxPolarAngle = Math.PI * 0.49;
       camera.position.set(-20.8, 9, -17.5);
-      controls.target.set(-7.56, 3.2, -8.56);
+      controls.target.set(-6.75, 3.2, -7.03);
+      applyProjection();
       controls.update();
-    });
+      document.getElementById("btn-iso").classList.add("active");
+      document.getElementById("btn-top").classList.remove("active");
+    }
+
+    document.getElementById("btn-reset").addEventListener("click", resetKit);
+    document.getElementById("btn-top").addEventListener("click", applyNorthUpView);
+    document.getElementById("btn-iso").addEventListener("click", applyStreetView);
+    document.getElementById("btn-sat").addEventListener("click", () => setSatelliteVisible(!satelliteOn));
 
     let suncalcLoaded = false;
     function updateSun() {
@@ -1427,7 +1514,7 @@
     function resize() {
       const w = wrap.clientWidth, h = wrap.clientHeight;
       camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+      applyProjection();
       renderer.setSize(w, h);
       labelRenderer.setSize(w, h);
     }
@@ -1435,11 +1522,13 @@
     resize();
 
     const compassRose = document.getElementById("compass-rose");
+    const _northA = new THREE.Vector3();
+    const _northB = new THREE.Vector3();
     function updateCompass() {
-      const dx = controls.target.x - camera.position.x;
-      const dz = controls.target.z - camera.position.z;
-      const viewYaw = Math.atan2(dx, dz);
-      compassRose.style.transform = `rotate(${-viewYaw}rad)`;
+      _northA.copy(controls.target).project(camera);
+      _northB.set(0, 0, 25).add(controls.target).project(camera);
+      const angle = Math.atan2(_northB.x - _northA.x, _northB.y - _northA.y);
+      compassRose.style.transform = `rotate(${angle}rad)`;
     }
 
     function tick() {
@@ -1455,7 +1544,8 @@
       const data = JSON.parse(dataEl.textContent);
       buildScene(data);
       
-      statusEl.textContent = "Bereit — Bestand von der Ashausener Straße";
+      applyNorthUpView();
+      statusEl.textContent = "Bereit — Norden oben, Osten rechts, Satellit ein";
       
       tick();
       
