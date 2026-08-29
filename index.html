@@ -322,13 +322,12 @@
     controls.dampingFactor = 0.08;
     controls.target.set(2, 0, 6);
     controls.minPolarAngle = 0.05;
-    controls.maxPolarAngle = Math.PI * 0.48;
+    controls.maxPolarAngle = Math.PI * 0.45;
     controls.minDistance = 10;
     controls.maxDistance = 220;
     controls.minAzimuthAngle = Math.PI;
     controls.maxAzimuthAngle = Math.PI;
     controls.rotateSpeed = 0.55;
-    controls.maxPolarAngle = Math.PI * 0.45;
     window.__controls = controls;
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.62);
@@ -1548,10 +1547,8 @@
 
     function applyProjection() {
       camera.updateProjectionMatrix();
-      if (northUpMode) {
-        camera.projectionMatrix.elements[0] *= -1;
-        camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
-      }
+      camera.projectionMatrix.elements[0] *= -1;
+      camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
     }
 
     const MAP_POLAR = 0.36;
@@ -1594,7 +1591,6 @@
       if (viewPointerDown && !force && !camAnimating) return;
       northUpMode = wantMap;
       if (!camAnimating) setMapLock(wantMap);
-      applyProjection();
       applySceneChrome();
     }
 
@@ -1604,7 +1600,6 @@
       if (!asMap) {
         northUpMode = false;
         setMapLock(false);
-        applyProjection();
         applySceneChrome();
       }
       const p0 = camera.position.clone();
