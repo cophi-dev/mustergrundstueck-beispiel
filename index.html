@@ -323,11 +323,12 @@
     controls.target.set(2, 0, 6);
     controls.minPolarAngle = 0.05;
     controls.maxPolarAngle = Math.PI * 0.48;
-    controls.minDistance = 6;
+    controls.minDistance = 10;
     controls.maxDistance = 220;
     controls.minAzimuthAngle = Math.PI;
     controls.maxAzimuthAngle = Math.PI;
-    controls.rotateSpeed = 0.65;
+    controls.rotateSpeed = 0.55;
+    controls.maxPolarAngle = Math.PI * 0.45;
     window.__controls = controls;
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.62);
@@ -1560,6 +1561,14 @@
     const STREET_TARGET = new THREE.Vector3(-6.75, 3.2, -7.03);
     const _viewOffset = new THREE.Vector3();
     let camAnimating = false;
+    let viewPointerDown = false;
+
+    renderer.domElement.addEventListener("pointerdown", () => { viewPointerDown = true; });
+    window.addEventListener("pointerup", () => {
+      if (!viewPointerDown) return;
+      viewPointerDown = false;
+      syncViewFromPolar(true);
+    });
 
     function setMapLock(on) {
       if (on) {
@@ -1576,12 +1585,13 @@
       return _viewOffset.angleTo(camera.up);
     }
 
-    function syncViewFromPolar() {
+    function syncViewFromPolar(force) {
       const polar = currentPolar();
       const wantMap = polar < MAP_POLAR;
       document.getElementById("btn-top").classList.toggle("active", wantMap);
       document.getElementById("btn-iso").classList.toggle("active", !wantMap);
       if (wantMap === northUpMode) return;
+      if (viewPointerDown && !force && !camAnimating) return;
       northUpMode = wantMap;
       if (!camAnimating) setMapLock(wantMap);
       applyProjection();
