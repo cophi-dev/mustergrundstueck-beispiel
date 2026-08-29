@@ -22,9 +22,9 @@
     #topbar {
       position: absolute; top: 0; left: 0; right: 0; z-index: 10;
       display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-      background: linear-gradient(180deg, rgba(12,16,13,0.88) 0%, rgba(12,16,13,0.62) 70%, rgba(12,16,13,0) 100%);
+      background: linear-gradient(180deg, rgba(12,16,13,0.7) 0%, rgba(12,16,13,0.28) 58%, rgba(12,16,13,0) 100%);
       border-bottom: 0;
-      padding: 10px 16px 18px;
+      padding: 8px 14px 14px;
       pointer-events: none;
     }
     #topbar > * { pointer-events: auto; }
@@ -76,8 +76,8 @@
 
     .ui {
       position: absolute; left: 12px; bottom: 12px; z-index: 6;
-      background: var(--panel); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px; padding: 10px 12px; width: min(228px, calc(100vw - 24px));
+      background: rgba(16, 20, 17, 0.62); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 8px 10px; width: min(210px, calc(100vw - 24px));
       backdrop-filter: blur(12px);
     }
     .ui h2 { margin: 0 0 6px; font-size: 10px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
@@ -294,7 +294,7 @@
 
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
     camera.up.set(0, 1, 0);
-    camera.position.set(0, 128, -0.2);
+    camera.position.set(2, 108, 5.8);
     window.__camera = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -314,7 +314,7 @@
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.target.set(0, 0, 0);
+    controls.target.set(2, 0, 6);
     controls.minAzimuthAngle = Math.PI;
     controls.maxAzimuthAngle = Math.PI;
     controls.minPolarAngle = 0.04;
@@ -335,7 +335,11 @@
     sun.shadow.camera.bottom = -60;
     sun.shadow.bias = -0.0001;
     scene.add(sun);
-    scene.add(new THREE.HemisphereLight(0xb8d4e8, 0x4a5a3a, 0.25));
+    const hemi = new THREE.HemisphereLight(0xb8d4e8, 0x4a5a3a, 0.25);
+    scene.add(hemi);
+    const topFill = new THREE.DirectionalLight(0xfff6ea, 0.2);
+    topFill.position.set(8, 90, 12);
+    scene.add(topFill);
 
     let ydoc = null, yPositions = null, yCustomPieces = null, wsProvider = null;
     let isRemoteUpdate = false;
@@ -807,6 +811,9 @@
     treesGroup.name = "Baeume";
     treesGroup.userData.satHide = true;
     context.add(treesGroup);
+    const planLabels = new THREE.Group();
+    planLabels.name = "PlanLabels";
+    context.add(planLabels);
 
     const kit = new THREE.Group();
     kit.name = "Baukasten_verschiebbar";
@@ -924,7 +931,7 @@
           const labelGroup = new THREE.Group();
           labelGroup.position.set(centroid[0], 0, centroid[1]);
           labelGroup.add(makeLabel("Baugrenze", 0.5));
-          context.add(labelGroup);
+          planLabels.add(labelGroup);
           return;
         }
         
@@ -944,13 +951,6 @@
           const lineVerts = [...offsetVerts, offsetVerts[0]];
           const lineGeom = new THREE.BufferGeometry().setFromPoints(lineVerts.map(v => new THREE.Vector3(v[0], 0.07, v[1])));
           context.add(new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ color: 0xc4a030 })));
-          const centroid = offsetVerts.reduce((acc, v) => [acc[0] + v[0], acc[1] + v[1]], [0, 0]);
-          centroid[0] /= offsetVerts.length;
-          centroid[1] /= offsetVerts.length;
-          const labelGroup = new THREE.Group();
-          labelGroup.position.set(centroid[0], 0, centroid[1]);
-          labelGroup.add(makeLabel("121/2", 0.4));
-          context.add(labelGroup);
           return;
         }
 
@@ -1063,6 +1063,7 @@
     let satelliteMesh = null;
     let lawnMesh = null;
     let parcelFill = null;
+    let satUnderlay = null;
     let satelliteOn = true;
     let northUpMode = true;
 
@@ -1076,6 +1077,16 @@
       const tex = loader.load(sat.url, () => { tex.needsUpdate = true; });
       tex.colorSpace = THREE.SRGBColorSpace;
       tex.flipY = true;
+      const under = new THREE.Mesh(
+        new THREE.PlaneGeometry(240, 240),
+        new THREE.MeshBasicMaterial({ color: 0x3a4034, depthWrite: false })
+      );
+      under.rotation.x = -Math.PI / 2;
+      under.position.set(cx, -0.03, cz);
+      under.name = "Satellit_Rahmen";
+      under.renderOrder = -2;
+      satUnderlay = under;
+      context.add(under);
       const mesh = new THREE.Mesh(
         new THREE.PlaneGeometry(w, d),
         new THREE.MeshBasicMaterial({ map: tex, depthWrite: false, side: THREE.DoubleSide })
@@ -1093,21 +1104,29 @@
       if (satelliteOn) {
         scene.background = new THREE.Color(BG_SAT);
         scene.fog = null;
-        ambient.intensity = 0.62;
+        ambient.intensity = northUpMode ? 1.2 : 0.7;
+        hemi.intensity = northUpMode ? 0.55 : 0.3;
+        topFill.intensity = northUpMode ? 1.05 : 0.25;
       } else if (northUpMode) {
         scene.background = new THREE.Color(BG_PLAN);
         scene.fog = null;
-        ambient.intensity = 0.5;
+        ambient.intensity = 0.85;
+        hemi.intensity = 0.45;
+        topFill.intensity = 0.7;
       } else {
         scene.background = new THREE.Color(BG_3D);
         scene.fog = new THREE.Fog(BG_3D, 220, 420);
-        ambient.intensity = 0.4;
+        ambient.intensity = 0.42;
+        hemi.intensity = 0.25;
+        topFill.intensity = 0.12;
       }
+      planLabels.visible = northUpMode;
     }
 
     function setSatelliteVisible(on) {
       satelliteOn = on;
       if (satelliteMesh) satelliteMesh.visible = on;
+      if (satUnderlay) satUnderlay.visible = on;
       context.traverse((obj) => {
         if (obj.userData.satHide) obj.visible = !on;
       });
@@ -1450,8 +1469,8 @@
       controls.maxAzimuthAngle = Math.PI;
       controls.minPolarAngle = 0.04;
       controls.maxPolarAngle = 0.7;
-      camera.position.set(0, 128, -0.2);
-      controls.target.set(0, 0, 0);
+      camera.position.set(2, 108, 5.8);
+      controls.target.set(2, 0, 6);
       applyProjection();
       controls.update();
       applySceneChrome();
