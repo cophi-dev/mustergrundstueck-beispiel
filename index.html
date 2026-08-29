@@ -495,7 +495,8 @@
       return new THREE.MeshStandardMaterial({
         color, roughness: opts.roughness ?? 0.8, metalness: opts.metalness ?? 0.05,
         transparent: !!opts.opacity, opacity: opts.opacity ?? 1,
-        side: opts.doubleSide ? THREE.DoubleSide : THREE.FrontSide
+        // Immer beidseitig: X-Spiegelung der Projektion cullt sonst Vorderwände.
+        side: THREE.DoubleSide
       });
     }
 
@@ -545,7 +546,8 @@
       return new THREE.MeshStandardMaterial({
         map: texture,
         roughness: 0.9,
-        metalness: 0.0
+        metalness: 0.0,
+        side: THREE.DoubleSide
       });
     }
 
@@ -553,7 +555,8 @@
       return new THREE.MeshStandardMaterial({
         color,
         roughness: 0.95,
-        metalness: 0.0
+        metalness: 0.0,
+        side: THREE.DoubleSide
       });
     }
 
