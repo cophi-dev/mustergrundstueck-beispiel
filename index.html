@@ -815,7 +815,7 @@
     function createBestandWohnhaus12() {
       const roofCol = "#3d383c";
       const brick = matBrick(3.4, 1.4);
-      brick.side = THREE.FrontSide;
+      brick.side = THREE.DoubleSide;
       const g = new THREE.Group();
       const gfH = 2.75;
 
@@ -842,6 +842,7 @@
       for (let i = 1; i < gfVerts.length; i++) shape.lineTo(gfVerts[i][0], -gfVerts[i][1]);
       shape.closePath();
       const gfGeom = new THREE.ExtrudeGeometry(shape, { depth: gfH, bevelEnabled: false });
+      gfGeom.computeVertexNormals();
       const gf = new THREE.Mesh(gfGeom, brick);
       gf.rotation.x = -Math.PI / 2;
       gf.castShadow = true;
