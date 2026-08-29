@@ -167,6 +167,11 @@
       border-left: 5px solid transparent; border-right: 5px solid transparent;
       border-bottom: 16px solid #e74c3c;
     }
+    #compass-rose .o, #compass-rose .w {
+      position: absolute; top: 22px; font-size: 10px; font-weight: 700; color: #d8ddd8;
+    }
+    #compass-rose .o { right: 6px; }
+    #compass-rose .w { left: 6px; }
     
     @media (max-width: 700px) {
       #topbar { padding: 8px 12px 10px; }
@@ -183,7 +188,7 @@
   <div id="loading-overlay">Laden…</div>
   <div id="canvas-wrap"></div>
   <div id="compass" title="Norden (+Z)">
-    <div id="compass-rose"><div class="needle"></div><div class="n">N</div></div>
+    <div id="compass-rose"><div class="needle"></div><div class="n">N</div><div class="o">O</div><div class="w">W</div></div>
   </div>
   
   <!-- TOP BAR: Variants + Sun - always visible -->
@@ -1406,7 +1411,18 @@
       document.getElementById("new-height").value = "";
     }
 
+    let northUpMode = true;
+
+    function applyProjection() {
+      camera.updateProjectionMatrix();
+      if (northUpMode) {
+        camera.projectionMatrix.elements[0] *= -1;
+        camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+      }
+    }
+
     function applyNorthUpView() {
+      northUpMode = true;
       camera.up.set(0, 1, 0);
       controls.minAzimuthAngle = Math.PI;
       controls.maxAzimuthAngle = Math.PI;
@@ -1414,12 +1430,14 @@
       controls.maxPolarAngle = 0.7;
       camera.position.set(0, 155, -0.2);
       controls.target.set(0, 0, 0);
+      applyProjection();
       controls.update();
       document.getElementById("btn-top").classList.add("active");
       document.getElementById("btn-iso").classList.remove("active");
     }
 
     function applyStreetView() {
+      northUpMode = false;
       camera.up.set(0, 1, 0);
       controls.minAzimuthAngle = -Infinity;
       controls.maxAzimuthAngle = Infinity;
@@ -1427,6 +1445,7 @@
       controls.maxPolarAngle = Math.PI * 0.49;
       camera.position.set(-20.8, 9, -17.5);
       controls.target.set(-6.75, 3.2, -7.03);
+      applyProjection();
       controls.update();
       document.getElementById("btn-iso").classList.add("active");
       document.getElementById("btn-top").classList.remove("active");
@@ -1495,7 +1514,7 @@
     function resize() {
       const w = wrap.clientWidth, h = wrap.clientHeight;
       camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+      applyProjection();
       renderer.setSize(w, h);
       labelRenderer.setSize(w, h);
     }
@@ -1526,7 +1545,7 @@
       buildScene(data);
       
       applyNorthUpView();
-      statusEl.textContent = "Bereit — Norden oben, Satellit ein";
+      statusEl.textContent = "Bereit — Norden oben, Osten rechts, Satellit ein";
       
       tick();
       
