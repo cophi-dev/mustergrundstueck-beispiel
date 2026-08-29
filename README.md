@@ -34,9 +34,11 @@ Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung = Flächenschwerpunk
 
 ### Bestand
 
-- Wohnhaus Nr. 12: ca. 11,5 × 8,9 m, EG + Dachgeschoss, Satteldach (aus Kataster + Bestandsplan)
-- Garage / Nebengebäude: ca. 6,4 × 4,0 m
-- Nachbarn als Kontext: Nr. 1, Nr. 7 (Am Osterfeld), Nr. 14
+Grundrisse aus **ALKIS Gebäude** (LGLN), Lage geprüft gegen DOP20 / Satellit:
+
+- Wohnhaus Nr. 12: Hauptbau **9,0 × 7,5 m** plus Straßenflügel **7,8 × 2,4 m** (L-Form, EG + DG), Garage **6,4 × 4,0 m** direkt am Nordostgiebel
+- Geräteschuppen **9,5 × 3,3 m** und Nebengebäude **5,1 × 5,0 m** im Osten von 121/1 (nicht auf 121/2)
+- Nachbarn als Kontext an ihrer ALKIS-Lage: Am Osterfeld 7 (östlich), Ashausener Str. 14 (südöstlich), Am Osterfeld 1 (nordwestlich)
 
 ### Bebauungsoptionen (verschiebbar)
 
@@ -47,7 +49,7 @@ Passend zu WA I / GRZ 0,25 / nur Einzel- und Doppelhäuser:
 3. **Doppelhaus** — 16×9 m, 1 VG + DG (statt 3-Familien-Haus, das der B-Plan nicht vorsieht)
 4. **Ersatzneubau** — 12×10 m anstelle des Bestands auf 121/1
 
-Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der Ersatzneubau sitzt auf **121/1** und blendet den Bestand (Wohnhaus + Garage) aus.
+Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der Ersatzneubau sitzt auf **121/1** und blendet den gesamten Bestand auf 121/1 aus.
 
 ## Dateien
 
