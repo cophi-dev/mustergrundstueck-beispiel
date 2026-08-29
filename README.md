@@ -36,8 +36,8 @@ Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung = Flächenschwerpunk
 
 Grundrisse aus **ALKIS Gebäude** (LGLN), Lage geprüft gegen DOP20 / Satellit:
 
-- Wohnhaus Nr. 12: Hauptbau **9,0 × 7,5 m** plus Straßenflügel **7,8 × 2,4 m** (L-Form, EG + DG), Garage **6,4 × 4,0 m** direkt am Nordostgiebel
-- Geräteschuppen **9,5 × 3,3 m** und Nebengebäude **5,1 × 5,0 m** im Osten von 121/1 (nicht auf 121/2)
+- Wohnhaus Nr. 12: First **parallel zur Ashausener Straße** (11,6 × 8,5 m), Ostflügel und Nordgiebel — L/T-Form wie im Satellitenbild, ca. 10 m von der Straße
+- Freistehende **L-Garage/Werkstatt** 5–6 m östlich des Hauses (nicht angebaut), Hof dazwischen, Zufahrt zur Ashausener Straße
 - Nachbarn als Kontext an ihrer ALKIS-Lage: Am Osterfeld 7 (östlich), Ashausener Str. 14 (südöstlich), Am Osterfeld 1 (nordwestlich)
 
 ### Bebauungsoptionen (verschiebbar)
