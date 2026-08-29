@@ -814,56 +814,93 @@
 
     function createBestandWohnhaus12() {
       const roofCol = "#3d383c";
-      const brick = matBrick(2.2, 1.3);
+      const brick = matBrick(3.4, 1.4);
+      brick.side = THREE.FrontSide;
       const g = new THREE.Group();
+      const gfH = 2.75;
 
-      g.add(createDetailedHouse(11.56, 8.49, 5, 3.6, {
-        name: "Wohnhaus 12",
-        brick: true,
-        roofStyle: "hip",
-        roofColor: roofCol,
-        houseNumber: "12",
-        erker: { w: 3.4, d: 1.15, h: 2.45 },
-        dormer: { w: 3.6, d: 1.5, h: 1.7 },
-        windows: [
-          { x: 2.75, y: 1.75, z: -4.30, w: 1.25, h: 1.4, rotY: 3.1416 },
-          { x: 5.85, y: 1.85, z: -1.5, w: 1.15, h: 1.35, rotY: 1.5708 },
-          { x: 5.85, y: 1.85, z: 1.6, w: 1.15, h: 1.35, rotY: 1.5708 }
-        ],
-        door: { x: 5.85, y: 1.1, z: 0.2, w: 1.05, h: 2.15, rotY: 1.5708 }
-      }));
+      const gfVerts = [
+        [-5.78, -4.25],
+        [-1.70, -4.25],
+        [-1.70, -5.15],
+        [1.70, -5.15],
+        [1.70, -4.25],
+        [5.78, -4.25],
+        [5.78, 4.25],
+        [5.85, 4.25],
+        [5.85, 7.15],
+        [1.25, 7.15],
+        [1.25, 5.10],
+        [-0.25, 5.10],
+        [-0.25, 9.00],
+        [-4.50, 9.00],
+        [-4.50, 4.25],
+        [-5.78, 4.25]
+      ];
+      const shape = new THREE.Shape();
+      shape.moveTo(gfVerts[0][0], -gfVerts[0][1]);
+      for (let i = 1; i < gfVerts.length; i++) shape.lineTo(gfVerts[i][0], -gfVerts[i][1]);
+      shape.closePath();
+      const gfGeom = new THREE.ExtrudeGeometry(shape, { depth: gfH, bevelEnabled: false });
+      const gf = new THREE.Mesh(gfGeom, brick);
+      gf.rotation.x = -Math.PI / 2;
+      gf.castShadow = true;
+      gf.receiveShadow = true;
+      gf.name = "Wohnhaus 12 EG";
+      g.add(gf);
 
-      const wingD = 3.5;
-      const wingZ = 4.245 - 0.65 + wingD / 2;
-      const wing = createDetailedHouse(4.5, wingD, 2.75, 1.35, {
-        name: "Seitenflügel",
-        brick: true,
-        frontWalls: true,
-        roofStyle: "lean",
-        roofColor: roofCol,
-        roofOverhang: 0.1,
-        windows: [
-          { x: 0, y: 1.45, z: wingD / 2 + 0.02, w: 0.9, h: 1.05, rotY: 0 },
-          { x: 4.5 / 2 + 0.02, y: 1.45, z: 0.15, w: 0.9, h: 1.05, rotY: 1.5708 }
-        ]
-      });
-      wing.position.set(3.55, 0, wingZ);
-      g.add(wing);
+      g.add(boxWithMaterial(11.56, 2.25, 8.49, brick, 0, gfH, 0, "Wohnhaus 12 OG"));
+      const mainRoof = createHipRoof(11.56, 8.49, 3.6, 0.35, roofCol);
+      mainRoof.position.y = 5;
+      g.add(mainRoof);
 
-      const anbauD = 5.4;
-      const anbauZ = 4.245 - 0.65 + anbauD / 2;
-      const anbau = createDetailedHouse(4.15, anbauD, 2.7, 1.25, {
-        name: "Anbau Hof",
-        brick: true,
-        frontWalls: true,
-        roofStyle: "lean",
-        roofColor: roofCol,
-        roofOverhang: 0.1
-      });
-      anbau.position.set(-2.35, 0, anbauZ);
-      g.add(anbau);
-      g.add(boxWithMaterial(3.4, 2.7, 0.7, brick, 0.55, 0, 4.2, "Anschluss Hof"));
-      g.add(box(3.6, 0.14, 0.85, 0x3d383c, 0.55, 2.7, 4.2, "Hof-Anschlussdach"));
+      const wingRoof = createLeanToRoof(4.55, 2.95, 1.2, 0.08, roofCol);
+      wingRoof.position.set(3.55, gfH, 5.68);
+      g.add(wingRoof);
+      const anbauRoof = createLeanToRoof(4.2, 4.85, 1.15, 0.08, roofCol);
+      anbauRoof.position.set(-2.38, gfH, 6.60);
+      g.add(anbauRoof);
+      g.add(box(3.2, 0.12, 1.0, 0x3d383c, 0.5, gfH, 4.65, "Hof-Anschlussdach"));
+
+      const dRoof = createHipRoof(3.6, 1.5, 1.05, 0.12, roofCol);
+      dRoof.position.set(0, 5.0 + 1.65, -4.245 + 0.85);
+      g.add(boxWithMaterial(3.6, 1.7, 1.5, brick, 0, 4.85, -4.245 + 0.85, "Zwerchhaus"));
+      g.add(dRoof);
+      const dw1 = createWindow(1.0, 1.0, 0xffffff, 0x87ceeb);
+      dw1.position.set(-0.7, 5.6, -4.245 - 0.02);
+      const dw2 = createWindow(1.0, 1.0, 0xffffff, 0x87ceeb);
+      dw2.position.set(0.7, 5.6, -4.245 - 0.02);
+      g.add(dw1, dw2);
+
+      const bayWin = createWindow(2.9, 1.3, 0xffffff, 0x87ceeb);
+      bayWin.position.set(0, 1.35, -5.15 - 0.02);
+      g.add(bayWin);
+      g.add(box(3.55, 0.12, 1.05, 0x2a2a2e, 0, 2.45, -4.70, "Erkerdach"));
+
+      const wins = [
+        { x: 2.75, y: 1.75, z: -4.26, w: 1.25, h: 1.4, rotY: Math.PI },
+        { x: 5.80, y: 1.85, z: -1.5, w: 1.15, h: 1.35, rotY: Math.PI / 2 },
+        { x: 5.80, y: 1.85, z: 1.6, w: 1.15, h: 1.35, rotY: Math.PI / 2 },
+        { x: 3.55, y: 1.45, z: 7.17, w: 0.9, h: 1.05, rotY: 0 },
+        { x: 5.87, y: 1.45, z: 5.6, w: 0.9, h: 1.05, rotY: Math.PI / 2 }
+      ];
+      for (const win of wins) {
+        const w = createWindow(win.w, win.h, 0xffffff, 0x87ceeb);
+        w.position.set(win.x, win.y, win.z);
+        w.rotation.y = win.rotY;
+        g.add(w);
+      }
+      const door = createDoor(1.05, 2.15, 0x5a4a3a, 0xc0c0c0);
+      door.position.set(5.80, 1.1, 0.2);
+      door.rotation.y = Math.PI / 2;
+      g.add(door);
+
+      const el = document.createElement("div");
+      el.className = "label pin";
+      el.textContent = "12";
+      const num = new CSS2DObject(el);
+      num.position.set(-4.2, 2.15, -4.30);
+      g.add(num);
 
       return g;
     }
