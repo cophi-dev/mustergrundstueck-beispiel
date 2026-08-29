@@ -1186,6 +1186,9 @@
         sun.intensity = 1.2;
       }
       planLabels.visible = northUpMode;
+      planLabels.traverse((obj) => {
+        if (obj.element) obj.element.style.display = northUpMode ? "" : "none";
+      });
       applyBuildingOverlay();
     }
 
