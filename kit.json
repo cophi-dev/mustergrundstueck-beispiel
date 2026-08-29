@@ -4,7 +4,7 @@
     "description": "Flur 6, Flurstücke 121/1 (Bestand Wohnhaus) und 121/2 (Garten / Am Osterfeld). Geometrie aus Liegenschaftsgrafik 1:500 (LGLN, 28.01.2026) und B-Plan Osterfeld West, Neufassung 1980.",
     "address": "Ashausener Straße 12, 21435 Stelle",
     "units": "meters",
-    "version": "2.4.0",
+    "version": "2.5.0",
     "crs": "local meters, +X Ost, +Z Nord, Ursprung = Flächenschwerpunkt 121/1+121/2",
     "sources": [
       "Liegenschaftsgrafik 1:500, Gemarkung Stelle, Flur 6, Flst. 121/2, LGLN Katasteramt Winsen, erstellt 28.01.2026, Zeichen 090-A-00084/2026",
@@ -173,62 +173,63 @@
     {
       "id": "bestand_wohnhaus",
       "name": "Bestand: Wohnhaus Nr. 12",
-      "label": "Wohnhaus 12 · 11,6×8,5 m · parallel Ashausener",
+      "label": "Wohnhaus 12 · Klinker · Walmdach",
       "layer": "BESTAND",
       "type": "box",
       "draggable": false,
       "position": [-7.56, -8.56],
       "size": [11.56, 8.49, 8.5],
       "rotation": 0.982,
-      "wallHeight": 5.2,
-      "roofHeight": 3.3,
+      "wallHeight": 5.0,
+      "roofHeight": 3.6,
       "detailed": true,
       "brick": true,
-      "roofColor": "#4a4a52",
+      "roofStyle": "hip",
+      "roofColor": "#3d383c",
+      "houseNumber": "12",
+      "erker": { "w": 3.4, "d": 1.15, "h": 2.45 },
+      "dormer": { "w": 3.6, "d": 1.5, "h": 1.7 },
       "windows": [
-        { "x": -3.6, "y": 1.9, "z": -4.30, "w": 1.2, "h": 1.4, "rotY": 3.1416 },
-        { "x": 0.0, "y": 1.9, "z": -4.30, "w": 1.2, "h": 1.4, "rotY": 3.1416 },
-        { "x": 3.6, "y": 1.9, "z": -4.30, "w": 1.2, "h": 1.4, "rotY": 3.1416 },
-        { "x": -3.6, "y": 4.4, "z": -4.30, "w": 1.0, "h": 1.0, "rotY": 3.1416 },
-        { "x": 0.0, "y": 4.4, "z": -4.30, "w": 1.0, "h": 1.0, "rotY": 3.1416 },
-        { "x": 3.6, "y": 4.4, "z": -4.30, "w": 1.0, "h": 1.0, "rotY": 3.1416 },
-        { "x": 5.85, "y": 1.9, "z": -1.6, "w": 1.2, "h": 1.4, "rotY": 1.5708 },
-        { "x": 5.85, "y": 1.9, "z": 1.6, "w": 1.2, "h": 1.4, "rotY": 1.5708 },
-        { "x": 5.85, "y": 4.4, "z": 0.0, "w": 1.0, "h": 1.0, "rotY": 1.5708 }
+        { "x": 4.15, "y": 1.85, "z": -4.30, "w": 1.15, "h": 1.35, "rotY": 3.1416 },
+        { "x": 5.85, "y": 1.85, "z": -1.5, "w": 1.15, "h": 1.35, "rotY": 1.5708 },
+        { "x": 5.85, "y": 1.85, "z": 1.6, "w": 1.15, "h": 1.35, "rotY": 1.5708 }
       ],
-      "door": { "x": 2.0, "y": 1.1, "z": -4.30, "w": 1.1, "h": 2.2, "rotY": 3.1416 }
+      "door": { "x": 5.85, "y": 1.1, "z": 0.2, "w": 1.05, "h": 2.15, "rotY": 1.5708 }
     },
     {
       "id": "bestand_wohnhaus_fluegel",
-      "name": "Bestand: Wohnhaus Ostflügel",
-      "label": "Ostflügel 4,3×6,5 m",
+      "name": "Bestand: Wohnhaus Seitenflügel",
+      "label": "Seitenflügel EG",
       "layer": "BESTAND",
       "type": "box",
       "draggable": false,
       "position": [-2.14, -9.81],
-      "size": [4.33, 6.54, 7.6],
+      "size": [4.33, 6.54, 4.4],
       "rotation": 0.982,
-      "wallHeight": 4.8,
-      "roofHeight": 2.8,
+      "wallHeight": 2.7,
+      "roofHeight": 1.7,
       "detailed": true,
       "brick": true,
-      "roofColor": "#4a4a52"
+      "roofColor": "#3d383c",
+      "windows": [
+        { "x": 0.0, "y": 1.45, "z": -3.33, "w": 0.9, "h": 1.05, "rotY": 3.1416 }
+      ]
     },
     {
       "id": "bestand_wohnhaus_anbau",
-      "name": "Bestand: Wohnhaus Nordgiebel",
-      "label": "Nordgiebel / Anbau 4,0×6,5 m",
+      "name": "Bestand: Wohnhaus Anbau Hof",
+      "label": "Anbau am Hof",
       "layer": "BESTAND",
       "type": "box",
       "draggable": false,
       "position": [-0.78, -0.34],
-      "size": [3.97, 6.45, 6.8],
+      "size": [3.97, 6.45, 4.2],
       "rotation": 0.982,
-      "wallHeight": 4.2,
-      "roofHeight": 2.6,
+      "wallHeight": 2.65,
+      "roofHeight": 1.55,
       "detailed": true,
       "brick": true,
-      "roofColor": "#4a4a52"
+      "roofColor": "#3d383c"
     },
     {
       "id": "zufahrt_12",
@@ -241,12 +242,11 @@
         [1.54, -9.95],
         [2.93, -0.25],
         [6.84, 4.07],
-        [10.05, -1.80],
-        [8.5, -6.2],
-        [1.54, -9.95]
+        [10.05, -1.8],
+        [8.5, -6.2]
       ],
       "height": 0.03,
-      "color": "#8a7a6a"
+      "color": "#9a8a72"
     },
     {
       "id": "zufahrt_strasse",
@@ -267,28 +267,37 @@
     },
     {
       "id": "bestand_garage",
-      "name": "Bestand: Garage / Werkstatt",
-      "label": "Garage/Werkstatt · L-Form",
+      "name": "Bestand: Garage",
+      "label": "Garage · weißes Tor",
       "layer": "BESTAND",
       "type": "box",
       "draggable": false,
       "position": [13.24, 2.06],
-      "size": [9.48, 3.29, 2.9],
+      "size": [9.48, 3.29, 3.5],
       "rotation": -1.212,
-      "color": "#6a6560",
-      "roofColor": "#3a3a40"
+      "wallHeight": 2.45,
+      "roofHeight": 1.45,
+      "detailed": true,
+      "brick": true,
+      "roofColor": "#3d383c",
+      "garageDoor": { "w": 2.45, "h": 2.05, "face": "-x" }
     },
     {
       "id": "bestand_neben_ost",
-      "name": "Bestand: Werkstatt-Flügel",
-      "label": "Werkstatt 5,1×5,0 m",
+      "name": "Bestand: Werkstatt L-Flügel",
+      "label": "Werkstatt · L-Flügel",
       "layer": "BESTAND",
       "type": "box",
       "draggable": false,
       "position": [10.09, 5.53],
-      "size": [5.07, 5.0, 2.8],
+      "size": [5.07, 5.0, 3.3],
       "rotation": 0.356,
-      "color": "#6a6560"
+      "wallHeight": 2.4,
+      "roofHeight": 1.25,
+      "detailed": true,
+      "brick": true,
+      "roofColor": "#3d383c",
+      "openBay": { "w": 3.4, "h": 2.15 }
     },
     {
       "id": "nachbar_7",
@@ -465,6 +474,36 @@
       "position": [-14.0, -4.0],
       "radius": 2.3,
       "height": 7.8
+    },
+    {
+      "id": "baum_07",
+      "name": "Lebensbaum an der Garage",
+      "layer": "BAEUME",
+      "type": "tree",
+      "draggable": false,
+      "position": [6.8, 6.4],
+      "radius": 1.4,
+      "height": 6.5
+    },
+    {
+      "id": "baum_08",
+      "name": "Lebensbaum am Hof",
+      "layer": "BAEUME",
+      "type": "tree",
+      "draggable": false,
+      "position": [5.4, 3.1],
+      "radius": 1.2,
+      "height": 6.2
+    },
+    {
+      "id": "baum_09",
+      "name": "Baum rechts vom Haus",
+      "layer": "BAEUME",
+      "type": "tree",
+      "draggable": false,
+      "position": [-3.2, -15.4],
+      "radius": 1.1,
+      "height": 7.4
     },
     {
       "id": "baum_06",
