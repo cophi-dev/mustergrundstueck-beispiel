@@ -31,7 +31,7 @@
       padding: 12px 14px 18px;
       pointer-events: none;
     }
-    #topbar > * { pointer-events: auto; }
+    #topbar > * { pointer-events: auto; position: relative; z-index: 2; }
     .brand, .chip, .sat-toggle, .sun-card {
       background: var(--glass);
       border: 1px solid var(--line);
@@ -62,7 +62,10 @@
     .variant-btn.active {
       background: var(--accent); color: #1a1400; font-weight: 600;
     }
-    .topbar-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .topbar-right {
+      display: flex; align-items: center; gap: 8px; margin-left: auto;
+      padding: 4px; border-radius: 14px;
+    }
     .sat-toggle {
       appearance: none; color: var(--ink);
       font-family: inherit; font-weight: 600; font-size: 12px;
@@ -167,7 +170,12 @@
     #compass {
       appearance: none; border: 0; padding: 0; margin: 0;
       width: 48px; height: 48px; cursor: pointer;
-      background: transparent; flex-shrink: 0; position: relative;
+      background: transparent; flex-shrink: 0; position: relative; z-index: 3;
+    }
+    #compass::before {
+      content: "";
+      position: absolute;
+      inset: -10px;
     }
     #compass-rose {
       width: 48px; height: 48px; border-radius: 50%;
@@ -1789,15 +1797,12 @@
     }
 
     function requestNorthUpView(ev) {
-      if (ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-      }
+      if (ev) ev.stopPropagation();
       applyNorthUpView();
     }
 
     document.getElementById("btn-reset").addEventListener("click", resetKit);
-    document.getElementById("compass").addEventListener("pointerdown", requestNorthUpView);
+    document.getElementById("compass").addEventListener("click", requestNorthUpView);
     document.getElementById("btn-sat").addEventListener("click", () => setSatelliteVisible(!satelliteOn));
     wrap.addEventListener("dblclick", (e) => {
       if (e.target.closest("#topbar, .ui, footer, #status")) return;
