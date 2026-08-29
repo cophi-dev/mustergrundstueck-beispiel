@@ -29,9 +29,7 @@
       display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
       background: linear-gradient(180deg, rgba(10,13,11,0.62) 0%, rgba(10,13,11,0.18) 70%, rgba(10,13,11,0) 100%);
       padding: 12px 14px 18px;
-      pointer-events: none;
     }
-    #topbar > * { pointer-events: auto; position: relative; z-index: 2; }
     .brand, .chip, .sat-toggle, .sun-card {
       background: var(--glass);
       border: 1px solid var(--line);
@@ -64,7 +62,7 @@
     }
     .topbar-right {
       display: flex; align-items: center; gap: 8px; margin-left: auto;
-      padding: 4px; border-radius: 14px;
+      padding: 4px 56px 4px 4px; border-radius: 14px;
     }
     .sat-toggle {
       appearance: none; color: var(--ink);
@@ -170,12 +168,13 @@
     #compass {
       appearance: none; border: 0; padding: 0; margin: 0;
       width: 48px; height: 48px; cursor: pointer;
-      background: transparent; flex-shrink: 0; position: relative; z-index: 3;
+      background: transparent;
+      position: fixed; top: 14px; right: 16px; z-index: 30;
     }
     #compass::before {
       content: "";
       position: absolute;
-      inset: -10px;
+      inset: -12px;
     }
     #compass-rose {
       width: 48px; height: 48px; border-radius: 50%;
@@ -245,11 +244,11 @@
           <span class="value" id="sun-month-val">Juni</span>
         </div>
       </div>
-      <button id="compass" type="button" title="Zurück zur Aufsicht" aria-label="Zurück zur Aufsicht">
-        <div id="compass-rose"><div class="needle"></div><div class="n">N</div><div class="o">O</div><div class="s">S</div><div class="w">W</div></div>
-      </button>
     </div>
   </div>
+  <button id="compass" type="button" title="Zurück zur Aufsicht" aria-label="Zurück zur Aufsicht">
+    <div id="compass-rose"><div class="needle"></div><div class="n">N</div><div class="o">O</div><div class="s">S</div><div class="w">W</div></div>
+  </button>
 
   <div class="ui" id="panel">
     <div class="section">
@@ -1803,6 +1802,7 @@
 
     document.getElementById("btn-reset").addEventListener("click", resetKit);
     document.getElementById("compass").addEventListener("click", requestNorthUpView);
+    window.__goNorthUp = applyNorthUpView;
     document.getElementById("btn-sat").addEventListener("click", () => setSatelliteVisible(!satelliteOn));
     wrap.addEventListener("dblclick", (e) => {
       if (e.target.closest("#topbar, .ui, footer, #status")) return;
