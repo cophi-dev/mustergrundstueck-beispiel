@@ -36,7 +36,7 @@ Drei Zahlen, drei Bedeutungen (121/2):
 
 **Geoportal Hamburg:** Geo-Online / der Hamburger B-Plan-WMS decken Stelle **nicht** ab (Südgrenze ca. 53,394°N, Grundstück bei 53,384°N). Stelle liegt in Niedersachsen, Landkreis Harburg. Kataster: [LGLN ALKIS](https://opendata.lgln.niedersachsen.de/doorman/noauth/alkis_wfs_einfach). B-Plan: LK Harburg, Osterfeld West (`32_50`).
 
-Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung = Flächenschwerpunkt beider Flurstücke. Die 3D-Ansicht startet von der Ashausener Straße (Südwest); **Aufsicht** blickt von Süden, sodass **Norden oben** liegt. Der rote Pfeil zeigt nach **+Z (Norden)**.
+Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung an 121/2-ALKIS (UTM E0=574305.224, N0=5914743.962, EPSG:25832). Beim Laden ist **Norden oben** (Aufsicht). Der rote Pfeil und der Kompass oben rechts zeigen nach **+Z**. Button **3D** schwenkt zur Ashausener Straße. **Satellit** blendet das LGLN-DOP20 unter die Gebäude.
 
 ### Bestand
 
@@ -62,6 +62,7 @@ Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der
 ```
 ├── index.html              # 3D-Viewer
 ├── kit.json                # Geometrie aus Lageplan + B-Plan
+├── satellit.jpg            # LGLN DOP20, georeferenziert auf das lokale Meter-System
 ├── generate-dxf.js         # DXF-Export
 └── README.md
 ```
