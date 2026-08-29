@@ -18,7 +18,13 @@ Die Katastergeometrie bleibt in `kit.json` (Meter, lokal). Die Original-Liegensc
 
 ## Grundstück
 
-Amtliche Flächen aus **LGLN ALKIS** (WFS, 2026-08-29). Die ~700 m² vom Telefon sind die **Grundstücksfläche von 121/2**, nicht die überbaubare Fläche.
+Drei Zahlen, drei Bedeutungen (121/2):
+
+| Zahl | Bedeutung |
+|------|-----------|
+| **702 m²** | amtliche **Grundstücksgröße** (ALKIS Flurstück) — die ~700 vom Telefon |
+| **293 m²** | **überbaubare Fläche** nach Abständen (Baugrenze: 7 m Am Osterfeld, 3 m Seite/hinten) |
+| **176 m²** | **max. Gebäudegrundfläche** nach GRZ 0,25 × 702 m² |
 
 | Element | Wert |
 |---------|------|
@@ -30,13 +36,15 @@ Amtliche Flächen aus **LGLN ALKIS** (WFS, 2026-08-29). Die ~700 m² vom Telefon
 
 **Geoportal Hamburg:** Geo-Online / der Hamburger B-Plan-WMS decken Stelle **nicht** ab (Südgrenze ca. 53,394°N, Grundstück bei 53,384°N). Stelle liegt in Niedersachsen, Landkreis Harburg. Kataster: [LGLN ALKIS](https://opendata.lgln.niedersachsen.de/doorman/noauth/alkis_wfs_einfach). B-Plan: LK Harburg, Osterfeld West (`32_50`).
 
-Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung = Flächenschwerpunkt beider Flurstücke.
+Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung = Flächenschwerpunkt beider Flurstücke. Die 3D-Ansicht startet von der Ashausener Straße (Südwest); **Aufsicht** blickt von Süden, sodass **Norden oben** liegt. Der rote Pfeil zeigt nach **+Z (Norden)**.
 
 ### Bestand
 
-- Wohnhaus Nr. 12: ca. 11,5 × 8,9 m, EG + Dachgeschoss, Satteldach (aus Kataster + Bestandsplan)
-- Garage / Nebengebäude: ca. 6,4 × 4,0 m
-- Nachbarn als Kontext: Nr. 1, Nr. 7 (Am Osterfeld), Nr. 14
+Grundrisse aus **ALKIS Gebäude** (LGLN), Lage geprüft gegen DOP20 / Satellit:
+
+- Wohnhaus Nr. 12: **roter Klinker**, steiles **Walmdach**, **Zwerchhaus** (2 Fenster) und **Erker** zur Ashausener Straße, Hausnummer 12, Hecke an der Straße. First parallel zur Straße (11,6 × 8,5 m), eingeschossiger Ostflügel und Hof-Anbau
+- Freistehende **L-Garage/Werkstatt** östlich des Hauses (ALKIS): langer Schenkel grob Nord–Süd an der Ostgrenze, kurzer Schenkel nach Westen, Hof dazwischen, **weißes Lamellentor** am Südgiebel
+- Nachbarn als Kontext an ihrer ALKIS-Lage: Am Osterfeld 7 (östlich), Ashausener Str. 14 (südöstlich), Am Osterfeld 1 (nordwestlich)
 
 ### Bebauungsoptionen (verschiebbar)
 
@@ -47,7 +55,7 @@ Passend zu WA I / GRZ 0,25 / nur Einzel- und Doppelhäuser:
 3. **Doppelhaus** — 16×9 m, 1 VG + DG (statt 3-Familien-Haus, das der B-Plan nicht vorsieht)
 4. **Ersatzneubau** — 12×10 m anstelle des Bestands auf 121/1
 
-Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der Ersatzneubau sitzt auf **121/1** und blendet den Bestand (Wohnhaus + Garage) aus.
+Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der Ersatzneubau sitzt auf **121/1** und blendet den gesamten Bestand auf 121/1 aus.
 
 ## Dateien
 
