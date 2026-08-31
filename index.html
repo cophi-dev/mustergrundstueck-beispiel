@@ -20,7 +20,7 @@
       --line: rgba(255,255,255,0.1);
     }
     * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: Inter, "Segoe UI", system-ui, sans-serif; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #16181a; color: var(--ink); font-family: Inter, "Segoe UI", system-ui, sans-serif; }
     #canvas-wrap { position: absolute; inset: 0; }
     canvas { display: block; width: 100%; height: 100%; }
 
@@ -325,25 +325,26 @@
     let kitData = null;
     let SITE_W = 55, SITE_D = 82, HALF_W, HALF_D;
     let SITE_POLY = [];
+    let ISLAND_POLY = [];
     let SITE_BBOX = [-29, -44, 27, 40];
     let PARK_X = 52, PARK_Z = 4, PARK_W = 30, PARK_D = 52;
 
-    const BG_SAT = 0x1a211c;
-    const BG_PLAN = 0x242a24;
-    const BG_3D = 0x8aa3b0;
+    const BG_STUDIO = 0x16181a;
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(BG_SAT);
+    scene.background = new THREE.Color(BG_STUDIO);
     scene.fog = null;
 
-    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
+    const camera = new THREE.PerspectiveCamera(32, 1, 0.8, 800);
     camera.up.set(0, 1, 0);
-    camera.position.set(2, 52, -10);
+    camera.position.set(0, 118, -38);
     window.__camera = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.12;
     // X-Spiegelung der Projektion dreht die Winding-Order. Three.js ruft
     // state.setMaterial auf — frontFaceCW umkehren macht Wände wieder sichtbar.
     // Die Shadow-Map hat keine X-Spiegelung, dort bleibt die Winding normal.
@@ -374,35 +375,36 @@
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
-    controls.target.set(2, 0, 6);
+    controls.target.set(0, 0, 2);
     controls.minPolarAngle = 0.05;
     controls.maxPolarAngle = Math.PI * 0.45;
-    controls.minDistance = 10;
-    controls.maxDistance = 220;
+    controls.minDistance = 16;
+    controls.maxDistance = 280;
     controls.minAzimuthAngle = Math.PI;
     controls.maxAzimuthAngle = Math.PI;
     controls.rotateSpeed = 0.55;
     window.__controls = controls;
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.62);
+    const ambient = new THREE.AmbientLight(0xfff6ea, 0.38);
     scene.add(ambient);
-    const sun = new THREE.DirectionalLight(0xfff3d4, 1.2);
+    const sun = new THREE.DirectionalLight(0xffe2b8, 1.85);
     sun.position.set(50, 50, 25);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
-    sun.shadow.camera.left = -80;
-    sun.shadow.camera.right = 80;
-    sun.shadow.camera.top = 60;
-    sun.shadow.camera.bottom = -60;
+    sun.shadow.camera.left = -55;
+    sun.shadow.camera.right = 55;
+    sun.shadow.camera.top = 50;
+    sun.shadow.camera.bottom = -50;
     sun.shadow.camera.near = 1;
-    sun.shadow.camera.far = 160;
-    sun.shadow.bias = -0.0008;
-    sun.target.position.set(2, 0, 6);
+    sun.shadow.camera.far = 140;
+    sun.shadow.bias = -0.0006;
+    sun.shadow.radius = 2.2;
+    sun.target.position.set(0, 0, 2);
     scene.add(sun);
     scene.add(sun.target);
-    const hemi = new THREE.HemisphereLight(0xb8d4e8, 0x4a5a3a, 0.25);
+    const hemi = new THREE.HemisphereLight(0x9eb4c8, 0x3a3228, 0.42);
     scene.add(hemi);
-    const topFill = new THREE.DirectionalLight(0xfff6ea, 0.2);
+    const topFill = new THREE.DirectionalLight(0xfff6ea, 0.18);
     topFill.position.set(8, 90, 12);
     scene.add(topFill);
 
@@ -954,11 +956,42 @@
       return m;
     }
 
-    function polygon(vertices, height, color, opacity = 1) {
+    function makeShape(vertices) {
       const shape = new THREE.Shape();
       shape.moveTo(vertices[0][0], -vertices[0][1]);
       for (let i = 1; i < vertices.length; i++) shape.lineTo(vertices[i][0], -vertices[i][1]);
       shape.closePath();
+      return shape;
+    }
+
+    function expandFromCentroid(verts, dist) {
+      let cx = 0, cz = 0;
+      for (const v of verts) { cx += v[0]; cz += v[1]; }
+      cx /= verts.length;
+      cz /= verts.length;
+      return verts.map((v) => {
+        const dx = v[0] - cx, dz = v[1] - cz;
+        const len = Math.hypot(dx, dz) || 1;
+        return [v[0] + (dx / len) * dist, v[1] + (dz / len) * dist];
+      });
+    }
+
+    function applySatUV(geom, sat) {
+      const [w, d] = sat.size;
+      const [cx, cz] = sat.center || [0, 0];
+      const pos = geom.attributes.position;
+      const uv = new Float32Array(pos.count * 2);
+      for (let i = 0; i < pos.count; i++) {
+        const worldX = pos.getX(i);
+        const worldZ = -pos.getY(i);
+        uv[i * 2] = (worldX - (cx - w / 2)) / w;
+        uv[i * 2 + 1] = (worldZ - (cz - d / 2)) / d;
+      }
+      geom.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+    }
+
+    function polygon(vertices, height, color, opacity = 1) {
+      const shape = makeShape(vertices);
       const geometry = height > 0
         ? new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false })
         : new THREE.ShapeGeometry(shape);
@@ -989,12 +1022,16 @@
     function treeMass(x, z, r, h, name) {
       const g = new THREE.Group();
       g.name = name;
-      const trunk = cyl(r * 0.18, h * 0.3, 0x6b4f32, 0, 0, 0);
-      const crown = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), mat(0x3f6b3a, { roughness: 0.9 }));
-      crown.position.set(0, h * 0.55, 0);
-      crown.scale.set(1, 0.9, 1);
+      const trunk = cyl(r * 0.16, h * 0.32, 0x5a3f2a, 0, 0, 0);
+      const crownMat = mat(0x4a6e38, { roughness: 0.95 });
+      const crown = new THREE.Mesh(new THREE.SphereGeometry(r, 18, 14), crownMat);
+      crown.position.set(0, h * 0.58, 0);
+      crown.scale.set(1.05, 0.88, 1.05);
       crown.castShadow = true;
-      g.add(trunk, crown);
+      const crown2 = new THREE.Mesh(new THREE.SphereGeometry(r * 0.62, 14, 10), crownMat);
+      crown2.position.set(r * 0.28, h * 0.72, -r * 0.12);
+      crown2.castShadow = true;
+      g.add(trunk, crown, crown2);
       g.position.set(x, 0, z);
       return g;
     }
@@ -1080,17 +1117,26 @@
         PARK_D = data.parkplatz.size[1];
       }
 
-      const groundRing = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), mat(0x8a8a7a, { roughness: 1 }));
-      groundRing.rotation.x = -Math.PI / 2;
-      groundRing.position.set(10, -0.04, 0);
-      groundRing.receiveShadow = true;
-      groundRing.name = "Umgebung";
-      groundRing.userData.satHide = true;
-      context.add(groundRing);
+      const SLAB_H = 3.2;
+      ISLAND_POLY = expandFromCentroid(SITE_POLY, 4.5);
 
-      const lawn = polygon(SITE_POLY, 0, "#6b8f4e", 1);
+      const slabShape = makeShape(ISLAND_POLY);
+      const slabGeom = new THREE.ExtrudeGeometry(slabShape, {
+        depth: SLAB_H,
+        bevelEnabled: false
+      });
+      slabGeom.computeVertexNormals();
+      const slab = new THREE.Mesh(slabGeom, mat(0x4a4038, { roughness: 0.96, metalness: 0 }));
+      slab.rotation.x = -Math.PI / 2;
+      slab.position.y = -SLAB_H;
+      slab.castShadow = true;
+      slab.receiveShadow = true;
+      slab.name = "Diorama_Sockel";
+      context.add(slab);
+
+      const lawn = polygon(ISLAND_POLY, 0, "#5f7a48", 1);
       lawn.name = "Rasen";
-      lawn.position.y = 0;
+      lawn.position.y = 0.02;
       lawn.userData.satHide = true;
       context.add(lawn);
       addSatelliteLayer(data, lawn);
@@ -1099,9 +1145,8 @@
       addFence(SITE_POLY);
       addStreetHedge();
 
-      addCardinalMarks();
-
       for (const piece of data.pieces) buildPiece(piece, data.layers);
+      hideOffIslandNeighbors();
       setSatelliteVisible(true);
     }
 
@@ -1211,7 +1256,9 @@
         }
         g.position.set(piece.position[0], 0, piece.position[1]);
         if (piece.rotation) g.rotation.y = piece.rotation;
-        if (piece.layer === "NACHBAR") g.userData.satHide = true;
+        if (piece.layer === "NACHBAR") {
+          g.userData.dioramaOff = true;
+        }
         if (piece.draggable) registerKit(g, piece);
         else context.add(g);
       }
@@ -1292,55 +1339,54 @@
     let satelliteMesh = null;
     let lawnMesh = null;
     let parcelFill = null;
-    let satUnderlay = null;
     let shadowCatcher = null;
     let satelliteOn = true;
     let northUpMode = true;
 
+    function hideOffIslandNeighbors() {
+      context.traverse((obj) => {
+        if (obj.userData.dioramaOff) obj.visible = false;
+      });
+    }
+
     function addSatelliteLayer(data, lawn) {
       lawnMesh = lawn;
       const sat = data.satellite;
-      if (!sat || !sat.url) return;
-      const [w, d] = sat.size;
-      const [cx, cz] = sat.center || [0, 0];
+      if (!sat || !sat.url || !ISLAND_POLY.length) return;
       const loader = new THREE.TextureLoader();
       const tex = loader.load(sat.url, () => { tex.needsUpdate = true; });
       tex.colorSpace = THREE.SRGBColorSpace;
       tex.flipY = true;
-      const under = new THREE.Mesh(
-        new THREE.PlaneGeometry(240, 240),
-        new THREE.MeshStandardMaterial({ color: 0x3a4034, roughness: 1, metalness: 0, depthWrite: false })
-      );
-      under.rotation.x = -Math.PI / 2;
-      under.position.set(cx, -0.03, cz);
-      under.name = "Satellit_Rahmen";
-      under.receiveShadow = true;
-      under.renderOrder = -2;
-      satUnderlay = under;
-      context.add(under);
-      const satGeom = new THREE.PlaneGeometry(w, d);
+      tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+      const satGeom = new THREE.ShapeGeometry(makeShape(ISLAND_POLY));
+      applySatUV(satGeom, sat);
+      satGeom.computeVertexNormals();
       const satN = satGeom.attributes.normal;
-      for (let i = 0; i < satN.count; i++) satN.setXYZ(i, 0, 0, -1);
+      for (let i = 0; i < satN.count; i++) satN.setXYZ(i, 0, 0, 1);
       satN.needsUpdate = true;
       const mesh = new THREE.Mesh(
         satGeom,
-        new THREE.MeshStandardMaterial({
-          map: tex, roughness: 1, metalness: 0, side: THREE.DoubleSide
+        new THREE.MeshBasicMaterial({
+          map: tex,
+          side: THREE.DoubleSide
         })
       );
-      mesh.rotation.x = Math.PI / 2;
-      mesh.position.set(cx, 0.008, cz);
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.position.set(0, 0.03, 0);
       mesh.name = "Satellit_DOP20";
       mesh.receiveShadow = true;
       mesh.renderOrder = -1;
       satelliteMesh = mesh;
       context.add(mesh);
+
+      const catchGeom = new THREE.ShapeGeometry(makeShape(ISLAND_POLY));
       const catcher = new THREE.Mesh(
-        new THREE.PlaneGeometry(240, 240),
-        new THREE.ShadowMaterial({ opacity: 0.45, side: THREE.DoubleSide })
+        catchGeom,
+        new THREE.ShadowMaterial({ opacity: 0.38, side: THREE.DoubleSide })
       );
       catcher.rotation.x = -Math.PI / 2;
-      catcher.position.set(cx, 0.03, cz);
+      catcher.position.set(0, 0.045, 0);
       catcher.receiveShadow = true;
       catcher.name = "Schattenfang";
       catcher.renderOrder = 2;
@@ -1350,16 +1396,8 @@
     }
 
     function applySceneChrome() {
-      if (satelliteOn) {
-        scene.background = new THREE.Color(BG_SAT);
-        scene.fog = null;
-      } else if (northUpMode) {
-        scene.background = new THREE.Color(BG_PLAN);
-        scene.fog = null;
-      } else {
-        scene.background = new THREE.Color(BG_3D);
-        scene.fog = new THREE.Fog(BG_3D, 220, 420);
-      }
+      scene.background = new THREE.Color(BG_STUDIO);
+      scene.fog = null;
       planLabels.visible = northUpMode;
       document.body.classList.toggle("iso-view", !northUpMode);
     }
@@ -1367,7 +1405,6 @@
     function setSatelliteVisible(on) {
       satelliteOn = on;
       if (satelliteMesh) satelliteMesh.visible = on;
-      if (satUnderlay) satUnderlay.visible = on;
       if (shadowCatcher) shadowCatcher.visible = on;
       context.traverse((obj) => {
         if (obj.userData.satHide) obj.visible = !on;
@@ -1703,8 +1740,8 @@
     }
 
     const MAP_POLAR = 0.36;
-    const TOP_POS = new THREE.Vector3(2, 52, -10);
-    const TOP_TARGET = new THREE.Vector3(2, 0, 6);
+    const TOP_POS = new THREE.Vector3(0, 118, -38);
+    const TOP_TARGET = new THREE.Vector3(0, 0, 2);
     const _viewOffset = new THREE.Vector3();
     let camAnimating = false;
     let viewPointerDown = false;
@@ -1857,13 +1894,13 @@
         const y = dist * Math.sin(altitude);
         const z = dist * Math.cos(azimuth) * Math.cos(altitude);
         sun.position.set(x, Math.max(y, 8), z);
-        sun.target.position.set(2, 0, 6);
+        sun.target.position.set(0, 0, 2);
         sun.castShadow = true;
         const elev = Math.max(0.2, Math.sin(altitude));
-        sun.intensity = 0.7 + 1.1 * elev;
-        ambient.intensity = 0.32 + 0.2 * elev;
-        hemi.intensity = 0.14 + 0.1 * elev;
-        topFill.intensity = 0.05;
+        sun.intensity = 0.85 + 1.35 * elev;
+        ambient.intensity = 0.28 + 0.18 * elev;
+        hemi.intensity = 0.28 + 0.18 * elev;
+        topFill.intensity = 0.12;
       } else {
         sun.position.set(0, 10, 0);
         sun.castShadow = false;

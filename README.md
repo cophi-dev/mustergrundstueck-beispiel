@@ -36,7 +36,7 @@ Drei Zahlen, drei Bedeutungen (121/2):
 
 **Geoportal Hamburg:** Geo-Online / der Hamburger B-Plan-WMS decken Stelle **nicht** ab (Südgrenze ca. 53,394°N, Grundstück bei 53,384°N). Stelle liegt in Niedersachsen, Landkreis Harburg. Kataster: [LGLN ALKIS](https://opendata.lgln.niedersachsen.de/doorman/noauth/alkis_wfs_einfach). B-Plan: LK Harburg, Osterfeld West (`32_50`).
 
-Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung an 121/2-ALKIS (UTM E0=574305.224, N0=5914743.962, EPSG:25832). Beim Laden ist **Norden oben und Osten rechts** (Kartenansicht; die Aufsicht spiegelt die X-Achse, weil ein Blick von +Y sonst West und Ost vertauscht). **Ziehen** neigt in die 3D-Ansicht. **Kompass** (oder Doppelklick / Esc) holt die Karte zurück. **Satellit** blendet das LGLN-DOP20 unter die Gebäude.
+Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung an 121/2-ALKIS (UTM E0=574305.224, N0=5914743.962, EPSG:25832). Das Grundstück liegt als **Diorama-Insel** im Studio (Katastergrenze plus Straßenkragen, Sockel ~2,5 m). Beim Laden ist **Norden oben und Osten rechts**. **Ziehen** neigt in die 3D-Ansicht. **Kompass** (oder Doppelklick / Esc) holt die Karte zurück. **Satellit** legt das LGLN-DOP20 auf die Insel (sonst Rasen).
 
 ### Bestand
 
