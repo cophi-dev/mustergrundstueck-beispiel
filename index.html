@@ -308,11 +308,6 @@
     import * as THREE from "three";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
-    import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
-    import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
-    import { SSAOPass } from "three/addons/postprocessing/SSAOPass.js";
-    import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
-    import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
     const wrap = document.getElementById("canvas-wrap");
     const statusEl = document.getElementById("status");
@@ -376,16 +371,6 @@
     labelRenderer.domElement.style.left = "0";
     labelRenderer.domElement.style.pointerEvents = "none";
     wrap.appendChild(labelRenderer.domElement);
-
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-    const ssaoPass = new SSAOPass(scene, camera, 1, 1);
-    ssaoPass.kernelRadius = 12;
-    ssaoPass.minDistance = 0.002;
-    ssaoPass.maxDistance = 0.2;
-    composer.addPass(ssaoPass);
-    composer.addPass(new UnrealBloomPass(new THREE.Vector2(1, 1), 0.07, 0.32, 0.86));
-    composer.addPass(new OutputPass());
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -979,8 +964,18 @@
       return shape;
     }
 
+    function ringArea(verts) {
+      let s = 0;
+      for (let i = 0; i < verts.length; i++) {
+        const a = verts[i], b = verts[(i + 1) % verts.length];
+        s += a[0] * b[1] - b[0] * a[1];
+      }
+      return s * 0.5;
+    }
+
     function offsetPoly(verts, dist) {
       const n = verts.length;
+      const sign = ringArea(verts) >= 0 ? 1 : -1;
       const out = [];
       for (let i = 0; i < n; i++) {
         const a = verts[(i - 1 + n) % n], b = verts[i], c = verts[(i + 1) % n];
@@ -991,7 +986,10 @@
         let ox = n1x / l1 + n2x / l2, oz = n1z / l1 + n2z / l2;
         const ol = Math.hypot(ox, oz) || 1;
         const miter = Math.min(3.2, 1 / Math.max(0.28, (ox / ol) * (n1x / l1) + (oz / ol) * (n1z / l1)));
-        out.push([b[0] + (ox / ol) * dist * miter, b[1] + (oz / ol) * dist * miter]);
+        out.push([
+          b[0] + (ox / ol) * dist * sign * miter,
+          b[1] + (oz / ol) * dist * sign * miter
+        ]);
       }
       return out;
     }
@@ -1919,10 +1917,10 @@
         sun.target.position.set(2, 0, 6);
         sun.castShadow = true;
         const elev = Math.max(0.2, Math.sin(altitude));
-        sun.intensity = 0.7 + 1.1 * elev;
-        ambient.intensity = 0.32 + 0.2 * elev;
-        hemi.intensity = 0.14 + 0.1 * elev;
-        topFill.intensity = 0.05;
+        sun.intensity = 0.85 + 1.35 * elev;
+        ambient.intensity = 0.28 + 0.18 * elev;
+        hemi.intensity = 0.28 + 0.18 * elev;
+        topFill.intensity = 0.12;
       } else {
         sun.position.set(0, 10, 0);
         sun.castShadow = false;
@@ -1954,8 +1952,6 @@
       camera.aspect = w / h;
       applyProjection();
       renderer.setSize(w, h);
-      composer.setSize(w, h);
-      ssaoPass.setSize(w, h);
       labelRenderer.setSize(w, h);
     }
     window.addEventListener("resize", resize);
@@ -1982,7 +1978,7 @@
         syncViewFromPolar();
       }
       updateCompass();
-      composer.render();
+      renderer.render(scene, camera);
       labelRenderer.render(scene, camera);
     }
 
