@@ -334,9 +334,9 @@
     scene.background = new THREE.Color(BG_STUDIO);
     scene.fog = null;
 
-    const camera = new THREE.PerspectiveCamera(28, 1, 0.4, 600);
+    const camera = new THREE.PerspectiveCamera(32, 1, 0.8, 800);
     camera.up.set(0, 1, 0);
-    camera.position.set(2, 78, -18);
+    camera.position.set(0, 118, -38);
     window.__camera = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -375,7 +375,7 @@
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
-    controls.target.set(2, 0, 6);
+    controls.target.set(0, 0, 2);
     controls.minPolarAngle = 0.05;
     controls.maxPolarAngle = Math.PI * 0.45;
     controls.minDistance = 16;
@@ -399,7 +399,7 @@
     sun.shadow.camera.far = 140;
     sun.shadow.bias = -0.0006;
     sun.shadow.radius = 2.2;
-    sun.target.position.set(2, 0, 6);
+    sun.target.position.set(0, 0, 2);
     scene.add(sun);
     scene.add(sun.target);
     const hemi = new THREE.HemisphereLight(0x9eb4c8, 0x3a3228, 0.42);
@@ -1135,8 +1135,8 @@
         PARK_D = data.parkplatz.size[1];
       }
 
-      const SLAB_H = 2.45;
-      ISLAND_POLY = offsetPoly(SITE_POLY, 5.5);
+      const SLAB_H = 3.4;
+      ISLAND_POLY = offsetPoly(SITE_POLY, 4.2);
 
       const slabShape = makeShape(ISLAND_POLY);
       const slabGeom = new THREE.ExtrudeGeometry(slabShape, {
@@ -1147,7 +1147,7 @@
         bevelSegments: 1
       });
       slabGeom.computeVertexNormals();
-      const slab = new THREE.Mesh(slabGeom, mat(0x2c2622, { roughness: 0.96, metalness: 0 }));
+      const slab = new THREE.Mesh(slabGeom, mat(0x4a4038, { roughness: 0.96, metalness: 0 }));
       slab.rotation.x = -Math.PI / 2;
       slab.position.y = -SLAB_H;
       slab.castShadow = true;
@@ -1389,7 +1389,13 @@
       const mesh = new THREE.Mesh(
         satGeom,
         new THREE.MeshStandardMaterial({
-          map: tex, roughness: 0.92, metalness: 0, side: THREE.DoubleSide
+          map: tex,
+          roughness: 0.95,
+          metalness: 0,
+          emissive: 0xffffff,
+          emissiveMap: tex,
+          emissiveIntensity: 0.32,
+          side: THREE.DoubleSide
         })
       );
       mesh.rotation.x = -Math.PI / 2;
@@ -1760,8 +1766,8 @@
     }
 
     const MAP_POLAR = 0.36;
-    const TOP_POS = new THREE.Vector3(2, 78, -18);
-    const TOP_TARGET = new THREE.Vector3(2, 0, 6);
+    const TOP_POS = new THREE.Vector3(0, 118, -38);
+    const TOP_TARGET = new THREE.Vector3(0, 0, 2);
     const _viewOffset = new THREE.Vector3();
     let camAnimating = false;
     let viewPointerDown = false;
@@ -1914,7 +1920,7 @@
         const y = dist * Math.sin(altitude);
         const z = dist * Math.cos(azimuth) * Math.cos(altitude);
         sun.position.set(x, Math.max(y, 8), z);
-        sun.target.position.set(2, 0, 6);
+        sun.target.position.set(0, 0, 2);
         sun.castShadow = true;
         const elev = Math.max(0.2, Math.sin(altitude));
         sun.intensity = 0.85 + 1.35 * elev;
