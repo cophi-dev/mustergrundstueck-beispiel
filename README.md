@@ -44,6 +44,7 @@ Grundrisse aus **ALKIS Gebäude** (LGLN), Lage geprüft gegen DOP20 / Satellit:
 
 - Wohnhaus Nr. 12: **roter Klinker**, steiles **Walmdach**, **Zwerchhaus** (2 Fenster) und **Erker** zur Ashausener Straße, Hausnummer 12, Hecke an der Straße. First parallel zur Straße (11,6 × 8,5 m), eingeschossiger Ostflügel und Hof-Anbau
 - Freistehende **L-Garage/Werkstatt** östlich des Hauses (ALKIS): langer Schenkel grob Nord–Süd an der Ostgrenze, kurzer Schenkel nach Westen, Hof dazwischen, **weißes Lamellentor** am Südgiebel
+- **Bäume** aus dem DOP20 (Laubkronen auf 121/2, Lebensbäume am Hof, Hecke Ashausener + Am Osterfeld). Button **Bäume** blendet die 3D-Kronen. Auf der Zufahrt steht ein Hof-Pkw wie im Luftbild.
 - Nachbarn als Kontext an ihrer ALKIS-Lage: Am Osterfeld 7 (östlich), Ashausener Str. 14 (südöstlich), Am Osterfeld 1 (nordwestlich)
 
 ### Bebauungsoptionen (verschiebbar)
