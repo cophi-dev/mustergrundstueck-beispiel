@@ -1265,7 +1265,6 @@
       if (parkEnabled) addParkplatz(data.parkplatz);
       addFence(SITE_POLY);
       addStreetHedge();
-      addOsterfeldHedge();
       addHardscape();
       addDrivewayCar();
 
@@ -1554,10 +1553,6 @@
       if (btn) btn.classList.toggle("active", on);
     }
 
-    function addHedgeRun(group, mat, ax, az, bx, bz, width, height) {
-      addStrip(group, mat, ax, az, bx, bz, width, height, 0, true);
-    }
-
     function addStrip(group, material, ax, az, bx, bz, width, height, y0 = 0, cast = false) {
       const dx = bx - ax, dz = bz - az;
       const len = Math.hypot(dx, dz);
@@ -1614,24 +1609,6 @@
         m.castShadow = true;
         hedgeGroup.add(m);
       }
-      context.add(hedgeGroup);
-    }
-
-    function addOsterfeldHedge() {
-      const hedgeGroup = new THREE.Group();
-      hedgeGroup.name = "Hecke_Osterfeld";
-      const hedgeMat = mat(0x355e32, { roughness: 0.96 });
-      const a = [-8.13, 38.75], b = [26.54, 26.27];
-      const dx = b[0] - a[0], dz = b[1] - a[1];
-      const len = Math.hypot(dx, dz);
-      const nx = dz / len, nz = -dx / len;
-      const inset = 1.35;
-      addHedgeRun(
-        hedgeGroup, hedgeMat,
-        a[0] + nx * inset, a[1] + nz * inset,
-        b[0] + nx * inset, b[1] + nz * inset,
-        0.85, 1.35
-      );
       context.add(hedgeGroup);
     }
 
