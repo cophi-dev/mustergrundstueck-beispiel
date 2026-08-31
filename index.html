@@ -1265,7 +1265,6 @@
       if (parkEnabled) addParkplatz(data.parkplatz);
       addFence(SITE_POLY);
       addStreetHedge();
-      addHardscape();
       addDrivewayCar();
 
       for (const piece of data.pieces) buildPiece(piece, data.layers);
@@ -1551,46 +1550,6 @@
       applySceneChrome();
       const btn = document.getElementById("btn-sat");
       if (btn) btn.classList.toggle("active", on);
-    }
-
-    function addStrip(group, material, ax, az, bx, bz, width, height, y0 = 0, cast = false) {
-      const dx = bx - ax, dz = bz - az;
-      const len = Math.hypot(dx, dz);
-      if (len < 0.4) return;
-      const m = new THREE.Mesh(new THREE.BoxGeometry(len, height, width), material);
-      m.position.set((ax + bx) / 2, y0 + height / 2, (az + bz) / 2);
-      m.rotation.y = Math.atan2(dx, dz);
-      m.castShadow = cast && height > 0.12;
-      m.receiveShadow = true;
-      group.add(m);
-    }
-
-    function offsetSeg(ax, az, bx, bz, dist) {
-      const dx = bx - ax, dz = bz - az;
-      const len = Math.hypot(dx, dz) || 1;
-      const nx = dz / len, nz = -dx / len;
-      return [ax + nx * dist, az + nz * dist, bx + nx * dist, bz + nz * dist];
-    }
-
-    function addHardscape() {
-      const group = new THREE.Group();
-      group.name = "Befestigung";
-      const walkMat = mat(0xb8b3a8, { roughness: 0.92 });
-      const curbMat = mat(0x8a8680, { roughness: 0.78 });
-
-      function sidewalk(a, b, out) {
-        const walk = offsetSeg(a[0], a[1], b[0], b[1], out);
-        addStrip(group, walkMat, walk[0], walk[1], walk[2], walk[3], 1.5, 0.07, 0.02);
-        const curb = offsetSeg(a[0], a[1], b[0], b[1], out * 0.22);
-        addStrip(group, curbMat, curb[0], curb[1], curb[2], curb[3], 0.22, 0.13, 0.02, true);
-      }
-
-      sidewalk([-8.13, 38.75], [26.54, 26.27], -1.15);
-      sidewalk([1.399, -42.818], [-13.494, -20.491], -1.05);
-      sidewalk([-13.494, -20.491], [-17.4, -14.6], -1.05);
-      sidewalk([-22.6, -7.0], [-28.388, 1.835], -1.05);
-
-      context.add(group);
     }
 
     function addStreetHedge() {
