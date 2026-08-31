@@ -22,6 +22,10 @@
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; overflow: hidden; background: #16181a; color: var(--ink); font-family: Inter, "Segoe UI", system-ui, sans-serif; }
     #canvas-wrap { position: absolute; inset: 0; }
+    #vignette {
+      position: absolute; inset: 0; z-index: 4; pointer-events: none;
+      background: radial-gradient(ellipse at 50% 45%, transparent 48%, rgba(0,0,0,0.38) 100%);
+    }
     canvas { display: block; width: 100%; height: 100%; }
 
     #topbar {
@@ -219,6 +223,7 @@
 <body>
   <div id="loading-overlay">Laden…</div>
   <div id="canvas-wrap"></div>
+  <div id="vignette"></div>
   <div id="topbar">
     <div class="brand">
       <h1>Ashausener Str. 12</h1>
@@ -309,6 +314,7 @@
     import * as THREE from "three";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+    import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
     const wrap = document.getElementById("canvas-wrap");
     const statusEl = document.getElementById("status");
@@ -366,6 +372,14 @@
     
     hideLoading();
 
+    {
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      const room = new RoomEnvironment();
+      scene.environment = pmrem.fromScene(room, 0.04).texture;
+      room.dispose();
+      pmrem.dispose();
+    }
+
     const labelRenderer = new CSS2DRenderer();
     labelRenderer.domElement.style.position = "absolute";
     labelRenderer.domElement.style.top = "0";
@@ -399,7 +413,7 @@
     sun.shadow.camera.near = 1;
     sun.shadow.camera.far = 140;
     sun.shadow.bias = -0.0006;
-    sun.shadow.radius = 2.2;
+    sun.shadow.radius = 3.4;
     sun.target.position.set(0, 0, 2);
     scene.add(sun);
     scene.add(sun.target);
@@ -707,39 +721,55 @@
 
     function createWindow(w, h, frameColor, glassColor) {
       const g = new THREE.Group();
-      const frameThickness = 0.05;
-      const frameMat = mat(frameColor);
-      const glassMat = new THREE.MeshStandardMaterial({ 
-        color: glassColor, 
-        roughness: 0.1, 
-        metalness: 0.3,
-        transparent: true,
-        opacity: 0.6
-      });
-      const glass = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.1, h - 0.1), glassMat);
-      glass.position.z = 0.02;
+      const frameMat = mat(frameColor, { roughness: 0.42, metalness: 0.08 });
+      const ft = Math.max(0.05, Math.min(0.08, w * 0.055));
+      const fd = 0.12;
+      const inner = new THREE.Mesh(
+        new THREE.PlaneGeometry(w - ft * 1.5, h - ft * 1.5),
+        mat(0x151c22, { roughness: 1, metalness: 0 })
+      );
+      inner.position.z = 0.012;
+      g.add(inner);
+      const glass = new THREE.Mesh(
+        new THREE.PlaneGeometry(w - ft * 2.15, h - ft * 2.15),
+        new THREE.MeshStandardMaterial({
+          color: glassColor || 0x7aa3b5,
+          roughness: 0.07,
+          metalness: 0.28,
+          transparent: true,
+          opacity: 0.52,
+          side: THREE.DoubleSide,
+          envMapIntensity: 1.55
+        })
+      );
+      glass.position.z = 0.04;
       g.add(glass);
-      const frameTop = new THREE.Mesh(new THREE.BoxGeometry(w, frameThickness, 0.08), frameMat);
-      frameTop.position.set(0, h/2 - frameThickness/2, 0);
-      g.add(frameTop);
-      const frameBottom = frameTop.clone();
-      frameBottom.position.y = -h/2 + frameThickness/2;
-      g.add(frameBottom);
-      const frameLeft = new THREE.Mesh(new THREE.BoxGeometry(frameThickness, h, 0.08), frameMat);
-      frameLeft.position.set(-w/2 + frameThickness/2, 0, 0);
-      g.add(frameLeft);
-      const frameRight = frameLeft.clone();
-      frameRight.position.x = w/2 - frameThickness/2;
-      g.add(frameRight);
-      const frameMid = new THREE.Mesh(new THREE.BoxGeometry(frameThickness * 0.7, h - 0.1, 0.06), frameMat);
-      g.add(frameMid);
+      function bar(bw, bh, x, y) {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, fd), frameMat);
+        m.position.set(x, y, fd * 0.28);
+        m.castShadow = true;
+        g.add(m);
+      }
+      bar(w, ft, 0, h / 2 - ft / 2);
+      bar(w, ft, 0, -h / 2 + ft / 2);
+      bar(ft, h, -w / 2 + ft / 2, 0);
+      bar(ft, h, w / 2 - ft / 2, 0);
+      if (w > 0.7) bar(ft * 0.55, h - ft * 2, 0, 0);
+      const sill = new THREE.Mesh(new THREE.BoxGeometry(w + 0.1, 0.048, 0.16), frameMat);
+      sill.position.set(0, -h / 2 - 0.008, 0.055);
+      sill.castShadow = true;
+      g.add(sill);
       return g;
     }
 
     function createDoor(w, h, color, handleColor) {
       const g = new THREE.Group();
       const doorMat = mat(color, { roughness: 0.7 });
-      const door = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.08), doorMat);
+      const reveal = new THREE.Mesh(new THREE.BoxGeometry(w + 0.08, h + 0.08, 0.1), mat(0x1a1612, { roughness: 1 }));
+      reveal.position.z = -0.02;
+      g.add(reveal);
+      const door = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.1), doorMat);
+      door.position.z = 0.04;
       g.add(door);
       const frameMat = mat(0x4a3a2a);
       const frameTop = new THREE.Mesh(new THREE.BoxGeometry(w + 0.12, 0.06, 0.1), frameMat);
@@ -933,6 +963,18 @@
         w.rotation.y = win.rotY;
         g.add(w);
       }
+      const ogWins = [
+        { x: 2.75, y: 3.92, z: -4.26, w: 1.12, h: 1.18, rotY: Math.PI },
+        { x: -2.55, y: 3.92, z: -4.26, w: 1.12, h: 1.18, rotY: Math.PI },
+        { x: 5.80, y: 3.95, z: -1.5, w: 1.05, h: 1.15, rotY: Math.PI / 2 },
+        { x: 5.80, y: 3.95, z: 1.6, w: 1.05, h: 1.15, rotY: Math.PI / 2 }
+      ];
+      for (const win of ogWins) {
+        const w = createWindow(win.w, win.h, 0xffffff, 0x87ceeb);
+        w.position.set(win.x, win.y, win.z);
+        w.rotation.y = win.rotY;
+        g.add(w);
+      }
       const door = createDoor(1.05, 2.15, 0x5a4a3a, 0xc0c0c0);
       door.position.set(5.80, 1.1, 0.2);
       door.rotation.y = Math.PI / 2;
@@ -1020,44 +1062,80 @@
       return obj;
     }
 
+    const TREE_ICOS = new THREE.IcosahedronGeometry(1, 1);
+    const TREE_LEAF_MATS = [0x4a6e38, 0x3f6232, 0x557a40, 0x456636].map((c) =>
+      mat(c, { roughness: 0.94 })
+    );
+    const TREE_CONE_MAT = mat(0x2f4a32, { roughness: 0.96 });
+    const TREE_SHRUB_MAT = mat(0x3f6a38, { roughness: 0.96 });
+
+    function treeSeed(x, z, i) {
+      const s = Math.sin(x * 12.9898 + z * 78.233 + i * 19.13) * 43758.5453;
+      return s - Math.floor(s);
+    }
+
     function treeMass(x, z, r, h, name, kind = "deciduous") {
       const g = new THREE.Group();
       g.name = name;
       if (kind === "conifer") {
-        const trunk = cyl(r * 0.18, h * 0.22, 0x4a3728, 0, 0, 0);
-        const coneMat = mat(0x2f4a32, { roughness: 0.96 });
-        const cone = new THREE.Mesh(new THREE.ConeGeometry(r * 0.95, h * 0.82, 8), coneMat);
-        cone.position.y = h * 0.22 + h * 0.41;
-        cone.castShadow = true;
-        const cone2 = new THREE.Mesh(new THREE.ConeGeometry(r * 0.62, h * 0.42, 8), coneMat);
-        cone2.position.y = h * 0.55;
-        cone2.castShadow = true;
-        g.add(trunk, cone, cone2);
+        g.add(cyl(r * 0.16, h * 0.2, 0x4a3728, 0, 0, 0));
+        const layers = [
+          { y: h * 0.36, rr: r * 0.95, hh: h * 0.5 },
+          { y: h * 0.56, rr: r * 0.72, hh: h * 0.42 },
+          { y: h * 0.74, rr: r * 0.48, hh: h * 0.34 }
+        ];
+        for (const L of layers) {
+          const cone = new THREE.Mesh(new THREE.ConeGeometry(L.rr, L.hh, 8), TREE_CONE_MAT);
+          cone.position.y = L.y;
+          cone.castShadow = true;
+          g.add(cone);
+        }
+        for (let i = 0; i < 5; i++) {
+          const t = treeSeed(x, z, i);
+          const m = new THREE.Mesh(TREE_ICOS, TREE_LEAF_MATS[i % TREE_LEAF_MATS.length]);
+          m.scale.setScalar(r * (0.16 + t * 0.14));
+          const ang = t * Math.PI * 2;
+          m.position.set(
+            Math.cos(ang) * r * 0.28,
+            h * (0.42 + t * 0.36),
+            Math.sin(ang) * r * 0.28
+          );
+          m.castShadow = true;
+          g.add(m);
+        }
       } else if (kind === "shrub") {
-        const bushMat = mat(0x3f6a38, { roughness: 0.96 });
-        const bush = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), bushMat);
-        bush.scale.set(1.15, 0.55, 1.15);
-        bush.position.y = r * 0.45;
-        bush.castShadow = true;
-        const bush2 = new THREE.Mesh(new THREE.SphereGeometry(r * 0.7, 12, 8), bushMat);
-        bush2.scale.set(1.1, 0.5, 1.1);
-        bush2.position.set(r * 0.35, r * 0.38, -r * 0.15);
-        bush2.castShadow = true;
-        g.add(bush, bush2);
+        for (let i = 0; i < 5; i++) {
+          const t = treeSeed(x, z, i + 3);
+          const m = new THREE.Mesh(TREE_ICOS, TREE_SHRUB_MAT);
+          const s = r * (0.42 + t * 0.38);
+          m.scale.set(s * 1.2, s * 0.52, s * 1.15);
+          const ang = (i / 5) * Math.PI * 2 + t;
+          m.position.set(
+            Math.cos(ang) * r * 0.35 * t,
+            r * (0.28 + t * 0.18),
+            Math.sin(ang) * r * 0.32 * t
+          );
+          m.castShadow = true;
+          g.add(m);
+        }
       } else {
-        const trunk = cyl(r * 0.14, h * 0.34, 0x5a3f2a, 0, 0, 0);
-        const crownMat = mat(0x4a6e38, { roughness: 0.95 });
-        const crown = new THREE.Mesh(new THREE.SphereGeometry(r, 18, 14), crownMat);
-        crown.position.set(0, h * 0.58, 0);
-        crown.scale.set(1.08, 0.86, 1.08);
-        crown.castShadow = true;
-        const crown2 = new THREE.Mesh(new THREE.SphereGeometry(r * 0.62, 14, 10), crownMat);
-        crown2.position.set(r * 0.32, h * 0.72, -r * 0.14);
-        crown2.castShadow = true;
-        const crown3 = new THREE.Mesh(new THREE.SphereGeometry(r * 0.5, 12, 9), crownMat);
-        crown3.position.set(-r * 0.28, h * 0.64, r * 0.18);
-        crown3.castShadow = true;
-        g.add(trunk, crown, crown2, crown3);
+        g.add(cyl(r * 0.13, h * 0.32, 0x5a3f2a, 0, 0, 0));
+        for (let i = 0; i < 8; i++) {
+          const t = treeSeed(x, z, i);
+          const t2 = treeSeed(z, x, i + 11);
+          const m = new THREE.Mesh(TREE_ICOS, TREE_LEAF_MATS[i % TREE_LEAF_MATS.length]);
+          const s = r * (0.36 + t * 0.44);
+          m.scale.set(s * 1.06, s * 0.8, s * 1.04);
+          const ang = (i / 8) * Math.PI * 2 + t * 0.65;
+          const rad = r * (0.1 + t2 * 0.45);
+          m.position.set(
+            Math.cos(ang) * rad,
+            h * 0.46 + t * h * 0.34,
+            Math.sin(ang) * rad
+          );
+          m.castShadow = true;
+          g.add(m);
+        }
       }
       g.position.set(x, 0, z);
       return g;
@@ -1160,6 +1238,23 @@
       slab.name = "Diorama_Sockel";
       context.add(slab);
 
+      const contact = new THREE.Mesh(
+        new THREE.CircleGeometry(1, 48),
+        new THREE.MeshBasicMaterial({
+          color: 0x050607,
+          transparent: true,
+          opacity: 0.44,
+          depthWrite: false,
+          side: THREE.DoubleSide
+        })
+      );
+      contact.rotation.x = -Math.PI / 2;
+      contact.position.set(-2, -SLAB_H - 0.18, -4);
+      contact.scale.set(38, 1, 50);
+      contact.name = "Studio_Kontakt";
+      contact.renderOrder = -3;
+      context.add(contact);
+
       const lawn = polygon(ISLAND_POLY, 0, "#5f7a48", 1);
       lawn.name = "Rasen";
       lawn.position.y = 0.02;
@@ -1171,6 +1266,7 @@
       addFence(SITE_POLY);
       addStreetHedge();
       addOsterfeldHedge();
+      addHardscape();
       addDrivewayCar();
 
       for (const piece of data.pieces) buildPiece(piece, data.layers);
@@ -1232,9 +1328,25 @@
         }
 
         if (piece.layer === "STRASSE") {
-          const mesh = polygon(offsetVerts, piece.height || 0.02, color, 0.95);
+          const isHof = typeof piece.id === "string" && piece.id.startsWith("zufahrt");
+          const mesh = polygon(
+            offsetVerts,
+            isHof ? 0.06 : (piece.height || 0.02),
+            isHof ? "#a89878" : color,
+            0.95
+          );
           mesh.name = piece.name;
-          mesh.userData.satHide = true;
+          if (isHof) {
+            mesh.position.y = 0.035;
+            mesh.receiveShadow = true;
+            if (mesh.material) {
+              mesh.material.transparent = false;
+              mesh.material.depthWrite = true;
+              mesh.material.roughness = 0.96;
+            }
+          } else {
+            mesh.userData.satHide = true;
+          }
           context.add(mesh);
           return;
         }
@@ -1443,15 +1555,47 @@
     }
 
     function addHedgeRun(group, mat, ax, az, bx, bz, width, height) {
+      addStrip(group, mat, ax, az, bx, bz, width, height, 0, true);
+    }
+
+    function addStrip(group, material, ax, az, bx, bz, width, height, y0 = 0, cast = false) {
       const dx = bx - ax, dz = bz - az;
       const len = Math.hypot(dx, dz);
       if (len < 0.4) return;
-      const m = new THREE.Mesh(new THREE.BoxGeometry(len, height, width), mat);
-      m.position.set((ax + bx) / 2, height / 2, (az + bz) / 2);
+      const m = new THREE.Mesh(new THREE.BoxGeometry(len, height, width), material);
+      m.position.set((ax + bx) / 2, y0 + height / 2, (az + bz) / 2);
       m.rotation.y = Math.atan2(dx, dz);
-      m.castShadow = true;
+      m.castShadow = cast && height > 0.12;
       m.receiveShadow = true;
       group.add(m);
+    }
+
+    function offsetSeg(ax, az, bx, bz, dist) {
+      const dx = bx - ax, dz = bz - az;
+      const len = Math.hypot(dx, dz) || 1;
+      const nx = dz / len, nz = -dx / len;
+      return [ax + nx * dist, az + nz * dist, bx + nx * dist, bz + nz * dist];
+    }
+
+    function addHardscape() {
+      const group = new THREE.Group();
+      group.name = "Befestigung";
+      const walkMat = mat(0xb8b3a8, { roughness: 0.92 });
+      const curbMat = mat(0x8a8680, { roughness: 0.78 });
+
+      function sidewalk(a, b, out) {
+        const walk = offsetSeg(a[0], a[1], b[0], b[1], out);
+        addStrip(group, walkMat, walk[0], walk[1], walk[2], walk[3], 1.5, 0.07, 0.02);
+        const curb = offsetSeg(a[0], a[1], b[0], b[1], out * 0.22);
+        addStrip(group, curbMat, curb[0], curb[1], curb[2], curb[3], 0.22, 0.13, 0.02, true);
+      }
+
+      sidewalk([-8.13, 38.75], [26.54, 26.27], -1.15);
+      sidewalk([1.399, -42.818], [-13.494, -20.491], -1.05);
+      sidewalk([-13.494, -20.491], [-17.4, -14.6], -1.05);
+      sidewalk([-22.6, -7.0], [-28.388, 1.835], -1.05);
+
+      context.add(group);
     }
 
     function addStreetHedge() {
