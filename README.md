@@ -42,7 +42,7 @@ Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung an 121/2-ALKIS (UTM 
 
 Grundrisse aus **ALKIS Gebäude** (LGLN), Lage geprüft gegen DOP20 / Satellit:
 
-- Wohnhaus Nr. 12: **roter Klinker**, steiles **Walmdach**, **Zwerchhaus** (2 Fenster) und **Erker** zur Ashausener Straße, Hausnummer 12, Hecke an der Straße. First parallel zur Straße (11,6 × 8,5 m), eingeschossiger Ostflügel und Hof-Anbau. Fenster mit dunkler Laibung, Glas und Sohlbank; OG-Fenster zur Straße und am Ostgiebel.
+- Wohnhaus Nr. 12 nach Bestandsplan H. Burmeister (M 1:100): **roter Klinker**, Sockel, 1 VG + **Kniestock-DG** im steilen **Walmdach** (First 4,00 m über DG-Fußboden, Firstlänge 4,00 m, parallel zur Straße). Hauptkörper **11,48 × 8,58 m**. Zur Ashausener Straße: **Erker 4,00 × 1,15 m** mit dreiflügeligem Fenster, je ein EG-Fenster links und rechts, Eingang in der Erker-Ecke mit Treppe, **Zwerchhaus** (Satteldach, 2 quadratische Fenster) — keine weiteren OG-Fenster in der Straßenfassade. Schornstein auf dem First. Rückwärtig **W.-Küche 3,90 × 4,90 m** (eingeschossig) und späterer Ostflügel (ALKIS). Hausnummer 12, Hecke an der Straße.
 - Freistehende **L-Garage/Werkstatt** östlich des Hauses (ALKIS): langer Schenkel grob Nord–Süd an der Ostgrenze, kurzer Schenkel nach Westen, Hof dazwischen, **weißes Lamellentor** am Südgiebel
 - **Bäume** aus dem DOP20 (gebüschelte Laubkronen auf 121/2, Lebensbäume am Hof, Hecke an der Ashausener). Button **Bäume** blendet die 3D-Kronen. Bei Satellit zeigt das DOP20 die Wege; ohne Satellit liegen Hof und der gebogene Weg von der Ashausener als Kies. Hof-Pkw wie im Luftbild. Studio-Vignette und Kontaktschatten unter der Insel.
 - Nachbarn als Kontext an ihrer ALKIS-Lage: Am Osterfeld 7 (östlich), Ashausener Str. 14 (südöstlich), Am Osterfeld 1 (nordwestlich)
@@ -51,7 +51,7 @@ Grundrisse aus **ALKIS Gebäude** (LGLN), Lage geprüft gegen DOP20 / Satellit:
 
 Passend zu WA I / GRZ 0,25 / nur Einzel- und Doppelhäuser:
 
-1. **Seniorengerechter Bungalow** — 18×9 m, 1 VG, 162 m² (passt in 9,5 m Baufenstertiefe)
+1. **Mittelstädt Bungalow 100 W** — 13,71×9,21 m, 1 VG, ~99,5 m² Wohnfläche (GRZ 0,18). Roter Klinker, Walmdach 30°, zurückgesetzte Diele zur Straße Am Osterfeld, große Wohnfenster und Terrasse gartenseitig (Richtung 121/1). Kubatur nach dem veröffentlichten Typ 100 W, der als einziger Katalog-Bungalow in die 9,5 m Baugrenze passt. Das PDF *Mittelstädt – Burmester+Oberhofer – EG+Perspektiven* war in der Cloud-Umgebung nicht lesbar (nur lokaler Mac-Pfad; SwissTransfer abgelaufen) — sobald es hängt, Öffnungen und ggf. abweichende Maße nachziehen.
 2. **Kompaktes EFH mit Dachgeschoss** — 10×8,5 m, 1 VG + DG
 3. **Doppelhaus** — 16×9 m, 1 VG + DG (statt 3-Familien-Haus, das der B-Plan nicht vorsieht)
 4. **Ersatzneubau** — 12×10 m anstelle des Bestands auf 121/1
@@ -79,7 +79,7 @@ Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der
 - Die gelbe Fläche im Viewer ist die **Baugrenze** (~293 m²), nicht das Grundstück. 121/2 ist amtlich **702 m²** (ALKIS).
 - Baugrenze aus den gedruckten WA-I-Maßen (7 m / 3 m), nicht ein pauschaler 3 m-Abstand. Die Strichpunktlinie im Scan 1:1000 lässt sich nicht sauber vektorisieren.
 - GRZ 0,25 und 1 Vollgeschoss stammen aus der Planzeichenerklärung / den Nutzungsschablonen (WA I) im B-Plan Osterfeld West.
-- Keine Innenräume, keine verbindliche Bauvoranfrage.
+- Das 3D-Wohnhaus folgt dem Bestandsplan (Ansichten + Grundrisse), die Lage auf dem Grundstück bleibt ALKIS/DOP20. Der Bungalow auf 121/2 folgt Mittelstädt 100 W (EG + Perspektive). Keine Innenräume, keine verbindliche Bauvoranfrage.
 
 ## Lizenz
 
