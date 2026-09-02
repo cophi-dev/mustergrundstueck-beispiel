@@ -173,7 +173,8 @@
       z-index: 6; font-size: 10px; color: rgba(255,255,255,0.42); text-align: right;
       max-width: min(360px, calc(100% - 260px));
     }
-    #sync-status { display: none; }
+    #sync-status { display: block; font-size: 11px; color: var(--muted); margin-top: 8px; }
+    #sync-status.connected { color: var(--ok); }
     .area-fact { display: flex; gap: 8px; align-items: baseline; margin: 3px 0; font-size: 11px; line-height: 1.3; }
     .area-fact strong { font-size: 13px; min-width: 50px; color: #fff; }
     .area-fact span { color: var(--muted); }
@@ -473,65 +474,200 @@
     topFill.position.set(8, 90, 12);
     scene.add(topFill);
 
-    let ydoc = null, yPositions = null, yCustomPieces = null, wsProvider = null;
+    let ydoc = null, yPositions = null, yCustomPieces = null, yState = null;
+    let wsProvider = null, rtcProvider = null;
     let isRemoteUpdate = false;
     let customPieceCounter = 0;
     let pendingPlacement = null;
     let syncReady = false;
+    const SYNC_ROOM = "ashausener-12-stelle-live-v3";
+    const syncChannel = ("BroadcastChannel" in window) ? new BroadcastChannel(SYNC_ROOM) : null;
+
+    function setSyncLabel(text, ok) {
+      syncStatusEl.textContent = text;
+      syncStatusEl.classList.toggle("connected", !!ok);
+    }
+
+    function peerCount() {
+      let n = 1;
+      try {
+        if (wsProvider && wsProvider.awareness) n = Math.max(n, wsProvider.awareness.getStates().size);
+        if (rtcProvider && rtcProvider.awareness) n = Math.max(n, rtcProvider.awareness.getStates().size);
+      } catch (e) { /* ignore */ }
+      return n;
+    }
+
+    function refreshSyncLabel() {
+      if (!syncReady) {
+        setSyncLabel("nur lokal", false);
+        return;
+      }
+      const n = peerCount();
+      setSyncLabel(n > 1 ? `geteilt · ${n} geöffnet` : "geteilt · gleicher Link", true);
+    }
 
     function initSyncLazy() {
       const connectTimeout = setTimeout(() => {
-        if (!syncReady) {
-          syncStatusEl.textContent = "nur lokal";
-          syncStatusEl.classList.remove("connected");
-        }
-      }, 3000);
+        if (!syncReady) setSyncLabel("nur lokal", false);
+      }, 4000);
+
+      if (syncChannel) {
+        syncChannel.onmessage = (ev) => {
+          if (!ev.data || ev.data.type !== "state") return;
+          applySharedState(ev.data, true);
+        };
+      }
 
       Promise.all([
         import("https://cdn.jsdelivr.net/npm/yjs@13.6.10/+esm"),
-        import("https://cdn.jsdelivr.net/npm/y-websocket@2.0.3/+esm")
-      ]).then(([Y, YWebsocket]) => {
+        import("https://cdn.jsdelivr.net/npm/y-websocket@2.0.3/+esm"),
+        import("https://cdn.jsdelivr.net/npm/y-webrtc@10.3.0/+esm").catch(() => null)
+      ]).then(([Y, YWebsocket, YWebrtc]) => {
         ydoc = new Y.Doc();
         yPositions = ydoc.getMap("positions");
         yCustomPieces = ydoc.getMap("customPieces");
-        
+        yState = ydoc.getMap("state");
+
         try {
           wsProvider = new YWebsocket.WebsocketProvider(
             "wss://demos.yjs.dev",
-            "stelle-ashausener-12-2026",
+            SYNC_ROOM,
             ydoc
           );
           wsProvider.on("status", (event) => {
             if (event.status === "connected") {
               clearTimeout(connectTimeout);
               syncReady = true;
-              syncStatusEl.textContent = "verbunden";
-              syncStatusEl.classList.add("connected");
-            } else {
-              syncStatusEl.textContent = "nur lokal";
-              syncStatusEl.classList.remove("connected");
+              refreshSyncLabel();
+            } else if (!syncReady) {
+              setSyncLabel("nur lokal", false);
             }
           });
           wsProvider.on("sync", (isSynced) => {
             if (isSynced) {
+              syncReady = true;
               applyRemoteCustomPieces();
               applyRemotePositions();
+              applyYState();
+              refreshSyncLabel();
             }
           });
-          yPositions.observe(() => {
-            if (!isRemoteUpdate) applyRemotePositions();
-          });
-          yCustomPieces.observe(() => {
-            if (!isRemoteUpdate) applyRemoteCustomPieces();
-          });
+          if (wsProvider.awareness) {
+            wsProvider.awareness.on("change", refreshSyncLabel);
+          }
         } catch (e) {
-          clearTimeout(connectTimeout);
-          syncStatusEl.textContent = "nur lokal";
+          setSyncLabel("nur lokal", false);
         }
+
+        if (YWebrtc && YWebrtc.WebrtcProvider) {
+          try {
+            rtcProvider = new YWebrtc.WebrtcProvider(SYNC_ROOM, ydoc, {
+              signaling: [
+                "wss://signaling.yjs.dev",
+                "wss://y-webrtc-eu.fly.dev"
+              ]
+            });
+            if (rtcProvider.awareness) rtcProvider.awareness.on("change", refreshSyncLabel);
+          } catch (e) { /* WebRTC optional */ }
+        }
+
+        yPositions.observe(() => {
+          if (!isRemoteUpdate) applyRemotePositions();
+        });
+        yCustomPieces.observe(() => {
+          if (!isRemoteUpdate) applyRemoteCustomPieces();
+        });
+        yState.observe(() => {
+          if (!isRemoteUpdate) applyYState();
+        });
       }).catch(() => {
         clearTimeout(connectTimeout);
-        syncStatusEl.textContent = "nur lokal";
+        setSyncLabel("nur lokal", false);
       });
+    }
+
+    function snapshotState() {
+      const extras = {};
+      const extraIds = (typeof extraPlacePos === "object" && extraPlacePos) ? extraPlacePos : {};
+      for (const id of Object.keys(extraIds)) {
+        const g = pieceGroups.get(id);
+        extras[id] = !!(g && g.visible);
+      }
+      return {
+        type: "state",
+        variant: activeVariant,
+        satellite: satelliteOn,
+        trees: !!(treesGroup && treesGroup.visible),
+        sunHour: parseFloat(document.getElementById("sun-hour").value),
+        sunMonth: parseInt(document.getElementById("sun-month").value, 10),
+        extras
+      };
+    }
+
+    function broadcastState() {
+      if (isRemoteUpdate) return;
+      const snap = snapshotState();
+      if (yState) {
+        yState.set("variant", snap.variant);
+        yState.set("satellite", snap.satellite);
+        yState.set("trees", snap.trees);
+        yState.set("sunHour", snap.sunHour);
+        yState.set("sunMonth", snap.sunMonth);
+        yState.set("extras", snap.extras);
+      }
+      if (syncChannel) {
+        try { syncChannel.postMessage(snap); } catch (e) { /* ignore */ }
+      }
+    }
+
+    function applyYState() {
+      if (!yState) return;
+      applySharedState({
+        variant: yState.get("variant"),
+        satellite: yState.get("satellite"),
+        trees: yState.get("trees"),
+        sunHour: yState.get("sunHour"),
+        sunMonth: yState.get("sunMonth"),
+        extras: yState.get("extras")
+      }, true);
+    }
+
+    function applySharedState(data, fromRemote) {
+      if (!data) return;
+      isRemoteUpdate = true;
+      if (data.variant !== undefined && data.variant !== activeVariant) {
+        selectVariant(data.variant, { fromRemote: true });
+      }
+      if (data.satellite !== undefined && data.satellite !== satelliteOn) {
+        setSatelliteVisible(data.satellite);
+      }
+      if (data.trees !== undefined && treesGroup && treesGroup.visible !== data.trees) {
+        treesGroup.visible = data.trees;
+        const tb = document.getElementById("btn-trees");
+        if (tb) tb.classList.toggle("active", data.trees);
+      }
+      let sunChanged = false;
+      if (data.sunHour != null) {
+        const el = document.getElementById("sun-hour");
+        if (el && el.value !== String(data.sunHour)) {
+          el.value = data.sunHour;
+          sunChanged = true;
+        }
+      }
+      if (data.sunMonth != null) {
+        const el = document.getElementById("sun-month");
+        if (el && el.value !== String(data.sunMonth)) {
+          el.value = data.sunMonth;
+          sunChanged = true;
+        }
+      }
+      if (sunChanged) updateSun();
+      if (data.extras && typeof extraPlacePos === "object" && extraPlacePos) {
+        for (const id of Object.keys(extraPlacePos)) {
+          if (data.extras[id]) placeExtra(id, { fromRemote: true });
+        }
+      }
+      isRemoteUpdate = false;
     }
 
     function applyRemotePositions() {
@@ -607,41 +743,29 @@
 
     function createBrickTexture() {
       const canvas = document.createElement('canvas');
-      canvas.width = 128;
-      canvas.height = 128;
+      canvas.width = 256;
+      canvas.height = 256;
       const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#8a4a3a';
-      ctx.fillRect(0, 0, 128, 128);
-      const bricks = ['#b24a36', '#9e3f2e', '#c4563c', '#a84432'];
-      for (let row = 0; row < 8; row++) {
-        const offset = (row % 2) * 32;
-        for (let col = 0; col < 4; col++) {
-          const x = col * 64 + offset - 32;
-          const y = row * 16;
-          ctx.fillStyle = bricks[(row + col) % bricks.length];
-          ctx.fillRect(x + 2, y + 2, 60, 12);
-        }
-      }
-      ctx.strokeStyle = '#7a4034';
-      ctx.lineWidth = 2;
-      for (let row = 0; row <= 8; row++) {
-        ctx.beginPath();
-        ctx.moveTo(0, row * 16);
-        ctx.lineTo(128, row * 16);
-        ctx.stroke();
-      }
-      for (let row = 0; row < 8; row++) {
-        const offset = (row % 2) * 32;
-        for (let col = 0; col <= 4; col++) {
-          ctx.beginPath();
-          ctx.moveTo(col * 64 + offset - 32, row * 16);
-          ctx.lineTo(col * 64 + offset - 32, (row + 1) * 16);
-          ctx.stroke();
+      ctx.fillStyle = '#b9b0a4';
+      ctx.fillRect(0, 0, 256, 256);
+      const bricks = ['#8c3a2a', '#7a3224', '#9a4230', '#6e2c20', '#854034', '#933c28'];
+      const brickH = 14, brickW = 32, joint = 3;
+      for (let row = 0; row < 20; row++) {
+        const offset = (row % 2) * (brickW / 2);
+        for (let col = -1; col < 10; col++) {
+          const x = col * brickW + offset;
+          const y = row * brickH;
+          ctx.fillStyle = bricks[(row * 7 + col + 3) % bricks.length];
+          ctx.fillRect(x + joint * 0.4, y + joint * 0.35, brickW - joint, brickH - joint);
+          ctx.fillStyle = "rgba(255,220,190,0.07)";
+          ctx.fillRect(x + joint * 0.4, y + joint * 0.35, brickW - joint, 2);
         }
       }
       const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
       texture.wrapS = THREE.RepeatWrapping;
       texture.wrapT = THREE.RepeatWrapping;
+      texture.anisotropy = 8;
       return texture;
     }
 
@@ -771,32 +895,38 @@
 
     function createWindow(w, h, frameColor, glassColor) {
       const g = new THREE.Group();
-      const frameMat = mat(frameColor, { roughness: 0.42, metalness: 0.08 });
-      const ft = Math.max(0.05, Math.min(0.08, w * 0.055));
-      const fd = 0.12;
-      const inner = new THREE.Mesh(
-        new THREE.PlaneGeometry(w - ft * 1.5, h - ft * 1.5),
-        mat(0x151c22, { roughness: 1, metalness: 0 })
+      const frameMat = mat(frameColor || 0xf4f1ea, { roughness: 0.38, metalness: 0.04 });
+      const ft = Math.max(0.055, Math.min(0.085, w * 0.06));
+      const fd = 0.11;
+      const reveal = new THREE.Mesh(
+        new THREE.BoxGeometry(w + 0.14, h + 0.16, 0.16),
+        mat(0x2a1c18, { roughness: 0.95 })
       );
-      inner.position.z = 0.012;
+      reveal.position.z = -0.04;
+      g.add(reveal);
+      const inner = new THREE.Mesh(
+        new THREE.PlaneGeometry(w - ft * 1.4, h - ft * 1.4),
+        mat(0x12181e, { roughness: 1, metalness: 0 })
+      );
+      inner.position.z = 0.01;
       g.add(inner);
       const glass = new THREE.Mesh(
-        new THREE.PlaneGeometry(w - ft * 2.15, h - ft * 2.15),
+        new THREE.PlaneGeometry(w - ft * 2.2, h - ft * 2.2),
         new THREE.MeshStandardMaterial({
-          color: glassColor || 0x7aa3b5,
-          roughness: 0.07,
-          metalness: 0.28,
+          color: glassColor || 0x6d8894,
+          roughness: 0.06,
+          metalness: 0.22,
           transparent: true,
-          opacity: 0.52,
+          opacity: 0.58,
           side: THREE.DoubleSide,
-          envMapIntensity: 1.55
+          envMapIntensity: 1.7
         })
       );
-      glass.position.z = 0.04;
+      glass.position.z = 0.045;
       g.add(glass);
       function bar(bw, bh, x, y) {
         const m = new THREE.Mesh(new THREE.BoxGeometry(bw, bh, fd), frameMat);
-        m.position.set(x, y, fd * 0.28);
+        m.position.set(x, y, fd * 0.32);
         m.castShadow = true;
         g.add(m);
       }
@@ -804,11 +934,15 @@
       bar(w, ft, 0, -h / 2 + ft / 2);
       bar(ft, h, -w / 2 + ft / 2, 0);
       bar(ft, h, w / 2 - ft / 2, 0);
-      if (w > 0.7) bar(ft * 0.55, h - ft * 2, 0, 0);
-      const sill = new THREE.Mesh(new THREE.BoxGeometry(w + 0.1, 0.048, 0.16), frameMat);
-      sill.position.set(0, -h / 2 - 0.008, 0.055);
+      if (w > 0.7) bar(ft * 0.5, h - ft * 2, 0, 0);
+      if (h > 1.05) bar(w - ft * 2, ft * 0.48, 0, h * 0.12);
+      const sill = new THREE.Mesh(new THREE.BoxGeometry(w + 0.16, 0.055, 0.18), mat(0xefe8dc, { roughness: 0.55 }));
+      sill.position.set(0, -h / 2 - 0.02, 0.06);
       sill.castShadow = true;
       g.add(sill);
+      const lintel = new THREE.Mesh(new THREE.BoxGeometry(w + 0.18, 0.07, 0.14), mat(0x3a221c, { roughness: 0.9 }));
+      lintel.position.set(0, h / 2 + 0.05, 0.02);
+      g.add(lintel);
       return g;
     }
 
@@ -1025,11 +1159,32 @@
         w.rotation.y = win.rotY;
         g.add(w);
       }
-      const door = createDoor(1.05, 2.15, 0x5a4a3a, 0xc0c0c0);
+      const door = createDoor(1.05, 2.15, 0x4a3428, 0xc9c4b8);
       door.position.set(5.80, 1.1, 0.2);
       door.rotation.y = Math.PI / 2;
       g.add(door);
 
+      const streetWinL = createWindow(1.18, 1.38, 0xf4f1ea, 0x6d8894);
+      streetWinL.position.set(-2.75, 1.75, -4.26);
+      streetWinL.rotation.y = Math.PI;
+      g.add(streetWinL);
+
+      const sockel = boxWithMaterial(11.7, 0.38, 8.62, mat(0x6a655c, { roughness: 0.95 }), 0, 0, 0, "Sockel");
+      g.add(sockel);
+
+      const gutterMat = mat(0xd8d4cc, { roughness: 0.35, metalness: 0.25 });
+      const gutterS = new THREE.Mesh(new THREE.BoxGeometry(11.9, 0.07, 0.09), gutterMat);
+      gutterS.position.set(0, 5.02, -4.38);
+      const gutterN = gutterS.clone();
+      gutterN.position.z = 4.38;
+      g.add(gutterS, gutterN);
+
+      const chimney = boxWithMaterial(0.55, 1.35, 0.48, mat(0x6e2c20, { roughness: 0.9 }), -2.2, 6.55, 0.4, "Schornstein");
+      const cap = box(0.66, 0.08, 0.58, 0x2a2a2c, -2.2, 7.9, 0.4, "Schornstein-Kappe");
+      g.add(chimney, cap);
+
+      const plate = box(0.28, 0.22, 0.03, 0xf2eee6, -4.35, 1.85, -4.28, "Hausnummer-Schild");
+      g.add(plate);
       const el = document.createElement("div");
       el.className = "label pin";
       el.textContent = "12";
@@ -1600,6 +1755,7 @@
       applySceneChrome();
       const btn = document.getElementById("btn-sat");
       if (btn) btn.classList.toggle("active", on);
+      if (!isRemoteUpdate) broadcastState();
     }
 
     function addStreetHedge() {
@@ -1798,6 +1954,7 @@
         g.visible = !stockIds.has(pieceId);
         if (pieceId) broadcastPosition(pieceId, p.x, p.y, p.z);
       }
+      broadcastState();
       statusEl.textContent = "Zurückgesetzt";
     }
 
@@ -1809,9 +1966,14 @@
       });
     }
 
-    function selectVariant(variantKey) {
-      const turningOff = activeVariant === variantKey;
-      activeVariant = turningOff ? null : variantKey;
+    function selectVariant(variantKey, opts = {}) {
+      const fromRemote = !!opts.fromRemote;
+      if (fromRemote) {
+        activeVariant = variantKey || null;
+      } else {
+        const turningOff = activeVariant === variantKey;
+        activeVariant = turningOff ? null : variantKey;
+      }
 
       document.querySelectorAll(".variant-btn").forEach(btn => btn.classList.remove("active"));
       if (activeVariant) {
@@ -1833,11 +1995,12 @@
           if (parkedPos) group.position.set(parkedPos.x, 0, parkedPos.z);
           group.visible = false;
         }
-        broadcastPosition(vId, group.position.x, group.position.y, group.position.z);
+        if (!fromRemote) broadcastPosition(vId, group.position.x, group.position.y, group.position.z);
       }
+      if (!fromRemote) broadcastState();
     }
 
-    function placeExtra(pieceId) {
+    function placeExtra(pieceId, opts = {}) {
       const group = pieceGroups.get(pieceId);
       const place = extraPlacePos[pieceId];
       if (!group || !place) return;
@@ -1847,7 +2010,10 @@
         group.position.y = roofY !== null ? roofY : 0;
       }
       group.visible = true;
-      broadcastPosition(pieceId, group.position.x, group.position.y, group.position.z);
+      if (!opts.fromRemote) {
+        broadcastPosition(pieceId, group.position.x, group.position.y, group.position.z);
+        broadcastState();
+      }
       statusEl.textContent = (group.name || pieceId) + " platziert";
     }
 
@@ -1861,6 +2027,7 @@
       const on = !treesGroup.visible;
       treesGroup.visible = on;
       document.getElementById("btn-trees").classList.toggle("active", on);
+      broadcastState();
     });
 
     const placeHint = document.getElementById("place-hint");
@@ -2122,8 +2289,8 @@
       }
     }
 
-    document.getElementById("sun-hour").addEventListener("input", updateSun);
-    document.getElementById("sun-month").addEventListener("input", updateSun);
+    document.getElementById("sun-hour").addEventListener("input", () => { updateSun(); broadcastState(); });
+    document.getElementById("sun-month").addEventListener("input", () => { updateSun(); broadcastState(); });
 
     function loadSunCalc() {
       const script = document.createElement("script");
