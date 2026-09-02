@@ -2382,12 +2382,15 @@
       northUpMode = false;
       setMapLock(false);
       applySceneChrome();
-      const hx = 5.17, hz = 21.47, hy = 2.4;
+      treesGroup.visible = false;
+      const treesBtn = document.getElementById("btn-trees");
+      if (treesBtn) treesBtn.classList.remove("active");
+      const hx = 5.17, hz = 21.47, hy = 2.15;
       const views = {
-        strasse: { pos: [10.2, 5.6, 35.0], tgt: [hx, 2.1, hz] },
-        garten: { pos: [0.2, 5.2, 8.4], tgt: [hx, hy, hz] },
-        seite: { pos: [18.5, 5.0, 18.5], tgt: [hx, hy, hz] },
-        dach: { pos: [5.2, 22, 6], tgt: [hx, 2.8, hz] }
+        strasse: { pos: [13.4, 6.4, 39.2], tgt: [hx, 1.7, hz] },
+        garten: { pos: [-3.2, 6.0, 3.8], tgt: [hx, hy, hz] },
+        seite: { pos: [24.5, 6.4, 24.0], tgt: [hx, hy, hz] },
+        dach: { pos: [6.2, 26, 7.5], tgt: [hx, 2.4, hz] }
       };
       const v = views[which] || views.strasse;
       camera.position.set(v.pos[0], v.pos[1], v.pos[2]);
