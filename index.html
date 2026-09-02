@@ -810,7 +810,12 @@
       bar(w, ft, 0, -h / 2 + ft / 2);
       bar(ft, h, -w / 2 + ft / 2, 0);
       bar(ft, h, w / 2 - ft / 2, 0);
-      if (w > 0.7 && opts.mullion !== false) bar(ft * 0.55, h - ft * 2, 0, 0);
+      const lights = opts.lights != null
+        ? opts.lights
+        : (w > 0.7 && opts.mullion !== false ? 2 : 1);
+      for (let i = 1; i < lights; i++) {
+        bar(ft * 0.55, h - ft * 2, -w / 2 + (w * i) / lights, 0);
+      }
       const sill = new THREE.Mesh(new THREE.BoxGeometry(w + 0.1, 0.048, 0.16), frameMat);
       sill.position.set(0, -h / 2 - 0.008, 0.055);
       sill.castShadow = true;
@@ -978,10 +983,44 @@
     }
 
     function addHouseWindow(group, x, y, z, w, h, rotY, opts) {
-      const win = createWindow(w, h, 0xffffff, 0x87ceeb, opts);
+      const frame = (opts && opts.frame) || 0xffffff;
+      const glass = (opts && opts.glass) || 0x87ceeb;
+      const win = createWindow(w, h, frame, glass, opts);
       win.position.set(x, y, z);
       win.rotation.y = rotY;
       group.add(win);
+    }
+
+    function createWhiteEntryDoor(w, h) {
+      const g = new THREE.Group();
+      const doorMat = mat(0xf2efe8, { roughness: 0.48 });
+      const reveal = new THREE.Mesh(new THREE.BoxGeometry(w + 0.1, h + 0.1, 0.08), mat(0x2c2824, { roughness: 1 }));
+      reveal.position.z = -0.02;
+      g.add(reveal);
+      const door = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.08), doorMat);
+      door.position.z = 0.03;
+      door.castShadow = true;
+      g.add(door);
+      const glass = new THREE.Mesh(
+        new THREE.PlaneGeometry(w * 0.26, h * 0.7),
+        new THREE.MeshStandardMaterial({
+          color: 0x7aa3b5,
+          roughness: 0.08,
+          metalness: 0.25,
+          transparent: true,
+          opacity: 0.5,
+          side: THREE.DoubleSide
+        })
+      );
+      glass.position.set(-w * 0.22, 0.02, 0.08);
+      g.add(glass);
+      const muntin = new THREE.Mesh(new THREE.BoxGeometry(w * 0.26, 0.03, 0.02), doorMat);
+      muntin.position.set(-w * 0.22, 0.02, 0.085);
+      g.add(muntin);
+      const handle = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.14, 0.05), mat(0xc5c5c8, { metalness: 0.8, roughness: 0.2 }));
+      handle.position.set(w * 0.32, 0, 0.08);
+      g.add(handle);
+      return g;
     }
 
     function createBestandWohnhaus12() {
@@ -1098,6 +1137,76 @@
       const num = new CSS2DObject(el);
       num.position.set(-4.15, 2.15, -hd - 0.06);
       g.add(num);
+
+      return g;
+    }
+
+    function createMittelstaedtBungalow() {
+      // Mittelstädt Bungalow 100 W (Himmelpforten): 13,71 × 9,21 m, ~99,5 m²,
+      // Walmdach 30°, zurückgesetzte Diele. Passt in die 9,5 m Baugrenze 121/2.
+      // Das client-PDF „EG+Perspektiven“ lag in der Cloud-Umgebung nicht vor
+      // (lokaler Mac-Pfad, SwissTransfer abgelaufen) — Öffnungen nach
+      // veröffentlichtem EG + Straßenperspektive 100 W.
+      const W = 13.71, D = 9.21;
+      const hw = W / 2, hd = D / 2;
+      const recL = -1.70, recR = 0.85, recD = 1.12;
+      const wallH = 2.75;
+      const roofH = 2.70;
+      const overhang = 0.50;
+      const roofCol = "#2f3034";
+      const brick = matBrick(4.2, 1.6);
+      brick.side = THREE.DoubleSide;
+      const sockelMat = mat(0x4a3a34, { roughness: 0.96 });
+      const g = new THREE.Group();
+
+      const verts = [
+        [-hw, -hd],
+        [hw, -hd],
+        [hw, hd],
+        [recR, hd],
+        [recR, hd - recD],
+        [recL, hd - recD],
+        [recL, hd],
+        [-hw, hd]
+      ];
+      g.add(extrudeFootprint(verts, wallH, brick, "Bungalow 100W"));
+      g.add(extrudeFootprint(verts, 0.16, sockelMat, "Bungalow-Sockel"));
+
+      const fascia = box(W + 0.12, 0.16, D + 0.12, 0xf2efe8, 0, wallH - 0.16, 0, "Traufband");
+      g.add(fascia);
+      g.add(box(recR - recL + 0.08, 0.07, recD + 0.2, 0xeeeae2, (recL + recR) / 2, wallH - 0.07, hd - recD / 2, "Vordach-Soffit"));
+      g.add(box(recR - recL, 0.07, recD, 0xb7b0a6, (recL + recR) / 2, 0, hd - recD / 2, "Diele-Podest"));
+
+      const roof = createHipRoof(W, D, roofH, overhang, roofCol, W - D);
+      roof.position.y = wallH;
+      g.add(roof);
+
+      const streetZ = hd + 0.04;
+      const gardenZ = -hd - 0.04;
+      const westX = -hw - 0.04;
+      const eastX = hw + 0.04;
+      const winY = 1.52;
+      const recBackZ = hd - recD + 0.04;
+
+      addHouseWindow(g, -3.45, 1.68, streetZ, 0.88, 0.95, 0);
+      addHouseWindow(g, -2.15, 1.72, streetZ, 0.62, 0.72, 0);
+      addHouseWindow(g, 4.55, winY, streetZ, 2.45, 1.42, 0, { lights: 3 });
+
+      addHouseWindow(g, -4.55, winY, gardenZ, 1.85, 1.48, Math.PI);
+      addHouseWindow(g, 0.15, winY, gardenZ, 1.40, 1.40, Math.PI);
+      addHouseWindow(g, 3.45, winY, gardenZ, 1.70, 1.48, Math.PI);
+      addHouseWindow(g, 5.55, winY, gardenZ, 1.55, 1.48, Math.PI);
+
+      addHouseWindow(g, westX, winY, -2.55, 1.45, 1.38, -Math.PI / 2);
+      addHouseWindow(g, westX, winY, 2.35, 1.15, 1.22, -Math.PI / 2);
+      addHouseWindow(g, eastX, winY, -2.45, 1.65, 1.45, Math.PI / 2);
+      addHouseWindow(g, eastX, winY, 2.45, 1.20, 1.28, Math.PI / 2);
+
+      const door = createWhiteEntryDoor(1.05, 2.18);
+      door.position.set((recL + recR) / 2, 1.12, recBackZ);
+      g.add(door);
+
+      g.add(box(7.2, 0.08, 2.3, 0xcfc8bc, 2.05, 0, -hd - 1.18, "Terrasse"));
 
       return g;
     }
@@ -1481,6 +1590,14 @@
           g.position.set(piece.position[0], 0, piece.position[1]);
           if (piece.rotation) g.rotation.y = piece.rotation;
           context.add(g);
+          return;
+        }
+
+        if (piece.id === "option_bungalow") {
+          g.add(createMittelstaedtBungalow());
+          g.position.set(piece.position[0], 0, piece.position[1]);
+          if (piece.rotation) g.rotation.y = piece.rotation;
+          registerKit(g, piece);
           return;
         }
 
@@ -2260,6 +2377,27 @@
       syncViewFromPolar(true);
     }
     window.__focusBestand = focusBestand;
+
+    function focusBungalow(which) {
+      northUpMode = false;
+      setMapLock(false);
+      applySceneChrome();
+      const hx = 5.17, hz = 21.47, hy = 2.4;
+      const views = {
+        strasse: { pos: [10.2, 5.6, 35.0], tgt: [hx, 2.1, hz] },
+        garten: { pos: [0.2, 5.2, 8.4], tgt: [hx, hy, hz] },
+        seite: { pos: [18.5, 5.0, 18.5], tgt: [hx, hy, hz] },
+        dach: { pos: [5.2, 22, 6], tgt: [hx, 2.8, hz] }
+      };
+      const v = views[which] || views.strasse;
+      camera.position.set(v.pos[0], v.pos[1], v.pos[2]);
+      controls.target.set(v.tgt[0], v.tgt[1], v.tgt[2]);
+      controls.minDistance = 6;
+      controls.update();
+      applyProjection();
+      syncViewFromPolar(true);
+    }
+    window.__focusBungalow = focusBungalow;
 
     function init() {
       const dataEl = document.getElementById("kit-data");

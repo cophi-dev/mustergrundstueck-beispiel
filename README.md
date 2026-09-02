@@ -51,7 +51,7 @@ Grundrisse aus **ALKIS Gebäude** (LGLN), Lage geprüft gegen DOP20 / Satellit:
 
 Passend zu WA I / GRZ 0,25 / nur Einzel- und Doppelhäuser:
 
-1. **Seniorengerechter Bungalow** — 18×9 m, 1 VG, 162 m² (passt in 9,5 m Baufenstertiefe)
+1. **Mittelstädt Bungalow 100 W** — 13,71×9,21 m, 1 VG, ~99,5 m² Wohnfläche (GRZ 0,18). Roter Klinker, Walmdach 30°, zurückgesetzte Diele zur Straße Am Osterfeld, große Wohnfenster und Terrasse gartenseitig (Richtung 121/1). Kubatur nach dem veröffentlichten Typ 100 W, der als einziger Katalog-Bungalow in die 9,5 m Baugrenze passt. Das PDF *Mittelstädt – Burmester+Oberhofer – EG+Perspektiven* war in der Cloud-Umgebung nicht lesbar (nur lokaler Mac-Pfad; SwissTransfer abgelaufen) — sobald es hängt, Öffnungen und ggf. abweichende Maße nachziehen.
 2. **Kompaktes EFH mit Dachgeschoss** — 10×8,5 m, 1 VG + DG
 3. **Doppelhaus** — 16×9 m, 1 VG + DG (statt 3-Familien-Haus, das der B-Plan nicht vorsieht)
 4. **Ersatzneubau** — 12×10 m anstelle des Bestands auf 121/1
@@ -79,7 +79,7 @@ Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der
 - Die gelbe Fläche im Viewer ist die **Baugrenze** (~293 m²), nicht das Grundstück. 121/2 ist amtlich **702 m²** (ALKIS).
 - Baugrenze aus den gedruckten WA-I-Maßen (7 m / 3 m), nicht ein pauschaler 3 m-Abstand. Die Strichpunktlinie im Scan 1:1000 lässt sich nicht sauber vektorisieren.
 - GRZ 0,25 und 1 Vollgeschoss stammen aus der Planzeichenerklärung / den Nutzungsschablonen (WA I) im B-Plan Osterfeld West.
-- Das 3D-Wohnhaus folgt dem Bestandsplan (Ansichten + Grundrisse), die Lage auf dem Grundstück bleibt ALKIS/DOP20. Keine Innenräume, keine verbindliche Bauvoranfrage.
+- Das 3D-Wohnhaus folgt dem Bestandsplan (Ansichten + Grundrisse), die Lage auf dem Grundstück bleibt ALKIS/DOP20. Der Bungalow auf 121/2 folgt Mittelstädt 100 W (EG + Perspektive). Keine Innenräume, keine verbindliche Bauvoranfrage.
 
 ## Lizenz
 

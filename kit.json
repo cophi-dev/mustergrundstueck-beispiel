@@ -4,7 +4,7 @@
     "description": "Flur 6, Flurstücke 121/1 (Bestand Wohnhaus) und 121/2 (Garten / Am Osterfeld). Geometrie aus Liegenschaftsgrafik 1:500 (LGLN, 28.01.2026) und B-Plan Osterfeld West, Neufassung 1980.",
     "address": "Ashausener Straße 12, 21435 Stelle",
     "units": "meters",
-    "version": "2.10.0",
+      "version": "2.11.0",
     "crs": "local meters, +X Ost, +Z Nord, Ursprung = Flächenschwerpunkt 121/1+121/2",
     "sources": [
       "Liegenschaftsgrafik 1:500, Gemarkung Stelle, Flur 6, Flst. 121/2, LGLN Katasteramt Winsen, erstellt 28.01.2026, Zeichen 090-A-00084/2026",
@@ -12,7 +12,8 @@
       "ALKIS amtliche Fläche: LGLN WFS NI ALKIS Vereinfacht, abgerufen 2026-08-29 (CC BY 4.0 LGLN)",
       "ALKIS Gebäudegrundrisse (GebaeudeBauwerk) + DOP20, abgeglichen mit Satellitenbild Ashausener Str. 12, 2026-08-29",
       "LGLN DOP20 WMS ni_dop20, EPSG:25832, 2026-08-29 (satellit.jpg)",
-      "Bestandsplan Wohnung H. Burmeister, Stelle, M 1:100 + vorh. Garage (Erdgeschoss, Dachgeschoss, Keller, Ansichten)"
+      "Bestandsplan Wohnung H. Burmeister, Stelle, M 1:100 + vorh. Garage (Erdgeschoss, Dachgeschoss, Keller, Ansichten)",
+      "Mittelstädt Haus Bungalow 100 W (13,71 × 9,21 m, EG + Perspektive); client-PDF Burmester+Oberhofer EG+Perspektiven war in der Cloud-Umgebung nicht lesbar"
     ],
     "alkis": {
       "retrieved": "2026-08-29",
@@ -637,8 +638,8 @@
     },
     {
       "id": "option_bungalow",
-      "name": "Option 1: Seniorengerechter Bungalow",
-      "label": "Bungalow 18×9 m, 1 VG (162 m², GRZ 0,23)",
+      "name": "Option 1: Mittelstädt Bungalow 100 W",
+      "label": "Mittelstädt 100 W, 13,71×9,21 m (99 m², GRZ 0,18)",
       "layer": "OPTION_BUNGALOW",
       "type": "box",
       "draggable": true,
@@ -647,12 +648,12 @@
         22
       ],
       "size": [
-        18,
-        9,
-        3.5
+        13.71,
+        9.21,
+        5.45
       ],
       "rotation": 0.346,
-      "color": "#4a9f4a",
+      "color": "#a65c48",
       "parked": true
     },
     {
