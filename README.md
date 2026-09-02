@@ -42,7 +42,7 @@ Koordinaten im Viewer: Meter, **+X Ost, +Z Nord**, Ursprung an 121/2-ALKIS (UTM 
 
 Grundrisse aus **ALKIS Gebäude** (LGLN), Lage geprüft gegen DOP20 / Satellit:
 
-- Wohnhaus Nr. 12: **roter Klinker**, steiles **Walmdach**, **Zwerchhaus** (2 Fenster) und **Erker** zur Ashausener Straße, Hausnummer 12, Hecke an der Straße. First parallel zur Straße (11,6 × 8,5 m), eingeschossiger Ostflügel und Hof-Anbau. Fenster mit dunkler Laibung, Glas und Sohlbank; OG-Fenster zur Straße und am Ostgiebel.
+- Wohnhaus Nr. 12 nach Bestandsplan H. Burmeister (M 1:100): **roter Klinker**, Sockel, 1 VG + **Kniestock-DG** im steilen **Walmdach** (First 4,00 m über DG-Fußboden, Firstlänge 4,00 m, parallel zur Straße). Hauptkörper **11,48 × 8,58 m**. Zur Ashausener Straße: **Erker 4,00 × 1,15 m** mit dreiflügeligem Fenster, je ein EG-Fenster links und rechts, Eingang in der Erker-Ecke mit Treppe, **Zwerchhaus** (Satteldach, 2 quadratische Fenster) — keine weiteren OG-Fenster in der Straßenfassade. Schornstein auf dem First. Rückwärtig **W.-Küche 3,90 × 4,90 m** (eingeschossig) und späterer Ostflügel (ALKIS). Hausnummer 12, Hecke an der Straße.
 - Freistehende **L-Garage/Werkstatt** östlich des Hauses (ALKIS): langer Schenkel grob Nord–Süd an der Ostgrenze, kurzer Schenkel nach Westen, Hof dazwischen, **weißes Lamellentor** am Südgiebel
 - **Bäume** aus dem DOP20 (gebüschelte Laubkronen auf 121/2, Lebensbäume am Hof, Hecke an der Ashausener). Button **Bäume** blendet die 3D-Kronen. Bei Satellit zeigt das DOP20 die Wege; ohne Satellit liegen Hof und der gebogene Weg von der Ashausener als Kies. Hof-Pkw wie im Luftbild. Studio-Vignette und Kontaktschatten unter der Insel.
 - Nachbarn als Kontext an ihrer ALKIS-Lage: Am Osterfeld 7 (östlich), Ashausener Str. 14 (südöstlich), Am Osterfeld 1 (nordwestlich)
@@ -79,7 +79,7 @@ Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der
 - Die gelbe Fläche im Viewer ist die **Baugrenze** (~293 m²), nicht das Grundstück. 121/2 ist amtlich **702 m²** (ALKIS).
 - Baugrenze aus den gedruckten WA-I-Maßen (7 m / 3 m), nicht ein pauschaler 3 m-Abstand. Die Strichpunktlinie im Scan 1:1000 lässt sich nicht sauber vektorisieren.
 - GRZ 0,25 und 1 Vollgeschoss stammen aus der Planzeichenerklärung / den Nutzungsschablonen (WA I) im B-Plan Osterfeld West.
-- Keine Innenräume, keine verbindliche Bauvoranfrage.
+- Das 3D-Wohnhaus folgt dem Bestandsplan (Ansichten + Grundrisse), die Lage auf dem Grundstück bleibt ALKIS/DOP20. Keine Innenräume, keine verbindliche Bauvoranfrage.
 
 ## Lizenz
 
