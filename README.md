@@ -4,7 +4,7 @@ Interaktiver 3D-Baukasten für **Ashausener Str. 12, 21435 Stelle** (Gemarkung S
 
 **🔗 Live Demo:** **https://mustergrundstueck-beispiel.vercel.app/**
 
-Zwei Browser mit derselben URL sehen synchronisierte Positionen (via Yjs). Sonnenstands-Slider, Varianten-Buttons und Objekt-Erstellung direkt im Viewer.
+Wenn zwei Browser denselben Link offen haben, folgen Variante, Satellit, Sonne und verschobene Teile mit. Sonnenstands-Slider, Varianten-Buttons und Objekt-Erstellung direkt im Viewer.
 
 ## Quellen
 
