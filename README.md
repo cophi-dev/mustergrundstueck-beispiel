@@ -23,7 +23,7 @@ Drei Zahlen, drei Bedeutungen (121/2):
 | Zahl | Bedeutung |
 |------|-----------|
 | **702 m²** | amtliche **Grundstücksgröße** (ALKIS Flurstück) — die ~700 vom Telefon |
-| **293 m²** | **überbaubare Fläche** nach Abständen (Baugrenze: 7 m Am Osterfeld, 3 m Seite/hinten) |
+| **386 m²** | **überbaubare Fläche** nach Abständen (Baugrenze: 7 m Am Osterfeld, 3 m zu Nachbarn, 0 m zur eigenen 121/1) |
 | **176 m²** | **max. Gebäudegrundfläche** nach GRZ 0,25 × 702 m² |
 
 | Element | Wert |
@@ -31,7 +31,7 @@ Drei Zahlen, drei Bedeutungen (121/2):
 | **121/1** | **1.497 m²** ALKIS, Bestand Wohnhaus Nr. 12 + Garage, Ashausener Straße |
 | **121/2** | **702 m²** ALKIS, unbebauter Gartenteil, Front **Am Osterfeld** |
 | **Gesamt** | **2.199 m²** |
-| **Baugrenze 121/2** | **293 m²** — 7 m von Am Osterfeld, 3 m seitlich und zur Grenze 121/1 (ca. 30,9 × 9,5 m). Das ist **nicht** die 702 m². |
+| **Baugrenze 121/2** | **386 m²** — 7 m von Am Osterfeld, 3 m zu den Nachbarn, **0 m** zur eigenen Grenze 121/1 (ca. 30,9 × 12,5 m). Das ist **nicht** die 702 m². |
 | **GRZ 0,25** | max. ca. **176 m²** Grundfläche auf 121/2 (0,25 × 702) |
 
 **Geoportal Hamburg:** Geo-Online / der Hamburger B-Plan-WMS decken Stelle **nicht** ab (Südgrenze ca. 53,394°N, Grundstück bei 53,384°N). Stelle liegt in Niedersachsen, Landkreis Harburg. Kataster: [LGLN ALKIS](https://opendata.lgln.niedersachsen.de/doorman/noauth/alkis_wfs_einfach). B-Plan: LK Harburg, Osterfeld West (`32_50`).
@@ -51,7 +51,7 @@ Grundrisse aus **ALKIS Gebäude** (LGLN), Lage geprüft gegen DOP20 / Satellit:
 
 Passend zu WA I / GRZ 0,25 / nur Einzel- und Doppelhäuser:
 
-1. **Mittelstädt Flachdach-Bungalow** (Burmester/Oberhofer, Projekt 2026A044, T. Hansen 16.03.2026) — **17,875 × 12,50 m**, 1 VG, Wohnfläche **163,90 m²**. Helle Klinker, anthrazite Attika, U-Grundriss mit überdachter Terrasse (Nord, 6,875 m) und zurückgesetzter Diele (Süd, 2,125 m). **Passung 121/2:** Die 12,50 m Tiefe überschreitet die **9,5 m Baugrenze**; Grundfläche ~205 m² liegt über GRZ 0,25 (176 m²). Im Viewer bewusst in echter Größe, damit der Konflikt sichtbar ist.
+1. **Mittelstädt Flachdach-Bungalow** (Burmester/Oberhofer, Projekt 2026A044, T. Hansen 16.03.2026) — **17,875 × 12,50 m**, 1 VG, Wohnfläche **163,90 m²**, **GR 205 m²** (Plan: 193 m² bebaut + ½ überdachte Terrasse). Helle Klinker, anthrazite Attika, U-Grundriss mit überdachter Terrasse (Nord, 6,875 m) und zurückgesetzter Diele (Süd, 2,125 m). **Passung 121/2:** Die 12,50 m Tiefe liegt in der Baugrenze (~12,5 m, ohne Abstand zur eigenen 121/1). GR 205 m² liegt über GRZ 0,25 (176 m²).
 2. **Kompaktes EFH mit Dachgeschoss** — 10×8,5 m, 1 VG + DG
 3. **Doppelhaus** — 16×9 m, 1 VG + DG (statt 3-Familien-Haus, das der B-Plan nicht vorsieht)
 4. **Ersatzneubau** — 12×10 m anstelle des Bestands auf 121/1
@@ -76,10 +76,10 @@ Bungalow / EFH / Doppelhaus werden auf das Baufenster von **121/2** gesetzt. Der
 
 ## Hinweise
 
-- Die gelbe Fläche im Viewer ist die **Baugrenze** (~293 m²), nicht das Grundstück. 121/2 ist amtlich **702 m²** (ALKIS).
-- Baugrenze aus den gedruckten WA-I-Maßen (7 m / 3 m), nicht ein pauschaler 3 m-Abstand. Die Strichpunktlinie im Scan 1:1000 lässt sich nicht sauber vektorisieren.
-- GRZ 0,25 und 1 Vollgeschoss stammen aus der Planzeichenerklärung / den Nutzungsschablonen (WA I) im B-Plan Osterfeld West.
-- Das 3D-Wohnhaus folgt dem Bestandsplan (Ansichten + Grundrisse), die Lage auf dem Grundstück bleibt ALKIS/DOP20. Der Bungalow auf 121/2 folgt dem Mittelstädt-EG Burmester/Oberhofer (Flachdach, 17,88 × 12,50 m). **12,50 m Tiefe vs. 9,5 m Baugrenze** und GRZ sind im Modell nicht wegskaliert. Keine Innenräume, keine verbindliche Bauvoranfrage.
+- Die gelbe Fläche im Viewer ist die **Baugrenze** (~386 m²), nicht das Grundstück. 121/2 ist amtlich **702 m²** (ALKIS).
+- Baugrenze aus den gedruckten WA-I-Maßen (7 m Straße, 3 m Nachbarn). Zur **eigenen** Grenze 121/1 kein Abstand — die gelbe Fläche reicht bis an die Katastergrenze. Die Strichpunktlinie im Scan 1:1000 lässt sich nicht sauber vektorisieren.
+- GRZ 0,25 und 1 Vollgeschoss stammen aus der Planzeichenerklärung / den Nutzungsschablonen (WA I) im B-Plan Osterfeld West. Die **GR** der gewählten Variante steht im Flächen-Panel (Bungalow 205 m²).
+- Das 3D-Wohnhaus folgt dem Bestandsplan (Ansichten + Grundrisse), die Lage auf dem Grundstück bleibt ALKIS/DOP20. Der Bungalow auf 121/2 folgt dem Mittelstädt-EG Burmester/Oberhofer (Flachdach, 17,88 × 12,50 m). Die Tiefe passt in die Baugrenze; die GR bleibt über GRZ 0,25. Keine Innenräume, keine verbindliche Bauvoranfrage.
 
 ## Lizenz
 
