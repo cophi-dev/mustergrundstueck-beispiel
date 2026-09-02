@@ -1276,6 +1276,10 @@
       door.position.set((eL + eR) / 2, 1.14, recBackZ);
       g.add(door);
 
+      const grPin = makeLabel("GR 205 m²", 3.55, true);
+      grPin.position.set(hw + 1.6, 3.55, 0);
+      g.add(grPin);
+
       return g;
     }
 
@@ -1644,13 +1648,10 @@
           const grLine = new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ color: 0x2a8f9a }));
           grLine.name = piece.name + "_Linie";
           context.add(grLine);
-          const centroid = offsetVerts.reduce((acc, v) => [acc[0] + v[0], acc[1] + v[1]], [0, 0]);
-          centroid[0] /= offsetVerts.length;
-          centroid[1] /= offsetVerts.length;
           const labelGroup = new THREE.Group();
-          labelGroup.position.set(centroid[0], 0, centroid[1]);
+          labelGroup.position.set(16.45, 0, 17.85);
           labelGroup.add(makeLabel("GR 205 m²", 0.55, true));
-          planLabels.add(labelGroup);
+          context.add(labelGroup);
           grOverlayParts.push(fill, grLine, labelGroup);
           return;
         }
