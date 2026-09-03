@@ -4,7 +4,7 @@
     "description": "Flur 6, Flurstücke 121/1 (Bestand Wohnhaus) und 121/2 (Garten / Am Osterfeld). Geometrie aus Liegenschaftsgrafik 1:500 (LGLN, 28.01.2026) und B-Plan Osterfeld West, Neufassung 1980.",
     "address": "Ashausener Straße 12, 21435 Stelle",
     "units": "meters",
-    "version": "2.12.0",
+    "version": "2.13.0",
     "crs": "local meters, +X Ost, +Z Nord, Ursprung = Flächenschwerpunkt 121/1+121/2",
     "sources": [
       "Liegenschaftsgrafik 1:500, Gemarkung Stelle, Flur 6, Flst. 121/2, LGLN Katasteramt Winsen, erstellt 28.01.2026, Zeichen 090-A-00084/2026",
@@ -41,12 +41,13 @@
       "grz": 0.25,
       "gfz": 0.25,
       "bauweise": "offen, nur Einzel- und Doppelhäuser",
-      "hinweis": "Baugrenze auf 121/2 rekonstruiert aus den Bemaßungen der WA-I-Zeile südlich Am Osterfeld: 7 m Straßenabstand, 3 m seitlich und hinten, angewandt auf die Katastergrenzen. Strichpunktlinie im Scan 1:1000 nicht zuverlässig vektorisierbar. Die gelbe Fläche (~293 m²) ist die überbaubare Fläche, nicht das Grundstück.",
+      "hinweis": "Baugrenze auf 121/2: 7 m von Am Osterfeld, 3 m zu den Nachbargrenzen (West 121/3, Ost 121/5), 0 m zur eigenen Grenze 121/1 — dort kein Abstand, gleiches Grundstück. Strichpunktlinie im Scan 1:1000 nicht zuverlässig vektorisierbar. Die gelbe Fläche (~386 m², Tiefe ~12,5 m) ist die überbaubare Fläche, nicht das Grundstück.",
       "baugrenze_121_2": {
         "strasse_am_osterfeld_m": 7,
         "seite_m": 3,
-        "hinten_m": 3,
-        "area_m2": 293
+        "hinten_m": 0,
+        "hinten_hinweis": "Keine Abstandsfläche zur eigenen 121/1; Baugrenze liegt auf der Katastergrenze DA.",
+        "area_m2": 386
       }
     }
   },
@@ -104,6 +105,10 @@
     "BAUFENSTER": {
       "color": "#d4a017",
       "dxfColor": 2
+    },
+    "GR": {
+      "color": "#2a8f9a",
+      "dxfColor": 5
     },
     "ABSTAND": {
       "color": "#8b6914",
@@ -245,30 +250,55 @@
     {
       "id": "baufenster",
       "name": "Baugrenze 121/2",
-      "label": "Baugrenze · 293 m² (nicht die 702 m² Grundstücksfläche)",
+      "label": "Baugrenze · 386 m² (7 / 3 / 0 m · nicht die 702 m² Grundstücksfläche)",
       "layer": "BAUFENSTER",
       "type": "polygon",
       "draggable": false,
       "vertices": [
         [
-          -10.979,
-          22.245
+          -12.011,
+          19.426
         ],
         [
           -7.716,
           31.158
         ],
         [
-          21.311,
-          20.711
+          21.325,
+          20.705
         ],
         [
-          18.081,
-          11.77
+          17.051,
+          8.954
         ]
       ],
       "height": 0.1,
       "fillOpacity": 0.25
+    },
+    {
+      "id": "gr_bungalow",
+      "name": "GR Bungalow",
+      "label": "GR 205 m² · Bungalow Burmester/Oberhofer",
+      "layer": "GR",
+      "type": "polygon",
+      "draggable": false,
+      "vertices": [
+        [-5.867, 17.211],
+        [-0.693, 15.346],
+        [0.07, 17.463],
+        [6.537, 15.131],
+        [5.774, 13.015],
+        [10.948, 11.149],
+        [15.187, 22.909],
+        [5.545, 26.385],
+        [5.138, 25.256],
+        [3.139, 25.977],
+        [3.546, 27.105],
+        [-1.628, 28.971]
+      ],
+      "height": 0.12,
+      "fillOpacity": 0.42,
+      "color": "#2a8f9a"
     },
     {
       "id": "strasse_osterfeld",
@@ -639,7 +669,7 @@
     {
       "id": "option_bungalow",
       "name": "Option 1: Mittelstädt Flachdach-Bungalow",
-      "label": "Burmester/Oberhofer 17,88×12,50 m, 164 m² (tiefer als 9,5 m Baugrenze)",
+      "label": "Burmester/Oberhofer 17,88×12,50 m, GR 205 m², Wohnfl. 164 m²",
       "layer": "OPTION_BUNGALOW",
       "type": "box",
       "draggable": true,
@@ -654,7 +684,9 @@
       ],
       "rotation": 0.346,
       "color": "#cfc6b8",
-      "parked": true
+      "parked": true,
+      "gr_m2": 205,
+      "wohnflaeche_m2": 163.9
     },
     {
       "id": "option_efh",
@@ -674,7 +706,8 @@
       ],
       "rotation": 0.346,
       "color": "#3a7ca5",
-      "parked": true
+      "parked": true,
+      "gr_m2": 85
     },
     {
       "id": "option_doppelhaus",
@@ -694,7 +727,8 @@
       ],
       "rotation": 0.346,
       "color": "#9f4a9f",
-      "parked": true
+      "parked": true,
+      "gr_m2": 144
     },
     {
       "id": "option_ersatz",
@@ -713,7 +747,8 @@
         7.2
       ],
       "color": "#d97b3a",
-      "parked": true
+      "parked": true,
+      "gr_m2": 120
     },
     {
       "id": "pv_feld",
