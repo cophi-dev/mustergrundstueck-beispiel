@@ -178,8 +178,18 @@
     .area-fact strong { font-size: 13px; min-width: 50px; color: #fff; }
     .area-fact span { color: var(--muted); }
     .area-fact.main strong { color: var(--accent); }
-    .area-fact.warn strong { color: var(--warn); }
+    .area-fact.warn {
+      background: rgba(204, 68, 68, 0.16);
+      border-radius: 4px;
+      padding: 3px 6px;
+      margin-left: -6px;
+      margin-right: -6px;
+    }
+    .area-fact.warn strong,
+    .area-fact.warn span { color: var(--warn); }
     .area-fact.ok strong { color: var(--ok); }
+    .area-fact.warn-banner[hidden] { display: none; }
+    .label.pin.warn { background: #cc4444; color: #fff; }
     footer {
       position: fixed; bottom: max(6px, env(safe-area-inset-bottom, 0px));
       right: max(14px, env(safe-area-inset-right, 0px));
@@ -312,7 +322,8 @@
       <div class="area-fact main"><strong>702 m²</strong><span>Grundstück (ALKIS)</span></div>
       <div class="area-fact"><strong>386 m²</strong><span>Baugrenze (7 / 3 / 0 m · eigene 121/1)</span></div>
       <div class="area-fact" id="fact-gr"><strong id="gr-ist">—</strong><span id="gr-ist-label">GR (Variante wählen)</span></div>
-      <div class="area-fact"><strong>176 m²</strong><span>max. GR nach GRZ 0,25</span></div>
+      <div class="area-fact warn-banner" id="fact-grz-warn" hidden><strong>über GRZ</strong><span id="fact-grz-warn-text">gewählte GR größer als 176 m²</span></div>
+      <div class="area-fact" id="fact-grz-max"><strong>176 m²</strong><span>max. GR nach GRZ 0,25</span></div>
     </div>
     <div class="section">
       <div class="row">
@@ -367,6 +378,7 @@
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
     import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+    import { GRZ_MAX_121_2, VARIANT_IDS, variantGrInfo as lookupVariantGr, formatGrBadge, formatGrPanel } from "./gr-facts.js";
 
     const wrap = document.getElementById("canvas-wrap");
     const statusEl = document.getElementById("status");
@@ -1276,10 +1288,6 @@
       door.position.set((eL + eR) / 2, 1.14, recBackZ);
       g.add(door);
 
-      const grPin = makeLabel("GR 205 m²", 3.55, true);
-      grPin.position.set(hw + 1.6, 3.55, 0);
-      g.add(grPin);
-
       return g;
     }
 
@@ -1452,12 +1460,7 @@
     const draggables = [];
     const home = new Map();
     const pieceGroups = new Map();
-    const variantIds = {
-      bungalow: "option_bungalow",
-      efh: "option_efh",
-      doppelhaus: "option_doppelhaus",
-      ersatz: "option_ersatz"
-    };
+    const variantIds = VARIANT_IDS;
     const variantParkedPos = {
       bungalow: { x: 48, z: 22 },
       efh: { x: 64, z: 22 },
@@ -1470,41 +1473,43 @@
       doppelhaus: { x: 4.66, z: 20.06 },
       ersatz: { x: -6.75, z: -7.03 }
     };
-    const GRZ_MAX_121_2 = 176;
+    let grBadgeEl = null;
+    let grBadgeObj = null;
+    let grOverlayParts = [];
 
     function variantGrInfo(variantKey) {
-      if (!variantKey || !kitData) return null;
-      const id = variantIds[variantKey];
-      const piece = (kitData.pieces || []).find((p) => p.id === id);
-      if (!piece) return null;
-      const m2 = Number.isFinite(piece.gr_m2)
-        ? piece.gr_m2
-        : Math.round((piece.size?.[0] || 0) * (piece.size?.[1] || 0));
-      const on1212 = variantKey !== "ersatz";
-      return { m2, on1212, label: piece.name.replace(/^Option \d+:\s*/, "") };
+      return lookupVariantGr(kitData ? kitData.pieces : null, variantKey, variantIds);
+    }
+
+    function updateGrBadge(info) {
+      const badge = formatGrBadge(info);
+      if (!grBadgeEl) return;
+      grBadgeEl.textContent = badge.text;
+      grBadgeEl.classList.toggle("warn", badge.over);
+      grBadgeEl.style.display = badge.visible ? "" : "none";
+      if (grBadgeObj) grBadgeObj.visible = badge.visible;
     }
 
     function updateAreaFacts() {
       const row = document.getElementById("fact-gr");
       const val = document.getElementById("gr-ist");
       const lab = document.getElementById("gr-ist-label");
+      const warnRow = document.getElementById("fact-grz-warn");
+      const warnText = document.getElementById("fact-grz-warn-text");
+      const maxRow = document.getElementById("fact-grz-max");
       if (!row || !val || !lab) return;
       const info = variantGrInfo(activeVariant);
+      const facts = formatGrPanel(info);
       row.classList.remove("warn", "ok");
-      if (!info) {
-        val.textContent = "—";
-        lab.textContent = "GR (Variante wählen)";
-        return;
+      val.textContent = facts.value;
+      lab.textContent = facts.label;
+      if (facts.state) row.classList.add(facts.state);
+      if (warnRow) {
+        warnRow.hidden = !facts.over;
+        if (warnText && facts.warnText) warnText.textContent = facts.warnText;
       }
-      val.textContent = info.m2 + " m²";
-      if (!info.on1212) {
-        lab.textContent = "GR " + info.label + " (auf 121/1)";
-        row.classList.add("ok");
-        return;
-      }
-      const over = info.m2 > GRZ_MAX_121_2;
-      lab.textContent = "GR " + info.label + (over ? " · über GRZ 0,25" : "");
-      row.classList.add(over ? "warn" : "ok");
+      if (maxRow) maxRow.classList.toggle("warn", facts.over);
+      updateGrBadge(info);
     }
 
     const extraPlacePos = {
@@ -1599,8 +1604,21 @@
       addDrivewayCar();
 
       for (const piece of data.pieces) buildPiece(piece, data.layers);
+      addGrBadge();
       hideOffIslandNeighbors();
       setSatelliteVisible(true);
+    }
+
+    function addGrBadge() {
+      const group = new THREE.Group();
+      group.name = "GR_Badge";
+      group.position.set(16.45, 0, 17.85);
+      grBadgeObj = makeLabel("", 0.55, true);
+      grBadgeEl = grBadgeObj.element;
+      grBadgeEl.style.display = "none";
+      grBadgeObj.visible = false;
+      group.add(grBadgeObj);
+      planLabels.add(group);
     }
 
     function buildPiece(piece, layers) {
@@ -1648,11 +1666,9 @@
           const grLine = new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ color: 0x2a8f9a }));
           grLine.name = piece.name + "_Linie";
           context.add(grLine);
-          const labelGroup = new THREE.Group();
-          labelGroup.position.set(16.45, 0, 17.85);
-          labelGroup.add(makeLabel("GR 205 m²", 0.55, true));
-          context.add(labelGroup);
-          grOverlayParts.push(fill, grLine, labelGroup);
+          fill.visible = false;
+          grLine.visible = false;
+          grOverlayParts.push(fill, grLine);
           return;
         }
         
@@ -1835,7 +1851,6 @@
     let satelliteMesh = null;
     let lawnMesh = null;
     let parcelFill = null;
-    let grOverlayParts = [];
     let shadowCatcher = null;
     let satelliteOn = true;
     let northUpMode = true;
@@ -2108,6 +2123,7 @@
         if (pieceId) broadcastPosition(pieceId, p.x, p.y, p.z);
       }
       statusEl.textContent = "Zurückgesetzt";
+      updateAreaFacts();
     }
 
     function setBestandVisible(visible) {
@@ -2144,7 +2160,7 @@
         }
         broadcastPosition(vId, group.position.x, group.position.y, group.position.z);
       }
-      const showBungalowGr = !activeVariant || activeVariant === "bungalow";
+      const showBungalowGr = activeVariant === "bungalow";
       for (const obj of grOverlayParts) obj.visible = showBungalowGr;
       updateAreaFacts();
     }
@@ -2540,6 +2556,7 @@
       const dataEl = document.getElementById("kit-data");
       const data = JSON.parse(dataEl.textContent);
       buildScene(data);
+      updateAreaFacts();
       
       applyNorthUpView(true);
       updateSun();
