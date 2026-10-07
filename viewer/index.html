@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>3D-Viewer – Bestand Ashausener Str. 12</title>
   <style>
-    html, body { margin: 0; height: 100%; overflow: hidden; background: #cfe3f3; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #bfc4d2; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
     canvas { display: block; touch-action: none; }
     #caption { position: fixed; left: 12px; bottom: 12px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.85); color: #222; font-size: 13px; pointer-events: none; }
-    #status { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #234; font-size: 15px; pointer-events: none; }
+    #status { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #234; font-size: 15px; pointer-events: none; text-align: center; padding: 0 20px; }
     #hint { position: fixed; right: 12px; bottom: 12px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.7); color: #444; font-size: 12px; pointer-events: none; }
+    @media (max-width: 640px) { #hint { display: none; } }
   </style>
   <script type="importmap">
     {
@@ -30,9 +31,14 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
+    const BASE = '/viewer/';
     const status = document.getElementById('status');
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // Small or touch screens: lighter model (512 px textures), smaller shadows, capped pixel ratio.
+    const MOBILE = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 700;
+    const HORIZON = 0xbfc4d2;   // mean horizon colour of the sky image (for the fog)
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: MOBILE ? 'low-power' : 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE ? 1.5 : 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -40,39 +46,93 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(renderer.domElement);
+    renderer.domElement.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+      document.body.insertAdjacentHTML('beforeend', '<div id="status">Grafikspeicher erschöpft – bitte Seite neu laden.</div>');
+    });
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xcfe3f3);
-    scene.fog = new THREE.Fog(0xcfe3f3, 150, 600);
+    scene.background = new THREE.Color(HORIZON);
+    scene.fog = new THREE.Fog(HORIZON, 70, 320);
 
     const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 2000);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.maxPolarAngle = Math.PI / 2 - 0.02;
+    controls.maxPolarAngle = Math.PI / 2 - 0.03;
 
-    scene.add(new THREE.HemisphereLight(0xdfeeff, 0x6b7a4f, 1.1));
-    const sun = new THREE.DirectionalLight(0xfff2dd, 2.4);
+    // Sky / reflections: Poly Haven kloofendal_48d_puresky (CC0), LDR equirect (same HDRI as the Blender renders).
+    new THREE.TextureLoader().load(BASE + (MOBILE ? 'sky_1k.jpg' : 'sky_2k.jpg'), (tex) => {
+      tex.mapping = THREE.EquirectangularReflectionMapping;
+      tex.colorSpace = THREE.SRGBColorSpace;
+      scene.background = tex;
+      scene.environment = tex;
+      scene.environmentIntensity = 0.9;
+    });
+
+    scene.add(new THREE.HemisphereLight(0xdfeeff, 0x5d6b45, 0.35));
+    const sun = new THREE.DirectionalLight(0xfff1dc, 2.6);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
-    sun.shadow.bias = -0.0005;
-    sun.shadow.normalBias = 0.02;
+    sun.shadow.mapSize.set(MOBILE ? 1024 : 2048, MOBILE ? 1024 : 2048);
+    sun.shadow.bias = -0.0004;
+    sun.shadow.normalBias = 0.03;
+    sun.shadow.radius = 3;
     scene.add(sun, sun.target);
+    const SUN_DIR = new THREE.Vector3(0.55, 0.85, 0.75).normalize();   // same sun direction as the Blender renders
+
+    // ---- low-poly vegetation (positions/heights from build_bestand_nr12_v2.py), instanced
+    function buildTrees(list) {
+      const toGl = (x, y) => new THREE.Vector3(x, 0, -y);   // Blender (x, y, z-up) -> glTF/three (x, z, -y)
+      const cyl = new THREE.CylinderGeometry(1, 1, 1, 7); cyl.translate(0, 0.5, 0);
+      const cone = new THREE.ConeGeometry(1, 1, 9);
+      const ball = new THREE.IcosahedronGeometry(1, 2);
+      const flat = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.9, flatShading: true });
+      const parts = { trunk: [], needle: [], leaf: [] };
+      const m4 = (pos, scl, yaw = 0) => new THREE.Matrix4().compose(pos, new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), scl);
+      let seed = 12; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+      for (const [k, x, y, h, r] of list) {
+        const p = toGl(x, y), yaw = rnd() * Math.PI * 2, tone = 0.85 + rnd() * 0.3;
+        const base = m4(p, new THREE.Vector3(1, 1, 1), yaw);
+        const add = (key, pos, scl) => parts[key].push([base.clone().multiply(m4(pos, scl)), tone]);
+        if (k === 'con') {
+          const tr = Math.max(0.12, r * 0.09);
+          add('trunk', new THREE.Vector3(0, 0, 0), new THREE.Vector3(tr, h * 0.25, tr));
+          for (const [z0, z1, rr] of [[h * 0.12, h * 0.7, r], [h * 0.45, h, r * 0.62]])
+            add('needle', new THREE.Vector3(0, (z0 + z1) / 2, 0), new THREE.Vector3(rr, z1 - z0, rr));
+        } else {
+          const tr = Math.max(0.14, r * 0.08);
+          add('trunk', new THREE.Vector3(0, 0, 0), new THREE.Vector3(tr, h - r * 0.9, tr));
+          for (const [dx, dy, dz, s] of [[0, 0, 0, 1], [r * 0.45, r * 0.2, -r * 0.25, 0.7], [-r * 0.4, -r * 0.3, -r * 0.2, 0.68]])
+            add('leaf', new THREE.Vector3(dx, h - r + dz, -dy), new THREE.Vector3(r * s, r * s * 0.85, r * s));
+        }
+      }
+      const group = new THREE.Group(); group.name = 'Vegetation'; group.userData.count = list.length;
+      const defs = { trunk: [cyl, flat(0x5b4331)], needle: [cone, flat(0x2e4a2b)], leaf: [ball, flat(0x557d38)] };
+      const c = new THREE.Color();
+      for (const [key, [geo, mat]] of Object.entries(defs)) {
+        const items = parts[key]; if (!items.length) continue;
+        const im = new THREE.InstancedMesh(geo, mat, items.length);
+        items.forEach(([m, t], i) => { im.setMatrixAt(i, m); im.setColorAt(i, c.setScalar(t)); });
+        im.castShadow = true; im.receiveShadow = true;
+        im.computeBoundingSphere();
+        group.add(im);
+      }
+      return group;
+    }
 
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
-    loader.load('/viewer/bestand_nr12_v2.glb', (gltf) => {
+    const vegPromise = fetch(BASE + 'vegetation.json').then((r) => r.json()).catch((e) => { console.warn('vegetation.json', e); return { trees: [] }; });
+
+    loader.load(BASE + (MOBILE ? 'bestand_nr12_v2_mobile.glb' : 'bestand_nr12_v2.glb'), async (gltf) => {
       const root = gltf.scene;
       // Fit to the buildings/plots, not to the large ground plane.
-      const box = new THREE.Box3();
-      const tmp = new THREE.Box3();
-      const size = new THREE.Vector3();
+      const box = new THREE.Box3(), tmp = new THREE.Box3(), size = new THREE.Vector3();
       root.updateMatrixWorld(true);
       root.traverse((o) => {
         if (!o.isMesh) return;
         // The grass texture exports without Blender's green tint; restore it.
         if (o.material && o.material.name === 'grass') o.material.color.setRGB(0.62, 0.85, 0.45);
-        tmp.setFromObject(o);
-        tmp.getSize(size);
+        tmp.setFromObject(o); tmp.getSize(size);
         const large = Math.max(size.x, size.z) > 120;
         o.castShadow = !large;
         o.receiveShadow = true;
@@ -81,23 +141,30 @@
       if (box.isEmpty()) box.setFromObject(root);
       scene.add(root);
 
+      const veg = buildTrees((await vegPromise).trees || []);
+      scene.add(veg);
+      const shadowBox = box.clone().union(new THREE.Box3().setFromObject(veg));
+
       const center = box.getCenter(new THREE.Vector3());
       const radius = box.getSize(new THREE.Vector3()).length() / 2;
       const dist = radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) * 0.7;
-      camera.position.copy(center).add(new THREE.Vector3(0.6, 0.55, 0.85).normalize().multiplyScalar(dist));
+      camera.position.copy(center).add(new THREE.Vector3(0.6, 0.34, 0.85).normalize().multiplyScalar(dist));
       controls.target.copy(center);
-      controls.maxDistance = dist * 4;
+      controls.maxDistance = dist * 3;
       controls.minDistance = 2;
       controls.update();
 
-      sun.position.copy(center).add(new THREE.Vector3(-0.5, 1, 0.6).normalize().multiplyScalar(radius * 2));
-      sun.target.position.copy(center);
+      const sc = shadowBox.getCenter(new THREE.Vector3());
+      const sr = shadowBox.getSize(new THREE.Vector3()).length() / 2;
+      sun.position.copy(sc).addScaledVector(SUN_DIR, sr * 2);
+      sun.target.position.copy(sc);
       const s = sun.shadow.camera;
-      s.left = s.bottom = -radius * 1.2; s.right = s.top = radius * 1.2;
-      s.near = 0.5; s.far = radius * 5;
+      s.left = s.bottom = -sr; s.right = s.top = sr;
+      s.near = 0.5; s.far = sr * 4;
       s.updateProjectionMatrix();
 
       status.remove();
+      window.__viewerReady = { trees: veg.userData.count, instances: veg.children.reduce((n, m) => n + m.count, 0), mobile: MOBILE };
     }, (ev) => {
       if (ev.total) status.textContent = `Modell wird geladen … ${Math.round(ev.loaded / ev.total * 100)} %`;
       else status.textContent = `Modell wird geladen … ${(ev.loaded / 1e6).toFixed(1)} MB`;
