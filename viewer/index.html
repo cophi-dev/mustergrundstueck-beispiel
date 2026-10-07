@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3D-Viewer – Bestand Ashausener Str. 12</title>
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #cfe3f3; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    canvas { display: block; touch-action: none; }
+    #caption { position: fixed; left: 12px; bottom: 12px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.85); color: #222; font-size: 13px; pointer-events: none; }
+    #status { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #234; font-size: 15px; pointer-events: none; }
+    #hint { position: fixed; right: 12px; bottom: 12px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.7); color: #444; font-size: 12px; pointer-events: none; }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="status">Modell wird geladen …</div>
+  <div id="caption">Bestand Ashausener Str. 12 – Modell v2</div>
+  <div id="hint">Ziehen: drehen · Scrollen/Pinch: zoomen · Rechtsklick: verschieben</div>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+
+    const status = document.getElementById('status');
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xcfe3f3);
+    scene.fog = new THREE.Fog(0xcfe3f3, 150, 600);
+
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 2000);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.maxPolarAngle = Math.PI / 2 - 0.02;
+
+    scene.add(new THREE.HemisphereLight(0xdfeeff, 0x6b7a4f, 1.1));
+    const sun = new THREE.DirectionalLight(0xfff2dd, 2.4);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.bias = -0.0005;
+    sun.shadow.normalBias = 0.02;
+    scene.add(sun, sun.target);
+
+    const loader = new GLTFLoader();
+    loader.setMeshoptDecoder(MeshoptDecoder);
+    loader.load('./bestand_nr12_v2.glb', (gltf) => {
+      const root = gltf.scene;
+      // Fit to the buildings/plots, not to the large ground plane.
+      const box = new THREE.Box3();
+      const tmp = new THREE.Box3();
+      const size = new THREE.Vector3();
+      root.updateMatrixWorld(true);
+      root.traverse((o) => {
+        if (!o.isMesh) return;
+        // The grass texture exports without Blender's green tint; restore it.
+        if (o.material && o.material.name === 'grass') o.material.color.setRGB(0.62, 0.85, 0.45);
+        tmp.setFromObject(o);
+        tmp.getSize(size);
+        const large = Math.max(size.x, size.z) > 120;
+        o.castShadow = !large;
+        o.receiveShadow = true;
+        if (!large) box.union(tmp);
+      });
+      if (box.isEmpty()) box.setFromObject(root);
+      scene.add(root);
+
+      const center = box.getCenter(new THREE.Vector3());
+      const radius = box.getSize(new THREE.Vector3()).length() / 2;
+      const dist = radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) * 0.7;
+      camera.position.copy(center).add(new THREE.Vector3(0.6, 0.55, 0.85).normalize().multiplyScalar(dist));
+      controls.target.copy(center);
+      controls.maxDistance = dist * 4;
+      controls.minDistance = 2;
+      controls.update();
+
+      sun.position.copy(center).add(new THREE.Vector3(-0.5, 1, 0.6).normalize().multiplyScalar(radius * 2));
+      sun.target.position.copy(center);
+      const s = sun.shadow.camera;
+      s.left = s.bottom = -radius * 1.2; s.right = s.top = radius * 1.2;
+      s.near = 0.5; s.far = radius * 5;
+      s.updateProjectionMatrix();
+
+      status.remove();
+    }, (ev) => {
+      if (ev.total) status.textContent = `Modell wird geladen … ${Math.round(ev.loaded / ev.total * 100)} %`;
+      else status.textContent = `Modell wird geladen … ${(ev.loaded / 1e6).toFixed(1)} MB`;
+    }, (err) => {
+      console.error(err);
+      status.textContent = 'Modell konnte nicht geladen werden.';
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+  </script>
+</body>
+</html>
