@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>3D-Viewer – Bestand Ashausener Str. 12</title>
   <style>
-    html, body { margin: 0; height: 100%; overflow: hidden; background: #bfc4d2; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #9fa1b2; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
     canvas { display: block; touch-action: none; }
     #caption { position: fixed; left: 12px; bottom: 12px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.85); color: #222; font-size: 13px; pointer-events: none; }
     #status { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #234; font-size: 15px; pointer-events: none; text-align: center; padding: 0 20px; }
@@ -35,7 +35,7 @@
     const status = document.getElementById('status');
     // Small or touch screens: lighter model (512 px textures), smaller shadows, capped pixel ratio.
     const MOBILE = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 700;
-    const HORIZON = 0xbfc4d2;   // mean horizon colour of the sky image (for the fog)
+    const HORIZON = 0x9fa1b2;   // rendered sky colour at the horizon, so the fogged ground meets the sky without a seam
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: MOBILE ? 'low-power' : 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE ? 1.5 : 2));
