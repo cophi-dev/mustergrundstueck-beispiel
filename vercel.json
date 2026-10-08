@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    { "source": "/viewer", "destination": "/", "permanent": false },
+    { "source": "/viewer/", "destination": "/", "permanent": false },
+    { "source": "/viewer/:path+", "destination": "/3d/:path+", "permanent": false },
+    { "source": "/modell", "destination": "/", "permanent": false },
+    { "source": "/ifc-modell", "destination": "/#ifc", "permanent": false }
+  ],
+  "headers": [
+    { "source": "/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] },
+    { "source": "/dateien/(.*)", "headers": [{ "key": "Content-Disposition", "value": "attachment" }] },
+    { "source": "/dateien/(.*)\\.ifc", "headers": [{ "key": "Content-Type", "value": "application/x-step" }] }
+  ]
+}

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>IFC-Modell – Ashausener Str. 12</title>
+  <style>
+    :root { --ink: #1f2a33; --muted: #5d6a74; --line: #dfe4e8; --accent: #2f5d50; --sel: #e8a33d; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #eef1f3; color: var(--ink); font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    canvas { display: block; touch-action: none; }
+    #status { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 15px; pointer-events: none; text-align: center; padding: 0 20px; }
+    .panel { position: fixed; background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 4px 18px rgba(20,30,40,.08); overflow: auto; }
+    #tree { left: 12px; top: 12px; width: 250px; max-height: calc(100% - 24px); padding: 10px 12px; }
+    #props { right: 12px; top: 12px; width: 340px; max-height: calc(100% - 24px); padding: 12px 14px; display: none; }
+    h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 6px 0 6px; font-weight: 600; }
+    h3 { font-size: 16px; margin: 0 26px 2px 0; }
+    .cls { color: var(--accent); font-weight: 600; font-size: 12px; }
+    label { display: flex; align-items: center; gap: 6px; padding: 2px 0; cursor: pointer; }
+    label small { color: var(--muted); margin-left: auto; }
+    .bld { margin: 6px 0 2px; font-weight: 600; font-size: 13px; }
+    .bld ~ label { padding-left: 4px; }
+    details { border-top: 1px solid var(--line); padding: 6px 0; }
+    details.own summary { color: var(--accent); }
+    summary { cursor: pointer; font-weight: 600; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 12.5px; }
+    td { padding: 3px 0; vertical-align: top; border-bottom: 1px dotted var(--line); }
+    td:first-child { color: var(--muted); width: 44%; padding-right: 8px; word-break: break-word; }
+    td:last-child { word-break: break-word; }
+    #close { position: absolute; right: 8px; top: 6px; border: 0; background: none; font-size: 22px; color: var(--muted); cursor: pointer; line-height: 1; padding: 4px 8px; }
+    #hint { position: fixed; left: 50%; transform: translateX(-50%); bottom: 12px; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,.88); color: var(--muted); font-size: 12.5px; pointer-events: none; white-space: nowrap; }
+    #treeBtn { display: none; }
+    .note { color: var(--muted); font-size: 12px; margin-top: 8px; }
+    @media (max-width: 760px) {
+      #tree { display: none; width: auto; right: 12px; max-height: 60%; }
+      #tree.open { display: block; }
+      #treeBtn { display: block; position: fixed; left: 12px; top: 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.95); color: var(--ink); font: 600 13px system-ui, -apple-system, sans-serif; }
+      #props { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 48%; }
+      #hint { bottom: 12px; font-size: 12px; white-space: normal; text-align: center; width: max-content; max-width: 86%; }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+        "web-ifc": "/ifc/lib/web-ifc-api.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="status">IFC-Modell wird geladen …</div>
+  <button id="treeBtn" type="button">Struktur &amp; Filter</button>
+  <div id="tree" class="panel" hidden></div>
+  <div id="props" class="panel" aria-live="polite"><button id="close" type="button" aria-label="Schließen">×</button><div id="propsBody"></div></div>
+  <div id="hint">Bauteil antippen bzw. anklicken: Eigenschaften anzeigen</div>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import * as WebIFC from 'web-ifc';
+
+    const IFC_URL = '/dateien/Oberhofer_Nr12_Bestand_BungalowV1_IFC4.ifc';
+    const MOBILE = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 760;
+    const $ = (id) => document.getElementById(id);
+    const status = $('status');
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const fmt = (v) => {
+      if (v === true || v === 'T' || v === '.T.') return 'ja';
+      if (v === false || v === 'F' || v === '.F.') return 'nein';
+      if (typeof v === 'number') return v.toLocaleString('de-DE', { maximumFractionDigits: 3 });
+      return v ?? '–';
+    };
+
+    // ---- three.js scene
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: MOBILE ? 'low-power' : 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE ? 1.5 : 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    document.body.prepend(renderer.domElement);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xeef1f3);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8a9488, 1.9));
+    const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(40, 70, 30); scene.add(sun);
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 2000);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    let dirty = true; controls.addEventListener('change', () => (dirty = true));
+
+    // ---- web-ifc
+    const api = new WebIFC.IfcAPI();
+    api.SetWasmPath('/ifc/lib/', true);
+    try {
+      await api.Init(undefined, true);
+      const buf = await (await fetch(IFC_URL)).arrayBuffer();
+      var mid = api.OpenModel(new Uint8Array(buf));
+    } catch (e) {
+      console.error(e); status.textContent = 'Das IFC-Modell konnte in diesem Browser nicht geladen werden. Sie können die Datei oben unter „Downloads“ herunterladen.';
+      throw e;
+    }
+    const line = (id) => api.GetLine(mid, id);
+    const typeName = (id) => api.GetNameFromTypeCode(api.GetLineType(mid, id));
+    const ids = (t) => { const v = api.GetLineIDsWithType(mid, t), a = []; for (let i = 0; i < v.size(); i++) a.push(v.get(i)); return a; };
+    const val = (x) => (x && typeof x === 'object' && 'value' in x ? x.value : x);
+
+    // spatial structure: element -> storey, storey -> building, part -> whole (roof slabs)
+    const parentOf = new Map(), storeyOf = new Map(), buildingOf = new Map(), wholeOf = new Map();
+    for (const r of ids(WebIFC.IFCRELAGGREGATES)) {
+      const l = line(r), p = val(l.RelatingObject);
+      for (const c of l.RelatedObjects) parentOf.set(val(c), p);
+    }
+    for (const r of ids(WebIFC.IFCRELCONTAINEDINSPATIALSTRUCTURE)) {
+      const l = line(r), s = val(l.RelatingStructure);
+      for (const c of l.RelatedElements) storeyOf.set(val(c), s);
+    }
+    const STOREY = new Set(ids(WebIFC.IFCBUILDINGSTOREY)), BUILDING = ids(WebIFC.IFCBUILDING);
+    for (const s of STOREY) buildingOf.set(s, parentOf.get(s));
+    const storeyFor = (id) => {
+      let cur = id;
+      for (let i = 0; i < 6 && cur; i++) {
+        if (storeyOf.has(cur)) return storeyOf.get(cur);
+        const p = parentOf.get(cur); if (p && STOREY.has(p)) return p;
+        if (p && !wholeOf.has(id) && !STOREY.has(p)) wholeOf.set(id, p);
+        cur = p;
+      }
+      return null;
+    };
+
+    // ---- geometry
+    const CLASSES = [
+      ['IFCWALL', 'Wände'], ['IFCSLAB', 'Decken / Bodenplatten / Dachflächen'], ['IFCWINDOW', 'Fenster'], ['IFCDOOR', 'Türen'],
+      ['IFCCHIMNEY', 'Schornsteine'], ['IFCSPACE', 'Räume (Neubau)'], ['OTHER', 'Sonstiges'],
+    ];
+    const classVisible = Object.fromEntries(CLASSES.map(([k]) => [k, k !== 'IFCSPACE']));
+    const storeyVisible = new Map([...STOREY].map((s) => [s, true]));
+    const items = new Map();   // expressID -> { meshes, cls, storey }
+    const pickables = [];
+    function addMesh(fm, isSpace) {
+      const eid = fm.expressID;
+      const tn = typeName(eid).toUpperCase();
+      const cls = CLASSES.some(([k]) => k === tn) ? tn : 'OTHER';
+      const it = items.get(eid) || { meshes: [], cls, storey: storeyFor(eid) };
+      for (let i = 0; i < fm.geometries.size(); i++) {
+        const pg = fm.geometries.get(i), g = api.GetGeometry(mid, pg.geometryExpressID);
+        const v = api.GetVertexArray(g.GetVertexData(), g.GetVertexDataSize());
+        const ix = api.GetIndexArray(g.GetIndexData(), g.GetIndexDataSize());
+        const n = v.length / 6, pos = new Float32Array(n * 3), nor = new Float32Array(n * 3);
+        for (let k = 0; k < n; k++) { pos.set(v.subarray(k * 6, k * 6 + 3), k * 3); nor.set(v.subarray(k * 6 + 3, k * 6 + 6), k * 3); }
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+        geo.setIndex(new THREE.BufferAttribute(new Uint32Array(ix), 1));
+        g.delete && g.delete();
+        const c = pg.color;
+        const mat = new THREE.MeshLambertMaterial({ color: new THREE.Color(c.x, c.y, c.z), transparent: isSpace || c.w < 1, opacity: isSpace ? 0.45 : c.w, side: THREE.DoubleSide, depthWrite: !isSpace && c.w >= 1 });
+        const me = new THREE.Mesh(geo, mat);
+        me.applyMatrix4(new THREE.Matrix4().fromArray(pg.flatTransformation));
+        me.userData.eid = eid; me.userData.baseColor = mat.color.clone();
+        scene.add(me); it.meshes.push(me); pickables.push(me);
+      }
+      items.set(eid, it);
+    }
+    api.StreamAllMeshes(mid, (m) => addMesh(m, false));
+    api.StreamAllMeshesWithTypes(mid, [WebIFC.IFCSPACE], (m) => addMesh(m, true));
+
+    const applyVisibility = () => {
+      for (const it of items.values()) {
+        const on = classVisible[it.cls] && (it.storey == null || storeyVisible.get(it.storey) !== false);
+        it.meshes.forEach((m) => (m.visible = on));
+      }
+      dirty = true;
+    };
+    applyVisibility();
+
+    // frame the model (without spaces)
+    const box = new THREE.Box3();
+    for (const it of items.values()) if (it.cls !== 'IFCSPACE') it.meshes.forEach((m) => box.expandByObject(m));
+    const center = box.getCenter(new THREE.Vector3()), radius = box.getSize(new THREE.Vector3()).length() / 2;
+    const vfov = THREE.MathUtils.degToRad(camera.fov), hfov = 2 * Math.atan(Math.tan(vfov / 2) * camera.aspect);
+    const dist = radius / Math.sin(Math.min(vfov, hfov) / 2) * 0.9;
+    camera.position.copy(center).add(new THREE.Vector3(0.55, 0.6, 0.85).normalize().multiplyScalar(dist));
+    controls.target.copy(center); controls.maxDistance = dist * 3; controls.minDistance = 1; controls.update();
+    const grid = new THREE.GridHelper(Math.ceil(radius * 3 / 10) * 10, Math.ceil(radius * 3 / 10), 0xc9d0d5, 0xdde2e6);
+    grid.position.set(center.x, 0, center.z); scene.add(grid);
+
+    // ---- structure / filter panel
+    const count = (pred) => [...items.values()].filter(pred).length;
+    let html = '<h2>Modellstruktur</h2>';
+    for (const b of BUILDING) {
+      html += `<div class="bld">${esc(val(line(b).Name) || 'Gebäude')}</div>`;
+      const sts = [...STOREY].filter((s) => buildingOf.get(s) === b)
+        .sort((a, c) => (val(line(a).Elevation) ?? 0) - (val(line(c).Elevation) ?? 0));
+      for (const s of sts) {
+        const L = line(s), el = val(L.Elevation);
+        html += `<label><input type="checkbox" data-storey="${s}" checked> ${esc(val(L.Name))}${el != null ? ` (${fmt(el)} m)` : ''}<small>${count((it) => it.storey === s && it.cls !== 'IFCSPACE')}</small></label>`;
+      }
+    }
+    html += '<h2 style="margin-top:12px">Bauteilklassen</h2>';
+    for (const [k, label] of CLASSES) {
+      const n = count((it) => it.cls === k); if (!n) continue;
+      html += `<label><input type="checkbox" data-cls="${k}" ${classVisible[k] ? 'checked' : ''}> ${label}<small>${n}</small></label>`;
+    }
+    html += '<div class="note">Vorentwurf, Stand 08.10.2026. Annahmen stehen am Bauteil unter „Oberhofer_Info“.</div>';
+    const tree = $('tree'); tree.innerHTML = html; tree.hidden = false;
+    tree.addEventListener('change', (e) => {
+      const t = e.target;
+      if (t.dataset.storey) storeyVisible.set(+t.dataset.storey, t.checked);
+      if (t.dataset.cls) classVisible[t.dataset.cls] = t.checked;
+      applyVisibility();
+    });
+    $('treeBtn').addEventListener('click', () => tree.classList.toggle('open'));
+
+    // ---- properties
+    async function describe(eid) {
+      const L = await api.properties.getItemProperties(mid, eid, false);
+      const tn = typeName(eid), st = items.get(eid)?.storey, bld = st ? buildingOf.get(st) : null, whole = wholeOf.get(eid);
+      const rows = [['IFC-Klasse', prettyClass(tn).split(' · ').pop()], ['Name', val(L.Name)], ['Langname', val(L.LongName)],
+        ['Beschreibung', val(L.Description)], ['Typ', val(L.ObjectType) || val(L.PredefinedType)], ['Kennung', val(L.Tag)],
+        ['Gebäude', bld ? val(line(bld).Name) : null], ['Geschoss', st ? val(line(st).Name) : null],
+        ['Teil von', whole ? `${typeName(whole)} „${val(line(whole).Name) || ''}“` : null], ['GlobalId', val(L.GlobalId)]].filter(([, v]) => v != null && v !== '');
+      let out = `<div class="cls">${esc(prettyClass(tn))}</div><h3>${esc(val(L.Name) || val(L.LongName) || '(ohne Name)')}</h3>`;
+      out += '<table>' + rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(fmt(v))}</td></tr>`).join('') + '</table>';
+      // material layers
+      try {
+        const mats = await api.properties.getMaterialsProperties(mid, eid, true);
+        const layers = [], names = new Set();
+        const walk = (o, d = 0) => {
+          if (!o || typeof o !== 'object' || d > 6) return;
+          if (Array.isArray(o)) return o.forEach((x) => walk(x, d + 1));
+          if (o.MaterialLayers) { o.MaterialLayers.forEach((ly) => layers.push([val(ly.Material?.Name) || val(ly.Name) || 'Schicht', val(ly.LayerThickness)])); return; }
+          if (o.type === WebIFC.IFCMATERIAL && o.Name) names.add(val(o.Name));
+          for (const k in o) if (k !== 'type' && typeof o[k] === 'object') walk(o[k], d + 1);
+        };
+        walk(mats);
+        if (layers.length) out += `<details open><summary>Materialschichten</summary><table>${layers.map(([n, t]) => `<tr><td>${esc(n)}</td><td>${t != null ? esc(fmt(t * 100)) + ' cm' : ''}</td></tr>`).join('')}</table></details>`;
+        else if (names.size) out += `<details open><summary>Material</summary><table>${[...names].map((n) => `<tr><td colspan="2">${esc(n)}</td></tr>`).join('')}</table></details>`;
+      } catch (e) { console.warn('material', e); }
+      // property & quantity sets ("Oberhofer_*" first)
+      const sets = await api.properties.getPropertySets(mid, eid, true);
+      sets.sort((a, b) => (/^Oberhofer/.test(val(b.Name)) - /^Oberhofer/.test(val(a.Name))));
+      for (const ps of sets) {
+        const nm = val(ps.Name) || 'Eigenschaften', props = ps.HasProperties || ps.Quantities || [];
+        const tr = props.map((p) => {
+          const v = val(p.NominalValue) ?? val(p.AreaValue) ?? val(p.LengthValue) ?? val(p.VolumeValue) ?? val(p.CountValue) ?? val(p.WeightValue);
+          const unit = p.AreaValue ? ' m²' : p.LengthValue ? ' m' : p.VolumeValue ? ' m³' : '';
+          return `<tr><td>${esc(val(p.Name))}</td><td>${esc(fmt(v))}${unit}</td></tr>`;
+        }).join('');
+        out += `<details ${/^Oberhofer/.test(nm) || sets.length <= 2 ? 'open' : ''} class="${/^Oberhofer/.test(nm) ? 'own' : ''}"><summary>${esc(nm)}</summary><table>${tr}</table></details>`;
+      }
+      return out;
+    }
+    const DE = { IFCWALL: 'Wand', IFCSLAB: 'Platte / Decke', IFCWINDOW: 'Fenster', IFCDOOR: 'Tür', IFCROOF: 'Dach', IFCCHIMNEY: 'Schornstein', IFCSPACE: 'Raum' };
+    function prettyClass(tn) {
+      tn = String(tn).toUpperCase();
+      const camel = { IFCWALL: 'IfcWall', IFCSLAB: 'IfcSlab', IFCWINDOW: 'IfcWindow', IFCDOOR: 'IfcDoor', IFCROOF: 'IfcRoof', IFCCHIMNEY: 'IfcChimney', IFCSPACE: 'IfcSpace' }[tn] || tn;
+      return DE[tn] ? `${DE[tn]} · ${camel}` : camel;
+    }
+
+    let selected = null;
+    const SEL = new THREE.Color(0xe8a33d);
+    function select(eid) {
+      if (selected != null) items.get(selected)?.meshes.forEach((m) => m.material.color.copy(m.userData.baseColor));
+      selected = eid;
+      const panel = $('props');
+      if (eid == null) { panel.style.display = 'none'; dirty = true; return; }
+      items.get(eid)?.meshes.forEach((m) => m.material.color.copy(SEL));
+      dirty = true;
+      panel.style.display = 'block';
+      $('hint').style.display = 'none';
+      $('propsBody').innerHTML = '<div class="note">Eigenschaften werden gelesen …</div>';
+      describe(eid).then((h) => { if (selected === eid) { $('propsBody').innerHTML = h; panel.scrollTop = 0; window.__lastProps = $('propsBody').innerText; } })
+        .catch((e) => { console.error(e); $('propsBody').textContent = 'Eigenschaften konnten nicht gelesen werden.'; });
+    }
+    $('close').addEventListener('click', () => select(null));
+    window.__select = select;
+
+    const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+    let down = null;
+    renderer.domElement.addEventListener('pointerdown', (e) => { down = [e.clientX, e.clientY]; });
+    renderer.domElement.addEventListener('pointerup', (e) => {
+      if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return;
+      const r = renderer.domElement.getBoundingClientRect();
+      ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(ndc, camera);
+      const hit = ray.intersectObjects(pickables.filter((m) => m.visible), false)[0];
+      select(hit ? hit.object.userData.eid : null);
+      if (MOBILE) tree.classList.remove('open');
+    });
+
+    status.remove();
+    const counts = {}; for (const it of items.values()) counts[it.cls] = (counts[it.cls] || 0) + 1;
+    window.__ifcReady = { elements: items.size, counts, mobile: MOBILE };
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight); dirty = true;
+    });
+    const loop = () => { controls.update(); if (dirty) { renderer.render(scene, camera); dirty = false; } };
+    renderer.setAnimationLoop(loop);
+    window.addEventListener('message', (e) => {
+      if (e.origin !== location.origin || !e.data || !('active' in e.data)) return;
+      renderer.setAnimationLoop(e.data.active ? loop : null); dirty = true;
+    });
+  </script>
+</body>
+</html>
