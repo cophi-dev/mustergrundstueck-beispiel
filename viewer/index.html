@@ -11,8 +11,6 @@
     #status { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #234; font-size: 15px; pointer-events: none; text-align: center; padding: 0 20px; }
     #hint { position: fixed; right: 12px; bottom: 12px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.7); color: #444; font-size: 12px; pointer-events: none; }
     @media (max-width: 640px) { #hint { display: none; } }
-    #v1 { position: fixed; right: 12px; top: 12px; padding: 8px 12px; border: 0; border-radius: 6px; background: rgba(255,255,255,.9); color: #222; font: 600 13px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; display: none; }
-    #v1.on { background: #b3261e; color: #fff; }
   </style>
   <script type="importmap">
     {
@@ -26,7 +24,6 @@
 <body>
   <div id="status">Modell wird geladen …</div>
   <div id="caption">Bestand Ashausener Str. 12 – Modell v2</div>
-  <button id="v1" type="button">Bungalow V1 ein/aus</button>
   <div id="hint">Ziehen: drehen · Scrollen/Pinch: zoomen · Rechtsklick: verschieben</div>
   <script type="module">
     import * as THREE from 'three';
@@ -144,13 +141,9 @@
       if (box.isEmpty()) box.setFromObject(root);
       scene.add(root);
 
-      const vj = await vegPromise, all = vj.trees || [];
-      const isFelled = (t) => (vj.felled_v1 || []).some(([x, y]) => Math.abs(t[1] - x) < 0.05 && Math.abs(t[2] - y) < 0.05);
-      const veg = buildTrees(all.filter((t) => !isFelled(t)));
-      const vegFelled = buildTrees(all.filter(isFelled));
-      scene.add(veg, vegFelled);
-      veg.userData.count = all.length;
-      const shadowBox = box.clone().union(new THREE.Box3().setFromObject(veg)).union(new THREE.Box3().setFromObject(vegFelled));
+      const veg = buildTrees((await vegPromise).trees || []);
+      scene.add(veg);
+      const shadowBox = box.clone().union(new THREE.Box3().setFromObject(veg));
 
       const center = box.getCenter(new THREE.Vector3());
       const radius = box.getSize(new THREE.Vector3()).length() / 2;
@@ -171,30 +164,7 @@
       s.updateProjectionMatrix();
 
       status.remove();
-      window.__viewerReady = { trees: veg.userData.count, instances: [veg, vegFelled].reduce((n, g) => n + g.children.reduce((k, m) => k + m.count, 0), 0), mobile: MOBILE };
-
-      // ---- optional: Neubau Bungalow V1 auf Flst. 121/2 (Vorentwurf), lazy geladen
-      const btn = document.getElementById('v1'), caption = document.getElementById('caption');
-      let bungalow = null, loading = false;
-      const setV1 = (on) => {
-        btn.classList.toggle('on', on);
-        vegFelled.visible = !on;
-        if (bungalow) bungalow.visible = on;
-        caption.textContent = on ? 'Bestand Ashausener Str. 12 + Neubau Bungalow V1 (Vorentwurf)' : 'Bestand Ashausener Str. 12 – Modell v2';
-        if (on && !bungalow && !loading) {
-          loading = true; btn.textContent = 'Bungalow V1 lädt …';
-          loader.load(BASE + 'bungalow_v1.glb', (g) => {
-            bungalow = g.scene;
-            bungalow.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-            bungalow.visible = btn.classList.contains('on');
-            scene.add(bungalow); btn.textContent = 'Bungalow V1 ein/aus';
-            window.__v1Ready = true;
-          }, undefined, (e) => { console.error(e); btn.textContent = 'Bungalow V1 nicht verfügbar'; });
-        }
-      };
-      btn.style.display = 'block';
-      btn.addEventListener('click', () => setV1(!btn.classList.contains('on')));
-      if (new URLSearchParams(location.search).has('v1')) setV1(true);
+      window.__viewerReady = { trees: veg.userData.count, instances: veg.children.reduce((n, m) => n + m.count, 0), mobile: MOBILE };
     }, (ev) => {
       if (ev.total) status.textContent = `Modell wird geladen … ${Math.round(ev.loaded / ev.total * 100)} %`;
       else status.textContent = `Modell wird geladen … ${(ev.loaded / 1e6).toFixed(1)} MB`;
