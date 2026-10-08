@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>3D-Viewer – Bestand Ashausener Str. 12</title>
+  <meta name="robots" content="noindex,nofollow">
+  <title>Visualisierung – Ashausener Str. 12</title>
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; background: #9fa1b2; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
     canvas { display: block; touch-action: none; }
@@ -11,6 +12,8 @@
     #status { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #234; font-size: 15px; pointer-events: none; text-align: center; padding: 0 20px; }
     #hint { position: fixed; right: 12px; bottom: 12px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.7); color: #444; font-size: 12px; pointer-events: none; }
     @media (max-width: 640px) { #hint { display: none; } }
+    #v1 { position: fixed; right: 12px; top: 12px; padding: 8px 12px; border: 1px solid rgba(0,0,0,.12); border-radius: 8px; background: rgba(255,255,255,.92); color: #1f2a33; font: 600 13px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; display: none; }
+    #v1.on { background: #2f5d50; border-color: #2f5d50; color: #fff; }
   </style>
   <script type="importmap">
     {
@@ -24,14 +27,15 @@
 <body>
   <div id="status">Modell wird geladen …</div>
   <div id="caption">Bestand Ashausener Str. 12 – Modell v2</div>
-  <div id="hint">Ziehen: drehen · Scrollen/Pinch: zoomen · Rechtsklick: verschieben</div>
+  <button id="v1" type="button" aria-pressed="true">✓ Neubau Bungalow V1</button>
+  <div id="hint">Ziehen: drehen · Scrollen/Pinch: zoomen · Rechtsklick bzw. zwei Finger: verschieben</div>
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
-    const BASE = '/viewer/';
+    const BASE = '/3d/';
     const status = document.getElementById('status');
     // Small or touch screens: lighter model (512 px textures), smaller shadows, capped pixel ratio.
     const MOBILE = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 700;
@@ -141,9 +145,13 @@
       if (box.isEmpty()) box.setFromObject(root);
       scene.add(root);
 
-      const veg = buildTrees((await vegPromise).trees || []);
-      scene.add(veg);
-      const shadowBox = box.clone().union(new THREE.Box3().setFromObject(veg));
+      const vj = await vegPromise, all = vj.trees || [];
+      const isFelled = (t) => (vj.felled_v1 || []).some(([x, y]) => Math.abs(t[1] - x) < 0.05 && Math.abs(t[2] - y) < 0.05);
+      const veg = buildTrees(all.filter((t) => !isFelled(t)));
+      const vegFelled = buildTrees(all.filter(isFelled));
+      scene.add(veg, vegFelled);
+      veg.userData.count = all.length;
+      const shadowBox = box.clone().union(new THREE.Box3().setFromObject(veg)).union(new THREE.Box3().setFromObject(vegFelled));
 
       const center = box.getCenter(new THREE.Vector3());
       const radius = box.getSize(new THREE.Vector3()).length() / 2;
@@ -164,7 +172,32 @@
       s.updateProjectionMatrix();
 
       status.remove();
-      window.__viewerReady = { trees: veg.userData.count, instances: veg.children.reduce((n, m) => n + m.count, 0), mobile: MOBILE };
+      window.__viewerReady = { trees: veg.userData.count, instances: [veg, vegFelled].reduce((n, g) => n + g.children.reduce((k, m) => k + m.count, 0), 0), mobile: MOBILE };
+
+      // ---- optional: Neubau Bungalow V1 auf Flst. 121/2 (Vorentwurf), lazy geladen
+      const btn = document.getElementById('v1'), caption = document.getElementById('caption');
+      let bungalow = null, loading = false;
+      const setV1 = (on) => {
+        btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', on);
+        const label = () => (btn.classList.contains('on') ? '✓ Neubau Bungalow V1' : 'Neubau Bungalow V1 einblenden');
+        btn.textContent = label();
+        vegFelled.visible = !on;
+        if (bungalow) bungalow.visible = on;
+        caption.textContent = on ? 'Bestand Ashausener Str. 12 + Neubau Bungalow V1 (Vorentwurf)' : 'Bestand Ashausener Str. 12 – Modell v2';
+        if (on && !bungalow && !loading) {
+          loading = true; btn.textContent = 'Bungalow V1 lädt …';
+          loader.load(BASE + 'bungalow_v1.glb', (g) => {
+            bungalow = g.scene;
+            bungalow.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+            bungalow.visible = btn.classList.contains('on');
+            scene.add(bungalow); btn.textContent = label();
+            window.__v1Ready = true;
+          }, undefined, (e) => { console.error(e); btn.textContent = 'Bungalow V1 nicht verfügbar'; });
+        }
+      };
+      btn.style.display = 'block';
+      btn.addEventListener('click', () => setV1(!btn.classList.contains('on')));
+      setV1(!new URLSearchParams(location.search).has('bestand'));   // Bungalow standardmäßig an; ?bestand = nur Bestand
     }, (ev) => {
       if (ev.total) status.textContent = `Modell wird geladen … ${Math.round(ev.loaded / ev.total * 100)} %`;
       else status.textContent = `Modell wird geladen … ${(ev.loaded / 1e6).toFixed(1)} MB`;
@@ -179,6 +212,11 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
     renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+    // Paused by the parent page while the IFC view is shown (saves GPU/battery).
+    window.addEventListener('message', (e) => {
+      if (e.origin !== location.origin || !e.data || !('active' in e.data)) return;
+      renderer.setAnimationLoop(e.data.active ? () => { controls.update(); renderer.render(scene, camera); } : null);
+    });
   </script>
 </body>
 </html>
