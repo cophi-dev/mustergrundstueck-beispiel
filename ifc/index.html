@@ -31,10 +31,22 @@
     #close { position: absolute; right: 8px; top: 6px; border: 0; background: none; font-size: 22px; color: var(--muted); cursor: pointer; line-height: 1; padding: 4px 8px; }
     #hint { position: fixed; left: 50%; transform: translateX(-50%); bottom: 12px; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,.88); color: var(--muted); font-size: 12.5px; pointer-events: none; white-space: nowrap; }
     #treeBtn { display: none; }
+    #cutbar { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 8px; overflow: visible; z-index: 3; }
+    #cutbar b { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 4px; }
+    #cutbar button { min-height: 38px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); font: 600 13.5px system-ui, -apple-system, sans-serif; cursor: pointer; touch-action: manipulation; }
+    #cutbar button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+    #cutbar button[data-cut="off"] { font-weight: 500; }
+    #labels { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+    .rl { position: absolute; transform: translate(-50%, -50%); background: rgba(255,255,255,.82); border-radius: 5px; padding: 1px 6px; font-size: 12px; line-height: 1.25; text-align: center; color: #12324a; white-space: nowrap; }
+    .rl small { color: var(--muted); font-size: 11px; }
     .note { color: var(--muted); font-size: 12px; margin-top: 8px; }
     @media (max-width: 760px) {
       #tree { display: none; width: auto; right: 12px; max-height: 60%; }
       #tree.open { display: block; }
+      #cutbar { left: 8px; right: 8px; top: 56px; transform: none; justify-content: center; gap: 5px; padding: 5px; }
+      #cutbar b { display: none; }
+      #cutbar button { flex: 1 1 auto; padding: 6px 8px; font-size: 13px; min-height: 40px; }
+      .rl { font-size: 11px; }
       #treeBtn { display: block; position: fixed; left: 12px; top: 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.95); color: var(--ink); font: 600 13px system-ui, -apple-system, sans-serif; }
       #props { left: 8px; right: 8px; top: auto; bottom: 8px; width: auto; max-height: 48%; }
       #hint { bottom: 12px; font-size: 12px; white-space: normal; text-align: center; width: max-content; max-width: 86%; }
@@ -55,7 +67,9 @@
   <button id="treeBtn" type="button">Struktur &amp; Filter</button>
   <div id="tree" class="panel" hidden></div>
   <div id="props" class="panel" aria-live="polite"><button id="close" type="button" aria-label="Schließen">×</button><div id="propsBody"></div></div>
-  <div id="hint">Bauteil antippen bzw. anklicken: Eigenschaften anzeigen</div>
+  <div id="labels"></div>
+  <div id="cutbar" class="panel" role="group" aria-label="Grundriss-Schnitt"><b>Grundriss</b><button type="button" data-cut="b-eg" title="Bestand Erdgeschoss, Schnitt 1,10 m über Fußboden">Bestand EG</button><button type="button" data-cut="b-og" title="Bestand Obergeschoss (Dachgeschoss lt. Tektur), Schnitt 1,10 m über Fußboden">Bestand OG</button><button type="button" data-cut="bu" title="Neubau Bungalow V1, Schnitt 1,10 m über Fußboden">Bungalow</button><button type="button" data-cut="off" class="on">Schnitt aus</button></div>
+  <div id="hint">Bauteil antippen bzw. anklicken: Eigenschaften anzeigen · oben: Grundriss-Schnitt</div>
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -78,6 +92,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE ? 1.5 : 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.localClippingEnabled = true;
     document.body.prepend(renderer.domElement);
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xeef1f3);
@@ -130,7 +145,7 @@
     // ---- geometry
     const CLASSES = [
       ['IFCWALL', 'Wände'], ['IFCSLAB', 'Decken / Bodenplatten / Dachflächen'], ['IFCWINDOW', 'Fenster'], ['IFCDOOR', 'Türen'],
-      ['IFCCHIMNEY', 'Schornsteine'], ['IFCSPACE', 'Räume (Neubau)'], ['OTHER', 'Sonstiges'],
+      ['IFCCHIMNEY', 'Schornsteine'], ['IFCSPACE', 'Räume'], ['OTHER', 'Sonstiges'],
     ];
     const classVisible = Object.fromEntries(CLASSES.map(([k]) => [k, k !== 'IFCSPACE']));
     const storeyVisible = new Map([...STOREY].map((s) => [s, true]));
@@ -164,9 +179,14 @@
     api.StreamAllMeshes(mid, (m) => addMesh(m, false));
     api.StreamAllMeshesWithTypes(mid, [WebIFC.IFCSPACE], (m) => addMesh(m, true));
 
+    let cut = null;   // { storey, building, h }
     const applyVisibility = () => {
       for (const it of items.values()) {
-        const on = classVisible[it.cls] && (it.storey == null || storeyVisible.get(it.storey) !== false);
+        let on = classVisible[it.cls] && (it.storey == null || storeyVisible.get(it.storey) !== false);
+        if (cut) {
+          const b = it.storey != null ? buildingOf.get(it.storey) : null;
+          on = it.cls === 'IFCSPACE' ? it.storey === cut.storey : (on && b === cut.building);
+        }
         it.meshes.forEach((m) => (m.visible = on));
       }
       dirty = true;
@@ -201,7 +221,7 @@
       const n = count((it) => it.cls === k); if (!n) continue;
       html += `<label><input type="checkbox" data-cls="${k}" ${classVisible[k] ? 'checked' : ''}> ${label}<small>${n}</small></label>`;
     }
-    html += '<div class="note">Vorentwurf, Stand 08.10.2026. Annahmen stehen am Bauteil unter „Oberhofer_Info“.</div>';
+    html += '<div class="note">Bestand mit Innenwänden EG/OG nach Tektur, Bungalow = Vorentwurf. Stand 08.10.2026. Annahmen stehen am Bauteil unter „Oberhofer_Info“.</div>';
     const tree = $('tree'); tree.innerHTML = html; tree.hidden = false;
     tree.addEventListener('change', (e) => {
       const t = e.target;
@@ -260,7 +280,7 @@
     let selected = null;
     const SEL = new THREE.Color(0xe8a33d);
     function select(eid) {
-      if (selected != null) items.get(selected)?.meshes.forEach((m) => m.material.color.copy(m.userData.baseColor));
+      if (selected != null) items.get(selected)?.meshes.forEach((m) => m.material.color.copy(m.userData.cutColor || m.userData.baseColor));
       selected = eid;
       const panel = $('props');
       if (eid == null) { panel.style.display = 'none'; dirty = true; return; }
@@ -283,12 +303,103 @@
       const r = renderer.domElement.getBoundingClientRect();
       ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
       ray.setFromCamera(ndc, camera);
-      const hit = ray.intersectObjects(pickables.filter((m) => m.visible), false)[0];
+      const hit = ray.intersectObjects(pickables.filter((m) => m.visible), false).find((h) => !cut || h.point.y <= cut.h + 0.01);
       select(hit ? hit.object.userData.eid : null);
       if (MOBILE) tree.classList.remove('open');
     });
 
     status.remove();
+    // ---- Grundriss-Schnitt (horizontale Schnittebene 1,10 m über Fußboden, Draufsicht)
+    const CUT_ABOVE = 1.1;
+    const clipPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
+    const allMeshes = [...items.values()].flatMap((it) => it.meshes);
+    const model = new THREE.Group(); scene.add(model); allMeshes.forEach((m) => model.add(m));
+    const bName = (b) => String(val(line(b).Name) || '');
+    const B_BESTAND = BUILDING.find((b) => /Bestand Wohnhaus/i.test(bName(b))), B_BUNG = BUILDING.find((b) => /Bungalow/i.test(bName(b)));
+    const storeyIn = (b, nm) => [...STOREY].find((s) => buildingOf.get(s) === b && val(line(s).Name) === nm);
+    const CUTS = {
+      'b-eg': { building: B_BESTAND, storey: storeyIn(B_BESTAND, 'EG'), rot: 0 },
+      'b-og': { building: B_BESTAND, storey: storeyIn(B_BESTAND, 'DG'), rot: 0 },
+      'bu': { building: B_BUNG, storey: storeyIn(B_BUNG, 'EG'), rot: -0.66525 },   // Bungalow-Achse waagrecht, Am Osterfeld oben
+    };
+    const WALLCUT = new THREE.Color(0x3d454d), DOORCUT = new THREE.Color(0x9a6a3c), WINCUT = new THREE.Color(0x7fb2d6);
+    const ROOMCOLS = [0xf6d58e, 0xa9d6c2, 0xb7c9ef, 0xf2b8a2, 0xd4c1ea, 0xc9e2a0, 0xf3c6dd, 0xa8dbe6];
+    const labelsEl = $('labels'); let labels = [];
+    const spaceInfo = new Map();
+    async function roomInfo(eid) {
+      if (spaceInfo.has(eid)) return spaceInfo.get(eid);
+      const L = line(eid); let area = null;
+      try {
+        const sets = await api.properties.getPropertySets(mid, eid, true);
+        for (const ps of sets) for (const q of (ps.Quantities || [])) if (/NetFloorArea/.test(val(q.Name))) area = val(q.AreaValue);
+      } catch (e) {}
+      const r = { name: val(L.LongName) || val(L.Name) || 'Raum', area }; spaceInfo.set(eid, r); return r;
+    }
+    function setColors(on) {
+      let k = 0;
+      for (const [eid, it] of items) {
+        for (const m of it.meshes) {
+          let c = m.userData.baseColor;
+          if (on) {
+            if (it.cls === 'IFCWALL') c = WALLCUT; else if (it.cls === 'IFCDOOR') c = DOORCUT; else if (it.cls === 'IFCWINDOW') c = WINCUT;
+            else if (it.cls === 'IFCSPACE') c = new THREE.Color(ROOMCOLS[k % ROOMCOLS.length]);
+          }
+          if (eid !== selected) m.material.color.copy(c);
+          m.userData.cutColor = on ? c.clone() : null;
+          m.material.clippingPlanes = on ? [clipPlane] : null;
+          if (it.cls === 'IFCSPACE') { m.material.opacity = on ? 0.55 : 0.45; m.material.polygonOffset = on; m.material.polygonOffsetFactor = -2; m.material.polygonOffsetUnits = -8; }
+          m.material.needsUpdate = true;
+        }
+        if (it.cls === 'IFCSPACE') k++;
+      }
+    }
+    async function setCut(key) {
+      document.querySelectorAll('#cutbar button').forEach((b) => b.classList.toggle('on', b.dataset.cut === key || (key === 'off' && b.dataset.cut === 'off')));
+      labelsEl.innerHTML = ''; labels = [];
+      if (key === 'off' || !CUTS[key] || !CUTS[key].storey) {
+        cut = null; model.rotation.y = 0; model.updateMatrixWorld(true); setColors(false); applyVisibility();
+        camera.position.copy(center).add(new THREE.Vector3(0.55, 0.6, 0.85).normalize().multiplyScalar(dist));
+        controls.target.copy(center); controls.update(); dirty = true; return;
+      }
+      const c = CUTS[key], elev = val(line(c.storey).Elevation) || 0;
+      cut = { ...c, h: elev + CUT_ABOVE, key };
+      clipPlane.constant = cut.h;
+      model.rotation.y = c.rot; model.updateMatrixWorld(true);
+      setColors(true); applyVisibility();
+      const bb = new THREE.Box3();
+      for (const it of items.values()) if (it.cls !== 'IFCSPACE' && it.storey != null && buildingOf.get(it.storey) === c.building) it.meshes.forEach((m) => bb.expandByObject(m, true));
+      const ctr = bb.getCenter(new THREE.Vector3()), sz = bb.getSize(new THREE.Vector3());
+      ctr.y = elev;
+      const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
+      const span = Math.max(sz.z / (2 * Math.tan(vf / 2)), sz.x / (2 * Math.tan(hf / 2))) * (MOBILE ? 1.35 : 1.15);
+      camera.position.set(ctr.x, elev + span + CUT_ABOVE, ctr.z + 0.001 * span);
+      controls.target.copy(ctr); controls.update();
+      for (const [eid, it] of items) {
+        if (it.cls !== 'IFCSPACE' || it.storey !== c.storey) continue;
+        const b = new THREE.Box3(); it.meshes.forEach((m) => b.expandByObject(m));
+        const p = b.getCenter(new THREE.Vector3()); p.y = elev + 0.05;
+        const el = document.createElement('div'); el.className = 'rl'; labelsEl.appendChild(el);
+        labels.push({ el, p });
+        roomInfo(eid).then((r) => { el.innerHTML = `${esc(r.name.replace(/\s*\((Bezeichnung lt\. Plan|Zwerchhaus|Gast[^)]*)\)/g, '').trim())}${r.area ? `<br><small>${esc(fmt(r.area))} m²</small>` : ''}`; dirty = true; });
+      }
+      dirty = true;
+    }
+    const v3 = new THREE.Vector3();
+    function placeLabels() {
+      if (!labels.length) return;
+      const w = window.innerWidth, h = window.innerHeight;
+      for (const l of labels) {
+        v3.copy(l.p).project(camera);
+        const vis = v3.z < 1 && Math.abs(v3.x) < 1.1 && Math.abs(v3.y) < 1.1;
+        l.el.style.display = vis ? '' : 'none';
+        if (vis) { l.el.style.left = ((v3.x + 1) / 2 * w) + 'px'; l.el.style.top = ((1 - v3.y) / 2 * h) + 'px'; }
+      }
+    }
+    $('cutbar').addEventListener('click', (e) => { const b = e.target.closest('button[data-cut]'); if (b) { select(null); setCut(b.dataset.cut); } });
+    window.__setCut = setCut;
+    const startCut = new URLSearchParams(location.search).get('grundriss') || (location.hash.match(/grundriss=([\w-]+)/) || [])[1];
+    if (startCut && CUTS[startCut]) setCut(startCut);
+
     const counts = {}; for (const it of items.values()) counts[it.cls] = (counts[it.cls] || 0) + 1;
     window.__ifcReady = { elements: items.size, counts, mobile: MOBILE };
 
@@ -296,7 +407,7 @@
       camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight); dirty = true;
     });
-    const loop = () => { controls.update(); if (dirty) { renderer.render(scene, camera); dirty = false; } };
+    const loop = () => { controls.update(); if (dirty) { renderer.render(scene, camera); placeLabels(); dirty = false; } };
     renderer.setAnimationLoop(loop);
     window.addEventListener('message', (e) => {
       if (e.origin !== location.origin || !e.data || !('active' in e.data)) return;
