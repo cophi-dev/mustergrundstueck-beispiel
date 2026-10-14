@@ -123,12 +123,22 @@
       return group;
     }
 
+    // Glas: von beiden Seiten durchsichtig (vorher opak → von innen "blind").
+    const fixGlass = (root) => root.traverse((o) => {
+      if (!o.isMesh || !/glas/i.test(o.name + ' ' + (o.material && o.material.name))) return;
+      const m = o.material.clone();
+      m.transparent = true; m.opacity = 0.28; m.depthWrite = false; m.side = THREE.DoubleSide;
+      m.color.setRGB(0.55, 0.68, 0.75); m.metalness = 0; m.roughness = 0.05;
+      o.material = m; o.castShadow = false; o.renderOrder = 2;
+    });
+
     const loader = new GLTFLoader();
     loader.setMeshoptDecoder(MeshoptDecoder);
     const vegPromise = fetch(BASE + 'vegetation.json').then((r) => r.json()).catch((e) => { console.warn('vegetation.json', e); return { trees: [] }; });
 
     loader.load(BASE + (MOBILE ? 'bestand_nr12_v2_mobile.glb' : 'bestand_nr12_v2.glb'), async (gltf) => {
       const root = gltf.scene;
+      fixGlass(root);
       // Fit to the buildings/plots, not to the large ground plane.
       const box = new THREE.Box3(), tmp = new THREE.Box3(), size = new THREE.Vector3();
       root.updateMatrixWorld(true);
@@ -184,11 +194,14 @@
         vegFelled.visible = !on;
         if (bungalow) bungalow.visible = on;
         caption.textContent = on ? 'Bestand Ashausener Str. 12 + Neubau Bungalow V1 (Vorentwurf)' : 'Bestand Ashausener Str. 12 – Modell v2';
-        if (on && !bungalow && !loading) {
-          loading = true; btn.textContent = 'Bungalow V1 lädt …';
+        if (!bungalow && !loading) {   // immer laden: Straße Am Osterfeld steckt im Bungalow-GLB
+          loading = true; if (on) btn.textContent = 'Bungalow V1 lädt …';
           loader.load(BASE + 'bungalow_v1.glb', (g) => {
             bungalow = g.scene;
             bungalow.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+            fixGlass(bungalow);
+            // Straße/Gehweg Am Osterfeld gehören nicht zum Bungalow → dauerhaft sichtbar.
+            bungalow.children.filter((o) => !/^BU_/.test(o.name)).forEach((o) => scene.attach(o));
             bungalow.visible = btn.classList.contains('on');
             scene.add(bungalow); btn.textContent = label();
             window.__v1Ready = true;
