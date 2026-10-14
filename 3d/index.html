@@ -11,7 +11,7 @@
     #caption { position: fixed; left: 12px; bottom: 12px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.85); color: #222; font-size: 13px; pointer-events: none; }
     #status { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #234; font-size: 15px; pointer-events: none; text-align: center; padding: 0 20px; }
     #hint { position: fixed; right: 12px; bottom: 12px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.7); color: #444; font-size: 12px; pointer-events: none; }
-    @media (max-width: 640px) { #hint { display: none; } #attr { bottom: auto; top: 12px; max-width: 42%; } }
+    @media (max-width: 640px) { #hint { display: none; } }
     #v1 { position: fixed; right: 12px; top: 12px; padding: 8px 12px; border: 1px solid rgba(0,0,0,.12); border-radius: 8px; background: rgba(255,255,255,.92); color: #1f2a33; font: 600 13px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; display: none; }
     #v1.on, #sat.on, #pos button.on { background: #2f5d50; border-color: #2f5d50; color: #fff; }
     #sat { position: fixed; right: 12px; top: 54px; padding: 8px 12px; border: 1px solid rgba(0,0,0,.12); border-radius: 8px; background: rgba(255,255,255,.92); color: #1f2a33; font: 600 13px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; display: none; }
@@ -19,8 +19,9 @@
     #pos .row { display: flex; gap: 4px; }
     #pos button { padding: 6px 9px; border: 1px solid rgba(0,0,0,.12); border-radius: 7px; background: rgba(255,255,255,.92); color: #1f2a33; font: 600 12px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; }
     #pos small { background: rgba(255,255,255,.85); border-radius: 6px; padding: 4px 7px; font-size: 11px; color: #333; text-align: right; }
-    #attr { position: fixed; left: 12px; bottom: 44px; padding: 3px 8px; border-radius: 5px; background: rgba(255,255,255,.75); color: #333; font-size: 11px; display: none; }
+    #attr { position: fixed; right: 12px; bottom: 44px; padding: 0; background: none; color: #222; font-size: 11px; line-height: 1.2; white-space: nowrap; text-shadow: 0 0 3px #fff, 0 0 2px #fff; pointer-events: auto; display: none; }
     #attr a { color: #234; }
+    @media (max-width: 640px) { #attr { right: 8px; bottom: 6px; font-size: 10px; } }
   </style>
   <script type="importmap">
     {
@@ -211,6 +212,9 @@
           });
         } else satMesh.visible = on && !!satMat.map;
       };
+      // mobil: Quellenangabe direkt über der (ggf. zweizeiligen) Bildunterschrift
+      const capEl = document.getElementById('caption');
+      new ResizeObserver(() => { attr.style.bottom = window.innerWidth <= 640 ? (capEl.getBoundingClientRect().height + 18) + 'px' : ''; }).observe(capEl);
       satBtn.style.display = 'block';
       satBtn.addEventListener('click', () => setSat(!satBtn.classList.contains('on')));
       if (new URLSearchParams(location.search).has('luftbild')) setSat(true);
