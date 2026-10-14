@@ -2,26 +2,51 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow">
-  <title>Visualisierung – Ashausener Str. 12</title>
+  <title>3D-Ansicht – Ashausener Str. 12</title>
   <style>
-    html, body { margin: 0; height: 100%; overflow: hidden; background: #9fa1b2; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    :root { --ink: #1f2a33; --muted: #5d6a74; --accent: #2f5d50; --ok: #1f7a4d; --bad: #b23b2e; --panelH: 0px; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #9fa1b2; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); }
     canvas { display: block; touch-action: none; }
-    #caption { position: fixed; left: 12px; bottom: 12px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.85); color: #222; font-size: 13px; pointer-events: none; }
     #status { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #234; font-size: 15px; pointer-events: none; text-align: center; padding: 0 20px; }
+    #caption { position: fixed; left: 12px; bottom: 12px; max-width: calc(100vw - 24px); padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.88); font-size: 13px; pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box; }
     #hint { position: fixed; right: 12px; bottom: 12px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,.7); color: #444; font-size: 12px; pointer-events: none; }
-    @media (max-width: 640px) { #hint { display: none; } }
-    #v1 { position: fixed; right: 12px; top: 12px; padding: 8px 12px; border: 1px solid rgba(0,0,0,.12); border-radius: 8px; background: rgba(255,255,255,.92); color: #1f2a33; font: 600 13px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; display: none; }
-    #v1.on, #sat.on, #pos button.on { background: #2f5d50; border-color: #2f5d50; color: #fff; }
-    #sat { position: fixed; right: 12px; top: 54px; padding: 8px 12px; border: 1px solid rgba(0,0,0,.12); border-radius: 8px; background: rgba(255,255,255,.92); color: #1f2a33; font: 600 13px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; display: none; }
-    #pos { position: fixed; right: 12px; top: 96px; display: none; flex-direction: column; align-items: flex-end; gap: 4px; max-width: 230px; }
-    #pos .row { display: flex; gap: 4px; }
-    #pos button { padding: 6px 9px; border: 1px solid rgba(0,0,0,.12); border-radius: 7px; background: rgba(255,255,255,.92); color: #1f2a33; font: 600 12px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; }
-    #pos small { background: rgba(255,255,255,.85); border-radius: 6px; padding: 4px 7px; font-size: 11px; color: #333; text-align: right; }
-    #attr { position: fixed; right: 12px; bottom: 44px; padding: 0; background: none; color: #222; font-size: 11px; line-height: 1.2; white-space: nowrap; text-shadow: 0 0 3px #fff, 0 0 2px #fff; pointer-events: auto; display: none; }
+    #viewlabel { position: fixed; left: 14px; top: 64px; max-width: calc(100vw - 380px); padding: 8px 14px; border-radius: 8px; background: rgba(31,42,51,.82); color: #fff; font: 600 14px system-ui, -apple-system, sans-serif; text-align: center; display: none; pointer-events: none; box-sizing: border-box; }
+    #attr { position: fixed; right: 12px; bottom: 44px; color: #222; font-size: 11px; line-height: 1.2; white-space: nowrap; text-shadow: 0 0 3px #fff, 0 0 2px #fff; display: none; }
     #attr a { color: #234; }
-    @media (max-width: 640px) { #attr { right: 8px; bottom: 6px; font-size: 10px; } }
+    #panel { position: fixed; right: 12px; top: 12px; width: 340px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,.95); box-shadow: 0 6px 24px rgba(20,30,40,.18); display: none; flex-direction: column; gap: 10px; font-size: 13px; box-sizing: border-box; }
+    #panel .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    #panel .lbl { width: 44px; color: var(--muted); font-weight: 600; font-size: 12px; }
+    .seg { display: inline-flex; flex: 1; background: #eef1f3; border-radius: 9px; padding: 3px; gap: 2px; }
+    .seg button { flex: 1; border: 0; background: none; padding: 7px 6px; border-radius: 7px; font: 600 13px system-ui, -apple-system, sans-serif; color: var(--muted); cursor: pointer; min-height: 32px; }
+    .seg button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.14); }
+    .seg button:disabled { opacity: .4; cursor: default; }
+    .tgl { flex: 1; border: 1px solid #d5dbe0; background: #fff; border-radius: 9px; padding: 7px 10px; font: 600 13px system-ui, -apple-system, sans-serif; color: var(--ink); cursor: pointer; min-height: 36px; text-align: left; white-space: nowrap; }
+    .tgl::before { content: ""; display: inline-block; width: 26px; height: 15px; margin: 0 8px -3px 0; border-radius: 8px; background: #c9d0d6 radial-gradient(circle at 7px 7.5px, #fff 5px, transparent 5.5px); transition: background-color .15s; }
+    .tgl.on::before { background: var(--accent) radial-gradient(circle at 19px 7.5px, #fff 5px, transparent 5.5px); }
+    #check { display: flex; flex-direction: column; gap: 4px; }
+    .badge { align-self: flex-start; padding: 5px 10px; border-radius: 999px; font-weight: 700; font-size: 12.5px; color: #fff; background: var(--ok); }
+    .badge.bad { background: var(--bad); }
+    #check details { font-size: 12px; color: #333; }
+    #check summary { cursor: pointer; color: var(--muted); font-weight: 600; padding: 2px 0; }
+    #check details p { margin: 4px 0 0; line-height: 1.45; }
+    #pulse { animation: none; }
+    .flash { animation: flash 1.2s ease 2; }
+    @keyframes flash { 50% { box-shadow: 0 0 0 4px rgba(47,93,80,.45); } }
+    @media (max-width: 700px) {
+      #hint { display: none; }
+      #panel { left: 0; right: 0; top: auto; bottom: 0; width: auto; border-radius: 14px 14px 0 0; padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); gap: 6px; }
+      #panel .lbl { display: none; }
+      .seg button, .tgl { min-height: 44px; font-size: 14px; }
+      #panel .row.split > * { flex: 1 1 0; }
+      #caption { bottom: calc(var(--panelH) + 8px); font-size: 12.5px; }
+      #attr { right: 8px; bottom: calc(var(--panelH) + 44px); font-size: 10px; }
+      #viewlabel { font-size: 13px; top: 56px; left: 8px; max-width: calc(100vw - 20px); }
+      .tgl { white-space: nowrap; font-size: 13.5px; padding: 6px 8px; }
+      #check { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 8px; }
+      #check details[open] { flex-basis: 100%; }
+    }
   </style>
   <script type="importmap">
     {
@@ -34,13 +59,16 @@
 </head>
 <body>
   <div id="status">Modell wird geladen …</div>
-  <div id="caption">Bestand Ashausener Str. 12 – Modell v2</div>
-  <button id="v1" type="button" aria-pressed="true">✓ Neubau Bungalow V1</button>
-  <button id="sat" type="button" aria-pressed="false">Luftbild einblenden</button>
-  <div id="pos"><div class="row"><button type="button" data-u="14.40" class="on">Lage V1 (Ost)</button><button type="button" data-u="8.70">Mitte</button><button type="button" data-u="3.03">West ✗</button></div>
-    <small id="posnote"></small></div>
+  <div id="viewlabel"></div>
+  <div id="caption">Bestand Ashausener Str. 12</div>
+  <div id="panel" aria-label="Steuerung">
+    <div class="row split"><button id="v1" class="tgl on" type="button" aria-pressed="true">Bungalow anzeigen</button><button id="sat" class="tgl" type="button" aria-pressed="false">Luftbild</button></div>
+    <div class="row" id="posrow"><span class="lbl">Lage</span><div class="seg" id="pos" role="group" aria-label="Lage des Bungalows"><button type="button" data-k="ost" class="on">Ost</button><button type="button" data-k="mitte">Mitte</button><button type="button" data-k="west">West</button></div></div>
+    <div id="check"><span class="badge" id="badge">✓ Abstände und Größe vorgeprüft</span><details><summary>Details</summary><p id="checkdetails"></p></details></div>
+    <div class="row"><span class="lbl">Blick</span><div class="seg" id="views" role="group" aria-label="Blick"><button type="button" data-v="overview" class="on">Übersicht</button><button type="button" data-v="innen_bu">Innen Bungalow</button><button type="button" data-v="innen_be">Innen Bestand</button></div></div>
+  </div>
   <div id="attr">Luftbild: © <a href="https://www.lgln.niedersachsen.de" target="_blank" rel="noopener">LGLN</a> (DOP20), Lizenz <a href="https://www.govdata.de/dl-de/by-2-0" target="_blank" rel="noopener">dl-de/by-2-0</a></div>
-  <div id="hint">Ziehen: drehen · Scrollen/Pinch: zoomen · Rechtsklick bzw. zwei Finger: verschieben</div>
+  <div id="hint">Ziehen: drehen · Scrollen: zoomen · Rechtsklick: verschieben</div>
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -48,6 +76,7 @@
     import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
     const BASE = '/3d/';
+    let tick = () => {};
     const status = document.getElementById('status');
     // Small or touch screens: lighter model (512 px textures), smaller shadows, capped pixel ratio.
     const MOBILE = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 700;
@@ -122,7 +151,7 @@
         }
       }
       const group = new THREE.Group(); group.name = 'Vegetation'; group.userData.count = list.length;
-      const defs = { trunk: [cyl, flat(0x5b4331)], needle: [cone, flat(0x2e4a2b)], leaf: [ball, flat(0x557d38)] };
+      const defs = { trunk: [cyl, flat(0x5e5246)], needle: [cone, flat(0x46573f)], leaf: [ball, flat(0x6f8456)] };
       const c = new THREE.Color();
       for (const [key, [geo, mat]] of Object.entries(defs)) {
         const items = parts[key]; if (!items.length) continue;
@@ -171,7 +200,15 @@
       // Plot-Frame 121/2 (bungalow/v1_layout.py): u entlang Grenze 121/1|121/2, v Richtung Am Osterfeld
       const PO = [-22.614073, 10.959574], PU = [0.786761, 0.617258], PV = [-0.617258, 0.786761], U0_V1 = 14.40, BU_W = 19.0, BU_V0 = 3.03, BU_D = 9.2;
       const toUV = (x, y) => [(x - PO[0]) * PU[0] + (y - PO[1]) * PU[1], (x - PO[0]) * PV[0] + (y - PO[1]) * PV[1]];
-      let posU = U0_V1;
+      // Vorprüfung 14./15.10.26: Lageplan-Geometrie ±0,25 m; GRZ 0,25 lt. B-Plan 32/50 (BauNVO 1977, § 19 Abs. 4: Terrasse/Stellplätze nicht angerechnet),
+      // 121/2 = eigenes Baugrundstück 701 m²; NBauO § 5: 0,5 H (H 3,40 m) = 1,70 m, mind. 3 m.
+      const GR_TXT = 'Grundfläche 174,8 m², zulässig 175,3 m² (GRZ 0,25 auf 701 m²).';
+      const POS = {
+        ost:   { u: 14.40, ok: true, d: 'Abstände zu den Grenzen: Süd 3,03 m · Ost 3,04 m · Nord 7,02 m · West 14,34 m (mind. 3,00 m). Zur Garage 6,04 m, zum Gerätehaus 5,98 m.' },
+        mitte: { u: 8.70,  ok: true, d: 'Abstände zu den Grenzen: Süd 3,03 m · West 8,64 m · Ost 8,74 m · Nord 7,02 m (mind. 3,00 m). Zur Garage 6,73 m, zum Gerätehaus 5,98 m.' },
+        west:  { u: 3.13,  ok: true, d: 'Abstände zu den Grenzen: Süd 3,03 m · West 3,07 m · Nord 7,02 m · Ost 14,31 m (mind. 3,00 m). Zur Garage 10,46 m, zum Gerätehaus 6,95 m.' }
+      };
+      let posU = U0_V1, posK = 'ost';
       const isFelled = (t) => {
         if (posU === U0_V1) return (vj.felled_v1 || []).some(([x, y]) => Math.abs(t[1] - x) < 0.05 && Math.abs(t[2] - y) < 0.05);
         const [u, v] = toUV(t[1], t[2]);   // andere Lage: Bäume im Baufeld (+1,5 m) und auf der Terrasse
@@ -201,33 +238,33 @@
       let satLoaded = false;
       const setSat = (on) => {
         satBtn.classList.toggle('on', on); satBtn.setAttribute('aria-pressed', on);
-        satBtn.textContent = on ? '✓ Luftbild' : 'Luftbild einblenden';
         attr.style.display = on ? 'block' : 'none';
         if (on && !satLoaded) {
           satLoaded = true; satBtn.textContent = 'Luftbild lädt …';
           new THREE.TextureLoader().load(BASE + (MOBILE ? 'luftbild_1k.jpg' : 'luftbild_2k.jpg'), (t) => {
             t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
             satMat.map = t; satMat.needsUpdate = true; satMesh.visible = satBtn.classList.contains('on');
-            satBtn.textContent = satMesh.visible ? '✓ Luftbild' : 'Luftbild einblenden'; window.__satReady = true;
+            satBtn.textContent = 'Luftbild'; window.__satReady = true;
           });
         } else satMesh.visible = on && !!satMat.map;
       };
-      // mobil: Quellenangabe direkt über der (ggf. zweizeiligen) Bildunterschrift
-      const capEl = document.getElementById('caption');
-      new ResizeObserver(() => { attr.style.bottom = window.innerWidth <= 640 ? (capEl.getBoundingClientRect().height + 18) + 'px' : ''; }).observe(capEl);
-      satBtn.style.display = 'block';
       satBtn.addEventListener('click', () => setSat(!satBtn.classList.contains('on')));
       if (new URLSearchParams(location.search).has('luftbild')) setSat(true);
       const shadowBox = box.clone().union(new THREE.Box3().setFromObject(veg)).union(new THREE.Box3().setFromObject(vegFelled));
 
-      const center = box.getCenter(new THREE.Vector3());
-      const radius = box.getSize(new THREE.Vector3()).length() / 2;
-      const dist = radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) * 0.7;
-      camera.position.copy(center).add(new THREE.Vector3(0.6, 0.34, 0.85).normalize().multiplyScalar(dist));
-      controls.target.copy(center);
-      controls.maxDistance = dist * 3;
-      controls.minDistance = 2;
-      controls.update();
+      // ---- Startkamera: Übersicht schräg von oben, Bestand + Bungalow (alle Lagen) komplett im Bild
+      const focus = new THREE.Box3(new THREE.Vector3(-26, 0, -42), new THREE.Vector3(14, 6, 2));   // Haus, Nebengebäude, 121/2
+      const center = focus.getCenter(new THREE.Vector3());
+      const radius = focus.getSize(new THREE.Vector3()).length() / 2;
+      const fitDist = () => radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) / Math.min(1, Math.max(0.55, camera.aspect)) * 1.0;
+      const OV_DIR = new THREE.Vector3(0.75, 0.75, 0.62).normalize();
+      controls.maxDistance = fitDist() * 3;
+      const overview = () => {   // Desktop: Modell links vom Bedienfeld
+        const right = new THREE.Vector3(0, 1, 0).cross(OV_DIR).normalize(), t = center.clone();
+        if (innerWidth > 700) t.addScaledVector(right, radius * 0.05);
+        return { pos: t.clone().addScaledVector(OV_DIR, fitDist()), target: t, fov: 40 };
+      };
+      { const o = overview(); camera.position.copy(o.pos); controls.target.copy(o.target); controls.minDistance = 2; controls.update(); }
 
       const sc = shadowBox.getCenter(new THREE.Vector3());
       const sr = shadowBox.getSize(new THREE.Vector3()).length() / 2;
@@ -240,35 +277,78 @@
 
       status.remove();
       window.__view = { camera, controls };   // für automatische Screenshots
-      window.__viewerReady = { trees: veg.userData.count, instances: [veg, vegFelled].reduce((n, g) => n + g.children.reduce((k, m) => k + m.count, 0), 0), mobile: MOBILE };
+      window.__viewerReady = { trees: veg.userData.count, mobile: MOBILE };
 
-      // ---- optional: Neubau Bungalow V1 auf Flst. 121/2 (Vorentwurf), lazy geladen
-      const btn = document.getElementById('v1'), caption = document.getElementById('caption'), posBox = document.getElementById('pos');
-      // Lage-Varianten: Bungalow (inkl. Terrasse/Stellplätze) entlang u verschieben – nur Ansicht
-      const setPos = (u) => {
-        posU = u; posBox.querySelectorAll('button').forEach((b) => b.classList.toggle('on', +b.dataset.u === u));
-        const d = u - U0_V1; if (bungalow) bungalow.position.set(PU[0] * d, 0, -PU[1] * d);
-        rebuildTrees(); if (bungalow) vegFelled.visible = !bungalow.visible;
-        document.getElementById('posnote').innerHTML = (POS_NOTE[u] || '') + '<br>Vorprüfung, keine Bauvorlage.';
+      // ---- sanfte Kamerafahrten + Bungalow-Verschiebung
+      const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+      let camTween = null, buTween = null;
+      const flyTo = (v, dur = 1300) => { camTween = { t0: performance.now(), dur, p0: camera.position.clone(), q0: controls.target.clone(), f0: camera.fov, ...v }; };
+      tick = () => {
+        const now = performance.now();
+        if (camTween) {
+          const k = Math.min(1, (now - camTween.t0) / camTween.dur), e = ease(k);
+          camera.position.lerpVectors(camTween.p0, camTween.pos, e); controls.target.lerpVectors(camTween.q0, camTween.target, e);
+          camera.fov = camTween.f0 + (camTween.fov - camTween.f0) * e; camera.updateProjectionMatrix();
+          if (k >= 1) camTween = null;
+        }
+        if (buTween && bungalow) {
+          const k = Math.min(1, (now - buTween.t0) / 900);
+          bungalow.position.lerpVectors(buTween.a, buTween.b, ease(k)); if (k >= 1) buTween = null;
+        }
       };
-      // Vorprüfung 14.10.26 (Lageplan-Geometrie ±0,25 m; GRZ 0,25 lt. B-Plan 32/50, BauNVO 1977; NBauO § 5: 0,5 H, mind. 3 m)
-      const POS_NOTE = {
-        14.40: '✓ Geprüft: GR 174,8 m² ≤ 175,3 m² (GRZ 0,25) · Abstandsflächen 3 m auf 121/2 eingehalten (S 3,03 · O 3,04 · N 7,02 · W 14,34 m).',
-        8.70: '✓ Geprüft: GR 174,8 m² ≤ 175,3 m² (GRZ 0,25) · Abstandsflächen 3 m auf 121/2 eingehalten (S 3,03 · W 8,64 · O 8,74 · N 7,02 m).',
-        3.03: '✗ Nicht eingehalten: Abstand zur Westgrenze 2,97 m < 3,00 m. GR 174,8 m² wäre zulässig.'
+      const buOffset = (u) => new THREE.Vector3(PU[0] * (u - U0_V1), 0, -PU[1] * (u - U0_V1));
+
+      // ---- Innenansichten (Augenhöhe 1,60 m über Fußboden, Blick durchs Fenster)
+      const viewLabel = document.getElementById('viewlabel');
+      const hemi = scene.children.find((o) => o.isHemisphereLight);
+      const setInterior = (on) => { hemi.intensity = on ? 1.1 : 0.35; scene.environmentIntensity = on ? 1.3 : 0.9; controls.minDistance = on ? 0.05 : 2; };
+      const VIEWS = {
+        overview: () => ({ ...overview(), label: '' }),
+        innen_bu: () => {   // Wohnzimmer Bungalow (Südfassade), Blick über den Garten zum Bestandshaus
+          const o = buOffset(posU), eye = new THREE.Vector3(-1.53, 1.60, -34.15).add(o);
+          const tgt = eye.clone().add(new THREE.Vector3(5.7, 1.4, -4.3).sub(eye).setY(0).normalize().multiplyScalar(1.2)); tgt.y = 1.45;
+          return { pos: eye, target: tgt, fov: 62, label: 'Blick aus dem Wohnzimmer des Bungalows Richtung Bestandshaus' };
+        },
+        innen_be: () => {   // Bestandshaus EG, Rückseite (Gartenfenster), Blick zum Bungalow
+          const eye = new THREE.Vector3(9.3, 2.06, -7.35), b = new THREE.Vector3(-8.5, 1.6, -31.7).add(buOffset(posU));
+          const tgt = eye.clone().add(b.sub(eye).setY(0).normalize().multiplyScalar(1.2)); tgt.y = 1.95;
+          return { pos: eye, target: tgt, fov: 62, label: 'Blick aus dem Erdgeschoss des Bestandshauses in den Garten' };
+        }
       };
-      document.getElementById('posnote').innerHTML = POS_NOTE[U0_V1] + '<br>Vorprüfung, keine Bauvorlage.';
-      posBox.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => setPos(+b.dataset.u)));
+      let curView = 'overview';
+      const viewBtns = document.querySelectorAll('#views button');
+      const goView = (k, dur) => {
+        if (k === 'innen_bu' && !btn.classList.contains('on')) setV1(true);
+        curView = k; viewBtns.forEach((b) => b.classList.toggle('on', b.dataset.v === k));
+        const v = VIEWS[k](); setInterior(k !== 'overview'); flyTo(v, dur);
+        viewLabel.textContent = v.label; viewLabel.style.display = v.label ? 'block' : 'none';
+      };
+      viewBtns.forEach((b) => b.addEventListener('click', () => goView(b.dataset.v)));
+
+      // ---- Bungalow + Lage
+      const btn = document.getElementById('v1'), caption = document.getElementById('caption'), posBtns = document.querySelectorAll('#pos button');
+      const badge = document.getElementById('badge'), details = document.getElementById('checkdetails'), check = document.getElementById('check'), posRow = document.getElementById('posrow');
+      const updCaption = () => { caption.textContent = btn.classList.contains('on') ? `Bestand + Bungalow (Vorentwurf) · Lage ${posK[0].toUpperCase() + posK.slice(1)}` : 'Bestand Ashausener Str. 12 (heute)'; };
+      const setPos = (k, animate = true) => {
+        const p = POS[k]; if (!p) return;
+        posK = k; posU = p.u; posBtns.forEach((b) => b.classList.toggle('on', b.dataset.k === k));
+        if (bungalow) { if (animate) buTween = { t0: performance.now(), a: bungalow.position.clone(), b: buOffset(posU) }; else bungalow.position.copy(buOffset(posU)); }
+        rebuildTrees(); vegFelled.visible = !btn.classList.contains('on');
+        badge.textContent = p.ok ? '✓ Abstände und Größe vorgeprüft' : '✗ Abstand zur Grenze zu gering'; badge.classList.toggle('bad', !p.ok);
+        details.textContent = `${GR_TXT} ${p.d} Vorprüfung nach Lageplan (±0,25 m), keine Bauvorlage.`;
+        updCaption();
+        if (curView !== 'overview') goView(curView, 900);
+      };
+      posBtns.forEach((b) => b.addEventListener('click', () => setPos(b.dataset.k)));
       let bungalow = null, loading = false;
       const setV1 = (on) => {
         btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', on);
-        const label = () => (btn.classList.contains('on') ? '✓ Neubau Bungalow V1' : 'Neubau Bungalow V1 einblenden');
-        btn.textContent = label();
-        vegFelled.visible = !on; posBox.style.display = on ? 'flex' : 'none';
+        vegFelled.visible = !on; posRow.style.display = check.style.display = on ? '' : 'none';
+        viewBtns[1].disabled = false;
         if (bungalow) bungalow.visible = on;
-        caption.textContent = on ? 'Bestand Ashausener Str. 12 + Neubau Bungalow V1 (Vorentwurf)' : 'Bestand Ashausener Str. 12 – Modell v2';
+        updCaption();
         if (!bungalow && !loading) {   // immer laden: Straße Am Osterfeld steckt im Bungalow-GLB
-          loading = true; if (on) btn.textContent = 'Bungalow V1 lädt …';
+          loading = true;
           loader.load(BASE + 'bungalow_v1.glb', (g) => {
             bungalow = g.scene;
             bungalow.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
@@ -276,16 +356,25 @@
             // Straße/Gehweg Am Osterfeld gehören nicht zum Bungalow → dauerhaft sichtbar.
             bungalow.children.filter((o) => !/^BU_/.test(o.name)).forEach((o) => scene.attach(o));
             bungalow.visible = btn.classList.contains('on');
-            { const d = posU - U0_V1; bungalow.position.set(PU[0] * d, 0, -PU[1] * d); }
-            scene.add(bungalow); btn.textContent = label();
+            bungalow.position.copy(buOffset(posU));
+            scene.add(bungalow);
             window.__v1Ready = true;
-          }, undefined, (e) => { console.error(e); btn.textContent = 'Bungalow V1 nicht verfügbar'; });
+          }, undefined, (e) => { console.error(e); btn.textContent = 'Bungalow nicht verfügbar'; });
         }
       };
-      btn.style.display = 'block';
       btn.addEventListener('click', () => setV1(!btn.classList.contains('on')));
-      setV1(!new URLSearchParams(location.search).has('bestand'));
-      { const q = new URLSearchParams(location.search).get('lage'); if (q) setPos({ mitte: 8.70, west: 3.03 }[q] || U0_V1); }   // Bungalow standardmäßig an; ?bestand = nur Bestand
+      const panel = document.getElementById('panel'); panel.style.display = 'flex';
+      new ResizeObserver(() => document.documentElement.style.setProperty('--panelH', (innerWidth <= 700 ? panel.getBoundingClientRect().height : 0) + 'px')).observe(panel);
+      const qs = new URLSearchParams(location.search);
+      setV1(!qs.has('bestand'));   // Bungalow standardmäßig an; ?bestand = nur Bestand
+      setPos({ mitte: 'mitte', west: 'west' }[qs.get('lage')] || 'ost', false);
+      if (VIEWS[qs.get('blick')]) goView(qs.get('blick'), 1);
+      // Schritte aus der Intro-Karte der Hauptseite
+      window.addEventListener('message', (e) => {
+        if (e.origin !== location.origin || !e.data || !e.data.cmd) return;
+        if (e.data.cmd === 'view') goView(e.data.view);
+        if (e.data.cmd === 'lage') { goView('overview'); posRow.classList.remove('flash'); void posRow.offsetWidth; posRow.classList.add('flash'); }
+      });
     }, (ev) => {
       if (ev.total) status.textContent = `Modell wird geladen … ${Math.round(ev.loaded / ev.total * 100)} %`;
       else status.textContent = `Modell wird geladen … ${(ev.loaded / 1e6).toFixed(1)} MB`;
@@ -299,11 +388,12 @@
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
-    renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
-    // Paused by the parent page while the IFC view is shown (saves GPU/battery).
+    const loop = () => { tick(); controls.update(); renderer.render(scene, camera); };
+    renderer.setAnimationLoop(loop);
+    // Paused by the parent page while the plans view is shown (saves GPU/battery).
     window.addEventListener('message', (e) => {
       if (e.origin !== location.origin || !e.data || !('active' in e.data)) return;
-      renderer.setAnimationLoop(e.data.active ? () => { controls.update(); renderer.render(scene, camera); } : null);
+      renderer.setAnimationLoop(e.data.active ? loop : null);
     });
   </script>
 </body>
