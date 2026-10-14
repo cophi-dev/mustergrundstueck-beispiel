@@ -310,8 +310,8 @@
           return { pos: eye, target: tgt, fov: 62, label: 'Blick aus dem Wohnzimmer des Bungalows Richtung Bestandshaus' };
         },
         innen_be: () => {   // Bestandshaus EG, Rückseite (Gartenfenster), Blick zum Bungalow
-          const eye = new THREE.Vector3(9.3, 2.06, -7.35), b = new THREE.Vector3(-8.5, 1.6, -31.7).add(buOffset(posU));
-          const tgt = eye.clone().add(b.sub(eye).setY(0).normalize().multiplyScalar(1.2)); tgt.y = 1.95;
+          const eye = new THREE.Vector3(8.9, 2.06, -7.3);
+          const tgt = eye.clone().add(new THREE.Vector3(-0.3, 0, -1).normalize().multiplyScalar(1.2)); tgt.y = 1.95;
           return { pos: eye, target: tgt, fov: 62, label: 'Blick aus dem Erdgeschoss des Bestandshauses in den Garten' };
         }
       };
@@ -364,7 +364,12 @@
       };
       btn.addEventListener('click', () => setV1(!btn.classList.contains('on')));
       const panel = document.getElementById('panel'); panel.style.display = 'flex';
-      new ResizeObserver(() => document.documentElement.style.setProperty('--panelH', (innerWidth <= 700 ? panel.getBoundingClientRect().height : 0) + 'px')).observe(panel);
+      const fitPanel = () => {   // mobil: Bildmitte über die Bottom-Bar schieben
+        const ph = innerWidth <= 700 ? panel.getBoundingClientRect().height : 0;
+        document.documentElement.style.setProperty('--panelH', ph + 'px');
+        if (ph) camera.setViewOffset(innerWidth, innerHeight, 0, ph / 2, innerWidth, innerHeight); else camera.clearViewOffset();
+      };
+      new ResizeObserver(fitPanel).observe(panel); window.addEventListener('resize', fitPanel);
       const qs = new URLSearchParams(location.search);
       setV1(!qs.has('bestand'));   // Bungalow standardmäßig an; ?bestand = nur Bestand
       setPos({ mitte: 'mitte', west: 'west' }[qs.get('lage')] || 'ost', false);
