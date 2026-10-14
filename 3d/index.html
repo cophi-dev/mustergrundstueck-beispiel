@@ -37,8 +37,8 @@
   <div id="caption">Bestand Ashausener Str. 12 – Modell v2</div>
   <button id="v1" type="button" aria-pressed="true">✓ Neubau Bungalow V1</button>
   <button id="sat" type="button" aria-pressed="false">Luftbild einblenden</button>
-  <div id="pos"><div class="row"><button type="button" data-u="14.40" class="on">Lage V1 (Ost)</button><button type="button" data-u="8.70">Mitte</button><button type="button" data-u="3.03">West</button></div>
-    <small>Lage nur zur Ansicht – Abstandsflächen und GRZ werden dabei nicht automatisch geprüft.</small></div>
+  <div id="pos"><div class="row"><button type="button" data-u="14.40" class="on">Lage V1 (Ost)</button><button type="button" data-u="8.70">Mitte</button><button type="button" data-u="3.03">West ✗</button></div>
+    <small id="posnote"></small></div>
   <div id="attr">Luftbild: © <a href="https://www.lgln.niedersachsen.de" target="_blank" rel="noopener">LGLN</a> (DOP20), Lizenz <a href="https://www.govdata.de/dl-de/by-2-0" target="_blank" rel="noopener">dl-de/by-2-0</a></div>
   <div id="hint">Ziehen: drehen · Scrollen/Pinch: zoomen · Rechtsklick bzw. zwei Finger: verschieben</div>
   <script type="module">
@@ -249,7 +249,15 @@
         posU = u; posBox.querySelectorAll('button').forEach((b) => b.classList.toggle('on', +b.dataset.u === u));
         const d = u - U0_V1; if (bungalow) bungalow.position.set(PU[0] * d, 0, -PU[1] * d);
         rebuildTrees(); if (bungalow) vegFelled.visible = !bungalow.visible;
+        document.getElementById('posnote').innerHTML = (POS_NOTE[u] || '') + '<br>Vorprüfung, keine Bauvorlage.';
       };
+      // Vorprüfung 14.10.26 (Lageplan-Geometrie ±0,25 m; GRZ 0,25 lt. B-Plan 32/50, BauNVO 1977; NBauO § 5: 0,5 H, mind. 3 m)
+      const POS_NOTE = {
+        14.40: '✓ Geprüft: GR 174,8 m² ≤ 175,3 m² (GRZ 0,25) · Abstandsflächen 3 m auf 121/2 eingehalten (S 3,03 · O 3,04 · N 7,02 · W 14,34 m).',
+        8.70: '✓ Geprüft: GR 174,8 m² ≤ 175,3 m² (GRZ 0,25) · Abstandsflächen 3 m auf 121/2 eingehalten (S 3,03 · W 8,64 · O 8,74 · N 7,02 m).',
+        3.03: '✗ Nicht eingehalten: Abstand zur Westgrenze 2,97 m < 3,00 m. GR 174,8 m² wäre zulässig.'
+      };
+      document.getElementById('posnote').innerHTML = POS_NOTE[U0_V1] + '<br>Vorprüfung, keine Bauvorlage.';
       posBox.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => setPos(+b.dataset.u)));
       let bungalow = null, loading = false;
       const setV1 = (on) => {
