@@ -221,7 +221,7 @@
       const n = count((it) => it.cls === k); if (!n) continue;
       html += `<label><input type="checkbox" data-cls="${k}" ${classVisible[k] ? 'checked' : ''}> ${label}<small>${n}</small></label>`;
     }
-    html += '<div class="note">Bestand mit Innenwänden EG/OG nach Tektur, Bungalow = Vorentwurf. Stand 08.10.2026. Annahmen stehen am Bauteil unter „Oberhofer_Info“.</div>';
+    html += '<div class="note">Bestand mit Innenwänden EG/OG nach Tektur, Bungalow = Vorentwurf in Lage Ost (wie 3D-Ansicht), Klinkerfassade. Stand 15.10.2026. Annahmen stehen am Bauteil unter „Oberhofer_Info“.</div>';
     const tree = $('tree'); tree.innerHTML = html; tree.hidden = false;
     tree.addEventListener('change', (e) => {
       const t = e.target;
