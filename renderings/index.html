@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Renderings – Ashausener Str. 12</title>
+  <style>
+    :root { --ink: #1f2a33; --muted: #5d6a74; --accent: #2f5d50; --line: #d5dbe0; }
+    html, body { margin: 0; background: #f4f6f7; color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    header { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: #fff; border-bottom: 1px solid var(--line); }
+    header b { font-size: 15px; } header span { color: var(--muted); font-size: 13px; }
+    header a { margin-left: auto; border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; color: var(--ink); text-decoration: none; font-weight: 600; font-size: 13px; white-space: nowrap; }
+    main { max-width: 1240px; margin: 0 auto; padding: 18px 16px 40px; }
+    h1 { font-size: 22px; margin: 4px 0 4px; } .lead { color: var(--muted); margin: 0 0 18px; max-width: 760px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }
+    figure { margin: 0; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(20,30,40,.08); }
+    figure button { display: block; width: 100%; padding: 0; border: 0; background: #dde3e6; cursor: zoom-in; aspect-ratio: 16 / 10; }
+    figure img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    figcaption { padding: 10px 14px 14px; font-size: 14px; } figcaption b { display: block; font-size: 15px; margin-bottom: 2px; }
+    .tag { display: inline-block; font-size: 11.5px; font-weight: 700; color: #fff; background: var(--accent); border-radius: 999px; padding: 1px 8px; margin-right: 6px; vertical-align: 1px; }
+    .tag.w { background: #4f6d8f; }
+    .note { margin-top: 24px; color: var(--muted); font-size: 13px; }
+    #lb { position: fixed; inset: 0; background: rgba(12,16,20,.94); display: none; z-index: 10; flex-direction: column; align-items: center; justify-content: center; }
+    #lb.on { display: flex; }
+    #lb img { max-width: 96vw; max-height: calc(100vh - 110px); object-fit: contain; border-radius: 4px; }
+    #lb p { color: #e8ecef; max-width: 900px; margin: 10px 16px 0; text-align: center; font-size: 14.5px; }
+    #lb button { position: absolute; border: 0; background: rgba(255,255,255,.14); color: #fff; width: 48px; height: 48px; border-radius: 50%; font-size: 24px; cursor: pointer; }
+    #lbX { top: 12px; right: 12px; } #lbP { left: 12px; top: 50%; } #lbN { right: 12px; top: 50%; }
+    @media (max-width: 700px) { header span { display: none; } .grid { grid-template-columns: 1fr; } h1 { font-size: 19px; } #lbP, #lbN { top: auto; bottom: 14px; } }
+  </style>
+</head>
+<body>
+  <header><b>Ashausener Str. 12, Stelle</b><span>Renderings · Vorentwurf</span><a href="/">← 3D-Ansicht</a></header>
+  <main>
+    <h1>Renderings: So könnte es aussehen</h1>
+    <p class="lead">Fotorealistische Bilder vom aktuellen Planungsstand (15.10.2026). Die Sonne steht so, wie sie in Stelle am 21. Juni um 15 Uhr bzw. am 21. Dezember um 12 Uhr wirklich steht. Antippen vergrößert ein Bild.</p>
+    <div class="grid" id="grid"></div>
+    <p class="note">Visualisierung mit Blender (Cycles) aus dem 3D-Modell. Bungalow und „Dummy“ jeweils in Lage Ost auf Flurstück 121/2. Pflanzen, Materialien und Umgebung sind beispielhaft. Vorentwurf, keine Bauvorlage.</p>
+  </main>
+  <div id="lb" role="dialog" aria-modal="true" aria-label="Bild groß"><img alt=""><p></p><button id="lbX" aria-label="Schließen">×</button><button id="lbP" aria-label="Vorheriges Bild">‹</button><button id="lbN" aria-label="Nächstes Bild">›</button></div>
+  <script>
+    var IM = [
+      ['01_vogel_bungalow_sommer', 'Sommer', 'Von oben', 'Vorne das Bestandshaus, hinten der Bungalow auf dem zweiten Grundstück (Lage Ost). 21. Juni, 15 Uhr.'],
+      ['02_vogel_bungalow_winter', 'Winter', 'Von oben im Winter', 'Gleicher Blick am 21. Dezember um 12 Uhr: Die Sonne steht nur 13° hoch, die Schatten sind lang.'],
+      ['03_garten_bungalow_sommer', 'Sommer', 'Aus dem Garten', 'Blick vom Garten des Bestandshauses zum Bungalow an einem Sommernachmittag.'],
+      ['04_garten_bungalow_winter', 'Winter', 'Garten im Winter', 'Derselbe Gartenblick am kürzesten Tag des Jahres zur Mittagszeit.'],
+      ['05_osterfeld_bungalow_sommer', 'Sommer', 'Von der Straße Am Osterfeld', 'Die Straßenseite des Bungalows mit Eingang, so wie Nachbarn und Besucher ihn sehen.'],
+      ['06_vogel_dummy_sommer', 'Sommer', 'Vergleich: zweites Bestandshaus', '„Dummy“: eine Kopie des Bestandshauses ohne den eingeschossigen Anbau anstelle des Bungalows – zum Größenvergleich.'],
+      ['07_garten_dummy_sommer', 'Sommer', 'Vergleich aus dem Garten', 'Gartenblick mit dem „Dummy“ statt des Bungalows: deutlich höher, aber kleinere Grundfläche.'],
+      ['08_strasse_bestand_sommer', 'Sommer', 'Bestandshaus von der Straße', 'Das Bestandshaus von der Ashausener Straße aus, Sommernachmittag.']
+    ];
+    var grid = document.getElementById('grid'), lb = document.getElementById('lb'), li = lb.querySelector('img'), lp = lb.querySelector('p'), cur = 0;
+    var big = matchMedia('(min-width: 700px)').matches && devicePixelRatio >= 1;
+    IM.forEach(function (m, i) {
+      var f = document.createElement('figure');
+      f.innerHTML = '<button type="button" aria-label="' + m[2] + ' vergrößern"><picture><source type="image/webp" srcset="img/' + m[0] + '_960.webp 960w, img/' + m[0] + '_1920.webp 1920w" sizes="(max-width: 700px) 100vw, 400px"><img loading="lazy" src="img/' + m[0] + '_960.jpg" alt="' + m[3] + '" width="960" height="600"></picture></button>' +
+        '<figcaption><b><span class="tag' + (m[1] === 'Winter' ? ' w' : '') + '">' + m[1] + '</span>' + m[2] + '</b>' + m[3] + '</figcaption>';
+      f.querySelector('button').addEventListener('click', function () { open(i); });
+      grid.appendChild(f);
+    });
+    var webp = document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0;
+    function open(i) { cur = (i + IM.length) % IM.length; var m = IM[cur]; li.src = 'img/' + m[0] + '_' + (innerWidth * devicePixelRatio > 1100 ? '1920' : '960') + (webp ? '.webp' : '.jpg'); li.alt = m[3]; lp.textContent = m[2] + ': ' + m[3]; lb.classList.add('on'); }
+    function close() { lb.classList.remove('on'); }
+    document.getElementById('lbX').onclick = close; document.getElementById('lbP').onclick = function () { open(cur - 1); }; document.getElementById('lbN').onclick = function () { open(cur + 1); };
+    lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
+    addEventListener('keydown', function (e) { if (!lb.classList.contains('on')) return; if (e.key === 'Escape') close(); if (e.key === 'ArrowLeft') open(cur - 1); if (e.key === 'ArrowRight') open(cur + 1); });
+    var x0 = null; lb.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+    lb.addEventListener('touchend', function (e) { if (x0 == null) return; var dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) open(cur + (dx < 0 ? 1 : -1)); x0 = null; });
+  </script>
+</body>
+</html>

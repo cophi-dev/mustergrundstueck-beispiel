@@ -52,12 +52,16 @@
     #help li b { display: block; }
     #help li small { color: var(--muted); }
     #help .ok { margin-top: 14px; width: 100%; min-height: 44px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; font: 700 15px system-ui, sans-serif; cursor: pointer; }
+    #saveBtn { position: fixed; left: 60px; top: 12px; height: 40px; padding: 0 14px; border-radius: 20px; border: 0; background: rgba(255,255,255,.95); box-shadow: 0 3px 12px rgba(20,30,40,.2); font: 700 13.5px system-ui, sans-serif; color: var(--ink); cursor: pointer; z-index: 5; }
+    #panel .rlink { color: var(--accent); font-weight: 600; font-size: 12.5px; text-decoration: none; }
     #toast { position: fixed; left: 50%; top: 14px; transform: translateX(-50%); background: rgba(31,42,51,.9); color: #fff; padding: 9px 14px; border-radius: 10px; font-size: 13.5px; z-index: 6; display: none; max-width: calc(100vw - 120px); text-align: center; }
     @media (max-width: 700px) {
       #panel { max-height: 45vh; overflow-y: auto; }
       #panel #extra .lbl { display: inline-block; width: 52px; }
       #toast { top: 60px; max-width: calc(100vw - 24px); }
       #helpBtn { top: 10px; left: 10px; }
+      #saveBtn { top: 10px; left: 58px; padding: 0 12px; }
+      #saveBtn .txt { display: none; }
       #hint { display: none; }
       #panel { left: 0; right: 0; top: auto; bottom: 0; width: auto; border-radius: 14px 14px 0 0; padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); gap: 6px; }
       #panel .lbl { display: none; }
@@ -100,8 +104,10 @@
       <div class="row"><span class="lbl">Ort</span><div class="seg" id="wpos"><button type="button" data-p="garten" class="on">Garten 121/1</button><button type="button" data-p="nw">121/2 NW</button><button type="button" data-p="dach">Garagendach</button></div></div>
       <p class="note" id="wnote">Höhen nach NBauO, Anhang (zu § 60 Abs. 1) Nr. 2.5, Fassung ab 01.07.2025 (NI-VORIS, abgerufen 15.10.2026): frei stehend verfahrensfrei bis 10 m Gesamthöhe und max. 3 m Rotordurchmesser, an Gebäuden bis 3 m ab Befestigungspunkt – <b>nicht</b> in reinen und allgemeinen Wohngebieten. Das Grundstück liegt im WA (B-Plan 32/50), hier also voraussichtlich genehmigungspflichtig. Ohne Gewähr, Abstandsregeln beachten.</p>
     </div></details>
+    <a class="rlink" href="/renderings/" target="_top">📷 Fotorealistische Renderings ansehen →</a>
   </div>
   <div id="marker"></div>
+  <button id="saveBtn" type="button" title="Aktuelle Ansicht als Bild speichern">⤓<span class="txt"> Ansicht speichern</span></button>
   <button id="helpBtn" type="button" aria-label="Hilfe zur Steuerung" title="Hilfe zur Steuerung">?</button>
   <div id="toast" role="status"></div>
   <div id="help" role="dialog" aria-modal="true" aria-labelledby="helpT"><div class="card">
@@ -626,6 +632,33 @@
         toast.textContent = MOBILE ? 'Tipp: mit einem Finger drehen, doppelt tippen setzt den Drehpunkt. „?“ erklärt alles.' : 'Tipp: ziehen zum Drehen, Doppelklick setzt den Drehpunkt. „?“ erklärt alles.';
         toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 7000);
       }
+      // ---- Ansicht speichern: aktuelle Ansicht mit 2-facher Auflösung (max. 4096 px) + Bildunterschrift als JPG
+      const saveBtn = document.getElementById('saveBtn');
+      const saveView = () => {
+        const W = innerWidth, H = innerHeight, k = Math.min(Math.max(2, devicePixelRatio), 4096 / W, 4096 / H), pr0 = renderer.getPixelRatio();
+        renderer.setPixelRatio(k); renderer.setSize(W, H, false); renderer.render(scene, camera);
+        const src = renderer.domElement, cw = src.width, ch = src.height, bar = Math.round(30 * k);
+        const c = document.createElement('canvas'); c.width = cw; c.height = ch + bar; const g = c.getContext('2d');
+        g.drawImage(src, 0, 0); renderer.setPixelRatio(pr0); renderer.setSize(W, H, false);
+        g.fillStyle = '#fff'; g.fillRect(0, ch, cw, bar); g.fillStyle = '#1f2a33'; g.font = `600 ${Math.round(12 * k)}px system-ui, sans-serif`; g.textBaseline = 'middle';
+        const d = new Date(), ds = `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
+        const what = bldK === 'bungalow' ? `Bestand + Bungalow (Lage ${lageName()})` : bldK === 'dummy' ? `Bestand + Dummy (Lage ${lageName()})` : 'Bestand';
+        const sunT = sunMode === 'std' ? '' : ' · Sonne ' + sunval.textContent.split(' · ')[0];
+        g.fillText(`Ashausener Str. 12, Stelle · ${what}${sunT} · Vorentwurf`, 10 * k, ch + bar / 2);
+        g.textAlign = 'right'; g.fillStyle = '#5d6a74'; g.font = `${Math.round(10.5 * k)}px system-ui, sans-serif`;
+        g.fillText(`${satMesh.visible ? 'Luftbild © LGLN (DOP20), dl-de/by-2-0 · ' : ''}oberhofer.vercel.app · ${ds}`, cw - 10 * k, ch + bar / 2);
+        const url = c.toDataURL('image/jpeg', 0.92), name = `Ashausener12_Ansicht_${ds.replace(/\./g, '-')}_${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}.jpg`;
+        const bin = atob(url.split(',')[1]), arr = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        const file = new File([arr], name, { type: 'image/jpeg' });
+        window.__lastSave = { w: c.width, h: c.height, bytes: arr.length, name };
+        const done = (m) => { toast.textContent = m; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 3500); };
+        if (MOBILE && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file], title: 'Ansicht Ashausener Str. 12' }).catch(() => {}); return; }
+        const href = URL.createObjectURL(file);
+        if (/iP(hone|ad|od)/.test(navigator.userAgent)) { window.open(href, '_blank'); done('Bild in neuem Tab geöffnet – lange drücken zum Sichern.'); return; }
+        const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(href), 30000); done(`Bild gespeichert (${c.width} × ${c.height} px).`);
+      };
+      saveBtn.addEventListener('click', () => { try { saveView(); } catch (e) { console.error(e); toast.textContent = 'Speichern nicht möglich – bitte Bildschirmfoto nutzen.'; toast.style.display = 'block'; } });
       window.__nav = { pick, onDbl, setLook, setBld, applySun };
       const panel = document.getElementById('panel'); panel.style.display = 'flex';
       const fitPanel = () => {   // mobil: Bildmitte über die Bottom-Bar schieben
