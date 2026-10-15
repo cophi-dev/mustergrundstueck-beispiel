@@ -41,9 +41,23 @@
     #extra .val { width: 100%; color: #333; font-size: 12px; }
     #extra .note { font-size: 11px; color: #555; line-height: 1.4; margin: 0; }
     #marker { position: fixed; width: 18px; height: 18px; margin: -11px 0 0 -11px; border: 2px solid #fff; border-radius: 50%; background: rgba(47,93,80,.75); box-shadow: 0 0 0 2px rgba(31,42,51,.5); pointer-events: none; display: none; transition: opacity .6s; }
+    #helpBtn { position: fixed; left: 12px; top: 12px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,255,255,.95); box-shadow: 0 3px 12px rgba(20,30,40,.2); font: 700 19px system-ui, sans-serif; color: var(--accent); cursor: pointer; z-index: 5; }
+    #help { position: fixed; inset: 0; background: rgba(20,28,34,.55); display: none; align-items: center; justify-content: center; z-index: 10; padding: 16px; box-sizing: border-box; }
+    #help.on { display: flex; }
+    #help .card { background: #fff; border-radius: 14px; max-width: 520px; width: 100%; padding: 18px 20px; box-shadow: 0 10px 40px rgba(0,0,0,.3); max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
+    #help h2 { margin: 0 0 10px; font-size: 18px; }
+    #help ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    #help li { display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: center; font-size: 14px; line-height: 1.35; }
+    #help li svg { width: 40px; height: 40px; }
+    #help li b { display: block; }
+    #help li small { color: var(--muted); }
+    #help .ok { margin-top: 14px; width: 100%; min-height: 44px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; font: 700 15px system-ui, sans-serif; cursor: pointer; }
+    #toast { position: fixed; left: 50%; top: 14px; transform: translateX(-50%); background: rgba(31,42,51,.9); color: #fff; padding: 9px 14px; border-radius: 10px; font-size: 13.5px; z-index: 6; display: none; max-width: calc(100vw - 120px); text-align: center; }
     @media (max-width: 700px) {
-      #extra .body { max-height: 38vh; overflow-y: auto; }
-      #panel { max-height: 64vh; }
+      #panel { max-height: 45vh; overflow-y: auto; }
+      #panel #extra .lbl { display: inline-block; width: 52px; }
+      #toast { top: 60px; max-width: calc(100vw - 24px); }
+      #helpBtn { top: 10px; left: 10px; }
       #hint { display: none; }
       #panel { left: 0; right: 0; top: auto; bottom: 0; width: auto; border-radius: 14px 14px 0 0; padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); gap: 6px; }
       #panel .lbl { display: none; }
@@ -80,7 +94,7 @@
     <details id="extra"><summary>Sonne &amp; Windrad</summary><div class="body">
       <div class="row"><span class="lbl">Sonne</span><div class="seg" id="sunp"><button type="button" data-s="std" class="on">Standard</button><button type="button" data-s="03-21">21.3.</button><button type="button" data-s="06-21">21.6.</button><button type="button" data-s="12-21">21.12.</button></div></div>
       <div class="row"><span class="lbl">Datum</span><input type="range" id="sday" min="0" max="364" step="1" value="171" aria-label="Datum"></div>
-      <div class="row"><span class="lbl">Uhr</span><input type="range" id="stime" min="4" max="22" step="0.25" value="14" aria-label="Uhrzeit"></div>
+      <div class="row"><span class="lbl">Uhrzeit</span><input type="range" id="stime" min="4" max="22" step="0.25" value="14" aria-label="Uhrzeit"></div>
       <div class="val" id="sunval">Standard-Licht (kein bestimmter Sonnenstand)</div>
       <div class="row"><span class="lbl">Windrad</span><div class="seg" id="wtype"><button type="button" data-w="off" class="on">aus</button><button type="button" data-w="a">modern</button><button type="button" data-w="b">Western</button></div></div>
       <div class="row"><span class="lbl">Ort</span><div class="seg" id="wpos"><button type="button" data-p="garten" class="on">Garten 121/1</button><button type="button" data-p="nw">121/2 NW</button><button type="button" data-p="dach">Garagendach</button></div></div>
@@ -88,8 +102,22 @@
     </div></details>
   </div>
   <div id="marker"></div>
+  <button id="helpBtn" type="button" aria-label="Hilfe zur Steuerung" title="Hilfe zur Steuerung">?</button>
+  <div id="toast" role="status"></div>
+  <div id="help" role="dialog" aria-modal="true" aria-labelledby="helpT"><div class="card">
+    <h2 id="helpT">So bedienen Sie die 3D-Ansicht</h2>
+    <ul>
+      <li><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#eef4f1"/><path d="M11 22a9 9 0 0 1 17-5" fill="none" stroke="#2f5d50" stroke-width="2.5"/><path d="M29 11v7h-7" fill="none" stroke="#2f5d50" stroke-width="2.5"/></svg><span><b>Drehen</b><small>Maus: linke Taste gedrückt halten und ziehen · Handy: mit einem Finger wischen</small></span></li>
+      <li><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#eef4f1"/><circle cx="18" cy="18" r="7" fill="none" stroke="#2f5d50" stroke-width="2.5"/><path d="M23 23l7 7M15 18h6M18 15v6" stroke="#2f5d50" stroke-width="2.5"/></svg><span><b>Näher / weiter weg</b><small>Maus: Mausrad · Handy: zwei Finger auseinander- oder zusammenziehen</small></span></li>
+      <li><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#eef4f1"/><path d="M20 9v22M9 20h22M20 9l-3 3M20 9l3 3M20 31l-3-3M20 31l3-3M9 20l3-3M9 20l3 3M31 20l-3-3M31 20l-3 3" fill="none" stroke="#2f5d50" stroke-width="2.2"/></svg><span><b>Verschieben</b><small>Maus: rechte Taste gedrückt halten · Handy: mit zwei Fingern schieben</small></span></li>
+      <li><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#eef4f1"/><circle cx="20" cy="20" r="6" fill="#2f5d50" stroke="#fff" stroke-width="2"/><circle cx="20" cy="20" r="11" fill="none" stroke="#2f5d50" stroke-width="1.6" stroke-dasharray="3 3"/></svg><span><b>Drehpunkt setzen</b><small>Doppelklick (Handy: doppelt tippen) auf eine Stelle – danach dreht sich die Ansicht um genau diesen Punkt.</small></span></li>
+      <li><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#eef4f1"/><path d="M8 20s5-8 12-8 12 8 12 8-5 8-12 8-12-8-12-8z" fill="none" stroke="#2f5d50" stroke-width="2.3"/><circle cx="20" cy="20" r="4" fill="#2f5d50"/></svg><span><b>Umschauen</b><small>Schalter „Umschauen“: Sie stehen im Garten und drehen den Kopf. Mausrad bzw. zwei Finger = gehen, Doppelklick = dorthin gehen.</small></span></li>
+      <li><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#eef4f1"/><circle cx="20" cy="20" r="6" fill="#e8a33a"/><path d="M20 7v4M20 29v4M7 20h4M29 20h4M11 11l3 3M26 26l3 3M11 29l3-3M26 14l3-3" stroke="#e8a33a" stroke-width="2.2"/></svg><span><b>Sonne &amp; Windrad</b><small>Unten im Bedienfeld: Datum und Uhrzeit wählen – die Schatten stimmen für Stelle. Windrad zur Probe aufstellen.</small></span></li>
+    </ul>
+    <button class="ok" type="button" id="helpOk">Verstanden</button>
+  </div></div>
   <div id="attr">Luftbild: © <a href="https://www.lgln.niedersachsen.de" target="_blank" rel="noopener">LGLN</a> (DOP20), Lizenz <a href="https://www.govdata.de/dl-de/by-2-0" target="_blank" rel="noopener">dl-de/by-2-0</a></div>
-  <div id="hint">Ziehen: drehen · Doppelklick: Drehpunkt setzen · Scrollen: zoomen · Rechtsklick: verschieben</div>
+  <div id="hint">Ziehen: drehen · Doppelklick: Drehpunkt · Mausrad: näher/weiter · Rechte Maustaste: schieben · ? = Hilfe</div>
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -436,7 +464,7 @@
       const lookBtn = document.getElementById('look');
       const lookFlags = (on) => {
         look = on; lookBtn.classList.toggle('on', on); lookBtn.setAttribute('aria-pressed', on);
-        document.getElementById('hint').textContent = on ? 'Ziehen: umsehen · Mausrad: vor/zurück · Doppelklick: dorthin gehen' : 'Ziehen: drehen · Doppelklick: Drehpunkt setzen · Scrollen: zoomen · Rechtsklick: verschieben';
+        document.getElementById('hint').textContent = on ? 'Ziehen: Kopf drehen · Mausrad: gehen · Doppelklick: dorthin gehen · ? = Hilfe' : 'Ziehen: drehen · Doppelklick: Drehpunkt · Mausrad: näher/weiter · Rechte Maustaste: schieben · ? = Hilfe';
         controls.enableZoom = !on; controls.screenSpacePanning = !on; controls.rotateSpeed = on ? 0.45 : 1;
         controls.maxPolarAngle = on ? Math.PI - 0.08 : Math.PI / 2 - 0.03; controls.minPolarAngle = on ? 0.08 : 0;
         controls.minDistance = on ? 0.001 : (curView !== 'overview' ? 0.05 : 0.5);
@@ -489,8 +517,9 @@
       }, { passive: false });
 
       // ---- Sonnenstand für Stelle (53,384° N, 10,111° O), Ortszeit Europe/Berlin, Schatten aus der Sonnenrichtung (SunCalc-Formeln)
+      const qs0 = new URLSearchParams(location.search);
       const RAD = Math.PI / 180, LAT = 53.384 * RAD, LW = -10.111 * RAD;
-      const E3 = new THREE.Vector3(0.531, 0, -0.847), N3 = new THREE.Vector3(-0.847, 0, -0.531);   // Nord = V um 19,8° gedreht
+      const E3 = new THREE.Vector3(0.5178, 0, -0.8555), N3 = new THREE.Vector3(-0.8555, 0, -0.5178);   // geogr. Nord = V um 20,70° gedreht (Kataster-Gitternord 19,80° + Meridiankonvergenz UTM32 0,89°)
       const sunPos = (ms) => {
         const d = ms / 864e5 - 0.5 + 2440588 - 2451545, M = RAD * (357.5291 + 0.98560028 * d);
         const L = M + RAD * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M)) + RAD * 102.9372 + Math.PI, e = RAD * 23.4397;
@@ -584,6 +613,18 @@
             else { const q = markP.clone().project(camera), r = dom.getBoundingClientRect(); marker.style.display = 'block'; marker.style.left = (r.left + (q.x + 1) / 2 * r.width) + 'px'; marker.style.top = (r.top + (1 - q.y) / 2 * r.height) + 'px'; marker.style.opacity = a > 1.4 ? 0 : 1; }
           }
         };
+      }
+      // ---- Hilfe-Overlay + Hinweis beim ersten Besuch
+      const help = document.getElementById('help'), toast = document.getElementById('toast');
+      const showHelp = (on) => help.classList.toggle('on', on);
+      document.getElementById('helpBtn').addEventListener('click', () => showHelp(true));
+      document.getElementById('helpOk').addEventListener('click', () => showHelp(false));
+      help.addEventListener('click', (e) => { if (e.target === help) showHelp(false); });
+      addEventListener('keydown', (e) => { if (e.key === 'Escape') showHelp(false); });
+      let seen = false; try { seen = !!localStorage.getItem('ob_help_v1'); localStorage.setItem('ob_help_v1', '1'); } catch (e) {}
+      if (!seen && !qs0.has('nohint')) {
+        toast.textContent = MOBILE ? 'Tipp: mit einem Finger drehen, doppelt tippen setzt den Drehpunkt. „?“ erklärt alles.' : 'Tipp: ziehen zum Drehen, Doppelklick setzt den Drehpunkt. „?“ erklärt alles.';
+        toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 7000);
       }
       window.__nav = { pick, onDbl, setLook, setBld, applySun };
       const panel = document.getElementById('panel'); panel.style.display = 'flex';
