@@ -15,7 +15,7 @@
     #viewlabel { position: fixed; left: 14px; top: 64px; max-width: calc(100vw - 380px); padding: 8px 14px; border-radius: 8px; background: rgba(31,42,51,.82); color: #fff; font: 600 14px system-ui, -apple-system, sans-serif; text-align: center; display: none; pointer-events: none; box-sizing: border-box; }
     #attr { position: fixed; right: 12px; bottom: 44px; color: #222; font-size: 11px; line-height: 1.2; white-space: nowrap; text-shadow: 0 0 3px #fff, 0 0 2px #fff; display: none; }
     #attr a { color: #234; }
-    #panel { position: fixed; right: 12px; top: 12px; width: 340px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,.95); box-shadow: 0 6px 24px rgba(20,30,40,.18); display: none; flex-direction: column; gap: 10px; font-size: 13px; box-sizing: border-box; }
+    #panel { position: fixed; right: 12px; top: 12px; width: 340px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,.95); box-shadow: 0 6px 24px rgba(20,30,40,.18); display: none; flex-direction: column; gap: 10px; font-size: 13px; box-sizing: border-box; max-height: calc(100vh - 24px); overflow-y: auto; }
     #panel .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     #panel .lbl { width: 44px; color: var(--muted); font-weight: 600; font-size: 12px; }
     .seg { display: inline-flex; flex: 1; background: #eef1f3; border-radius: 9px; padding: 3px; gap: 2px; }
@@ -34,7 +34,16 @@
     #pulse { animation: none; }
     .flash { animation: flash 1.2s ease 2; }
     @keyframes flash { 50% { box-shadow: 0 0 0 4px rgba(47,93,80,.45); } }
+    #extra { font-size: 12.5px; }
+    #extra summary { cursor: pointer; color: var(--muted); font-weight: 700; padding: 2px 0; }
+    #extra .body { display: flex; flex-direction: column; gap: 7px; margin-top: 6px; }
+    #extra input[type=range] { flex: 1; min-width: 120px; accent-color: var(--accent); height: 28px; }
+    #extra .val { width: 100%; color: #333; font-size: 12px; }
+    #extra .note { font-size: 11px; color: #555; line-height: 1.4; margin: 0; }
+    #marker { position: fixed; width: 18px; height: 18px; margin: -11px 0 0 -11px; border: 2px solid #fff; border-radius: 50%; background: rgba(47,93,80,.75); box-shadow: 0 0 0 2px rgba(31,42,51,.5); pointer-events: none; display: none; transition: opacity .6s; }
     @media (max-width: 700px) {
+      #extra .body { max-height: 38vh; overflow-y: auto; }
+      #panel { max-height: 64vh; }
       #hint { display: none; }
       #panel { left: 0; right: 0; top: auto; bottom: 0; width: auto; border-radius: 14px 14px 0 0; padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); gap: 6px; }
       #panel .lbl { display: none; }
@@ -62,13 +71,25 @@
   <div id="viewlabel"></div>
   <div id="caption">Bestand Ashausener Str. 12</div>
   <div id="panel" aria-label="Steuerung">
-    <div class="row split"><button id="v1" class="tgl on" type="button" aria-pressed="true">Bungalow anzeigen</button><button id="sat" class="tgl" type="button" aria-pressed="false">Luftbild</button></div>
-    <div class="row" id="posrow"><span class="lbl">Lage</span><div class="seg" id="pos" role="group" aria-label="Lage des Bungalows"><button type="button" data-k="ost" class="on">Ost</button><button type="button" data-k="mitte">Mitte</button><button type="button" data-k="west">West</button></div></div>
+    <div class="row"><span class="lbl">Haus</span><div class="seg" id="bld" role="group" aria-label="Neubau auf 121/2"><button type="button" data-b="bungalow" class="on">Bungalow</button><button type="button" data-b="dummy" title="Kopie Bestandshaus ohne Anbau">Dummy</button><button type="button" data-b="none">nichts</button></div></div>
+    <div class="row split"><button id="sat" class="tgl" type="button" aria-pressed="false">Luftbild</button><button id="look" class="tgl" type="button" aria-pressed="false" title="Auf der Stelle umsehen (Ich-Perspektive)">Umschauen</button></div>
+    <button id="v1" type="button" hidden></button>
+    <div class="row" id="posrow"><span class="lbl">Lage</span><div class="seg" id="pos" role="group" aria-label="Lage auf 121/2"><button type="button" data-k="ost" class="on">Ost</button><button type="button" data-k="mitte">Mitte</button><button type="button" data-k="west">West</button></div></div>
     <div id="check"><span class="badge" id="badge">✓ Abstände und Größe vorgeprüft</span><details><summary>Details</summary><p id="checkdetails"></p></details></div>
     <div class="row"><span class="lbl">Blick</span><div class="seg" id="views" role="group" aria-label="Blick"><button type="button" data-v="overview" class="on">Übersicht</button><button type="button" data-v="innen_bu">Innen Bungalow</button><button type="button" data-v="innen_be">Innen Bestand</button></div></div>
+    <details id="extra"><summary>Sonne &amp; Windrad</summary><div class="body">
+      <div class="row"><span class="lbl">Sonne</span><div class="seg" id="sunp"><button type="button" data-s="std" class="on">Standard</button><button type="button" data-s="03-21">21.3.</button><button type="button" data-s="06-21">21.6.</button><button type="button" data-s="12-21">21.12.</button></div></div>
+      <div class="row"><span class="lbl">Datum</span><input type="range" id="sday" min="0" max="364" step="1" value="171" aria-label="Datum"></div>
+      <div class="row"><span class="lbl">Uhr</span><input type="range" id="stime" min="4" max="22" step="0.25" value="14" aria-label="Uhrzeit"></div>
+      <div class="val" id="sunval">Standard-Licht (kein bestimmter Sonnenstand)</div>
+      <div class="row"><span class="lbl">Windrad</span><div class="seg" id="wtype"><button type="button" data-w="off" class="on">aus</button><button type="button" data-w="a">modern</button><button type="button" data-w="b">Western</button></div></div>
+      <div class="row"><span class="lbl">Ort</span><div class="seg" id="wpos"><button type="button" data-p="garten" class="on">Garten 121/1</button><button type="button" data-p="nw">121/2 NW</button><button type="button" data-p="dach">Garagendach</button></div></div>
+      <p class="note" id="wnote">Höhen nach NBauO, Anhang (zu § 60 Abs. 1) Nr. 2.5, Fassung ab 01.07.2025 (NI-VORIS, abgerufen 15.10.2026): frei stehend verfahrensfrei bis 10 m Gesamthöhe und max. 3 m Rotordurchmesser, an Gebäuden bis 3 m ab Befestigungspunkt – <b>nicht</b> in reinen und allgemeinen Wohngebieten. Das Grundstück liegt im WA (B-Plan 32/50), hier also voraussichtlich genehmigungspflichtig. Ohne Gewähr, Abstandsregeln beachten.</p>
+    </div></details>
   </div>
+  <div id="marker"></div>
   <div id="attr">Luftbild: © <a href="https://www.lgln.niedersachsen.de" target="_blank" rel="noopener">LGLN</a> (DOP20), Lizenz <a href="https://www.govdata.de/dl-de/by-2-0" target="_blank" rel="noopener">dl-de/by-2-0</a></div>
-  <div id="hint">Ziehen: drehen · Scrollen: zoomen · Rechtsklick: verschieben</div>
+  <div id="hint">Ziehen: drehen · Doppelklick: Drehpunkt setzen · Scrollen: zoomen · Rechtsklick: verschieben</div>
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -208,10 +229,18 @@
         mitte: { u: 8.70,  ok: true, d: 'Abstände zu den Grenzen: Süd 3,03 m · West 8,64 m · Ost 8,74 m · Nord 7,02 m (mind. 3,00 m). Zur Garage 6,73 m, zum Gerätehaus 5,98 m.' },
         west:  { u: 3.13,  ok: true, d: 'Abstände zu den Grenzen: Süd 3,03 m · West 3,07 m · Nord 7,02 m · Ost 14,31 m (mind. 3,00 m). Zur Garage 10,46 m, zum Gerätehaus 6,95 m.' }
       };
-      let posU = U0_V1, posK = 'ost';
+      let posU = U0_V1, posK = 'ost', bldK = 'bungalow';
+      // Dummy = Kopie Bestandshaus ohne Anbau (11,48 x 8,58 m, Veranda vorn Richtung Am Osterfeld), Mitte u je Lage, Südwand bei v = 4,70 m
+      const DU_W = 11.48, DU_V0 = 4.70, DU_V1 = 15.28;
+      const DU = {
+        ost:   { u: 23.90, p: [-7.492, -39.703],  ok: true, d: 'Abstände zu den Grenzen: Süd 4,70 m · Ost 6,80 m · Nord 5,97 m (Veranda 3,97 m) · West 18,09 m.' },
+        mitte: { u: 18.20, p: [-11.976, -36.185], ok: true, d: 'Abstände zu den Grenzen: Süd 4,70 m · West 12,39 m · Ost 12,50 m · Nord 5,97 m (Veranda 3,97 m).' },
+        west:  { u: 12.63, p: [-16.358, -32.747], ok: true, d: 'Abstände zu den Grenzen: Süd 4,70 m · West 6,82 m · Nord 5,98 m (Veranda 3,98 m) · Ost 18,07 m.' }
+      };
       const isFelled = (t) => {
-        if (posU === U0_V1) return (vj.felled_v1 || []).some(([x, y]) => Math.abs(t[1] - x) < 0.05 && Math.abs(t[2] - y) < 0.05);
+        if (bldK === 'bungalow' && posU === U0_V1) return (vj.felled_v1 || []).some(([x, y]) => Math.abs(t[1] - x) < 0.05 && Math.abs(t[2] - y) < 0.05);
         const [u, v] = toUV(t[1], t[2]);   // andere Lage: Bäume im Baufeld (+1,5 m) und auf der Terrasse
+        if (bldK === 'dummy') { const c = DU[posK].u; return u > c - DU_W / 2 - 1.5 && u < c + DU_W / 2 + 1.5 && v > DU_V0 - 2 && v < DU_V1 + 1.5; }
         return u > posU - 1.5 && u < posU + BU_W + 1.5 && v > BU_V0 - 3.5 && v < BU_V0 + BU_D + 1.5;
       };
       let veg = buildTrees(all.filter((t) => !isFelled(t)));
@@ -224,8 +253,8 @@
         vegFelled.visible = vis; scene.add(veg, vegFelled);
       };
 
-      // ---- Luftbild LGLN DOP20 (dl-de/by-2-0), 240 x 240 m, EPSG:25832, per Flurstück 121/2 eingepasst (Abw. < 1 cm)
-      const SAT = [[-159.934, 26.697], [-34.046, -174.112], [166.762, -48.223], [40.874, 152.585]];   // NW, NE, SE, SW (three x, z)
+      // ---- Luftbild LGLN DOP20 (dl-de/by-2-0), 440 x 440 m, EPSG:25832, per Flurstück 121/2 eingepasst (Abw. < 1 cm)
+      const SAT = [[-296.058, 57.913], [-65.263, -310.235], [302.886, -79.44], [72.091, 288.709]];   // NW, NE, SE, SW (three x, z)
       const satGeo = new THREE.BufferGeometry();
       satGeo.setAttribute('position', new THREE.Float32BufferAttribute(SAT.flatMap(([x, z]) => [x, 0.006, z]), 3));
       satGeo.setAttribute('uv', new THREE.Float32BufferAttribute([0, 1, 1, 1, 1, 0, 0, 0], 2));
@@ -239,9 +268,10 @@
       const setSat = (on) => {
         satBtn.classList.toggle('on', on); satBtn.setAttribute('aria-pressed', on);
         attr.style.display = on ? 'block' : 'none';
+        scene.fog.near = on ? 140 : 70; scene.fog.far = on ? 620 : 320;
         if (on && !satLoaded) {
           satLoaded = true; satBtn.textContent = 'Luftbild lädt …';
-          new THREE.TextureLoader().load(BASE + (MOBILE ? 'luftbild_1k.jpg' : 'luftbild_2k.jpg'), (t) => {
+          new THREE.TextureLoader().load(BASE + (MOBILE ? 'luftbild_1k5.jpg' : 'luftbild_3k.jpg'), (t) => {
             t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
             satMat.map = t; satMat.needsUpdate = true; satMesh.visible = satBtn.classList.contains('on');
             satBtn.textContent = 'Luftbild'; window.__satReady = true;
@@ -258,13 +288,13 @@
       const radius = focus.getSize(new THREE.Vector3()).length() / 2;
       const fitDist = () => radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) / Math.min(1, Math.max(0.55, camera.aspect)) * 1.0;
       const OV_DIR = new THREE.Vector3(0.75, 0.75, 0.62).normalize();
-      controls.maxDistance = fitDist() * 3;
+      controls.maxDistance = fitDist() * 3; controls.zoomToCursor = true;
       const overview = () => {   // Desktop: Modell links vom Bedienfeld
         const right = new THREE.Vector3(0, 1, 0).cross(OV_DIR).normalize(), t = center.clone();
         if (innerWidth > 700) t.addScaledVector(right, radius * 0.05);
         return { pos: t.clone().addScaledVector(OV_DIR, fitDist()), target: t, fov: 40 };
       };
-      { const o = overview(); camera.position.copy(o.pos); controls.target.copy(o.target); controls.minDistance = 2; controls.update(); }
+      { const o = overview(); camera.position.copy(o.pos); controls.target.copy(o.target); controls.minDistance = 0.5; controls.update(); }
 
       const sc = shadowBox.getCenter(new THREE.Vector3());
       const sr = shadowBox.getSize(new THREE.Vector3()).length() / 2;
@@ -301,7 +331,7 @@
       // ---- Innenansichten (Augenhöhe 1,60 m über Fußboden, Blick durchs Fenster)
       const viewLabel = document.getElementById('viewlabel');
       const hemi = scene.children.find((o) => o.isHemisphereLight);
-      const setInterior = (on) => { hemi.intensity = on ? 1.1 : 0.35; scene.environmentIntensity = on ? 1.3 : 0.9; controls.minDistance = on ? 0.05 : 2; };
+      const setInterior = (on) => { hemi.intensity = on ? 1.1 : 0.35; scene.environmentIntensity = on ? 1.3 : 0.9; controls.minDistance = on ? 0.05 : 0.5; };
       const VIEWS = {
         overview: () => ({ ...overview(), label: '' }),
         innen_bu: () => {   // Wohnzimmer Bungalow (Südfassade), Blick über den Garten zum Bestandshaus
@@ -319,34 +349,49 @@
       const viewBtns = document.querySelectorAll('#views button');
       const goView = (k, dur) => {
         if (k === 'innen_bu' && !btn.classList.contains('on')) setV1(true);
+        if (look) lookOff();
         curView = k; viewBtns.forEach((b) => b.classList.toggle('on', b.dataset.v === k));
         const v = VIEWS[k](); setInterior(k !== 'overview'); flyTo(v, dur);
         viewLabel.textContent = v.label; viewLabel.style.display = v.label ? 'block' : 'none';
       };
       viewBtns.forEach((b) => b.addEventListener('click', () => goView(b.dataset.v)));
 
-      // ---- Bungalow + Lage
-      const btn = document.getElementById('v1'), caption = document.getElementById('caption'), posBtns = document.querySelectorAll('#pos button');
+      // ---- Neubau auf 121/2: Bungalow | Dummy (Kopie Bestandshaus ohne Anbau) | nichts – je Lage Ost/Mitte/West
+      const btn = document.getElementById('v1'), caption = document.getElementById('caption'), posBtns = document.querySelectorAll('#pos button'), bldBtns = document.querySelectorAll('#bld button');
       const badge = document.getElementById('badge'), details = document.getElementById('checkdetails'), check = document.getElementById('check'), posRow = document.getElementById('posrow');
-      const updCaption = () => { caption.textContent = btn.classList.contains('on') ? `Bestand + Bungalow (Vorentwurf) · Lage ${posK[0].toUpperCase() + posK.slice(1)}` : 'Bestand Ashausener Str. 12 (heute)'; };
+      // Vorprüfung Dummy 15.10.26 (shapely, Lageplan ±0,25 m): GR 98,5 + Veranda 8,0 m²; NBauO § 5: 0,5 H, H = Firsthöhe 9,15 m → 4,58 m; Veranda H 3,00 m → 3,00 m.
+      const DU_GR = 'Grundfläche 106,5 m² (Haus 11,48 × 8,58 m + Veranda 4,00 × 2,00 m), zulässig 175,3 m² (GRZ 0,25 auf 701 m²).';
+      const DU_AF = 'Nötig sind 4,58 m (0,5 × Firsthöhe 9,15 m), an der Veranda 3,00 m. Dafür steht das Haus 4,70 m von der Südgrenze ab (der Bungalow nur 3,03 m – mit 3,03 m würde der Dummy nicht passen).';
+      const lageName = () => posK[0].toUpperCase() + posK.slice(1);
+      const updCaption = () => {
+        caption.textContent = bldK === 'bungalow' ? `Bestand + Bungalow (Vorentwurf) · Lage ${lageName()}` : bldK === 'dummy' ? `Bestand + Dummy (ohne Anbau) · Lage ${lageName()}` : 'Bestand Ashausener Str. 12 (heute)';
+      };
+      const updCheck = () => {
+        const p = bldK === 'dummy' ? DU[posK] : POS[posK];
+        badge.textContent = p.ok ? '✓ Abstände und Größe vorgeprüft' : '✗ Abstand zur Grenze zu gering'; badge.classList.toggle('bad', !p.ok);
+        details.textContent = bldK === 'dummy' ? `${DU_GR} ${p.d} ${DU_AF} Vorprüfung nach Lageplan (±0,25 m), keine Bauvorlage.` : `${GR_TXT} ${p.d} Vorprüfung nach Lageplan (±0,25 m), keine Bauvorlage.`;
+      };
+      let dummy = null, duLoading = false, duTween = null;
+      const duPos = (k) => new THREE.Vector3(DU[k].p[0], 0, DU[k].p[1]);
       const setPos = (k, animate = true) => {
         const p = POS[k]; if (!p) return;
         posK = k; posU = p.u; posBtns.forEach((b) => b.classList.toggle('on', b.dataset.k === k));
         if (bungalow) { if (animate) buTween = { t0: performance.now(), a: bungalow.position.clone(), b: buOffset(posU) }; else bungalow.position.copy(buOffset(posU)); }
-        rebuildTrees(); vegFelled.visible = !btn.classList.contains('on');
-        badge.textContent = p.ok ? '✓ Abstände und Größe vorgeprüft' : '✗ Abstand zur Grenze zu gering'; badge.classList.toggle('bad', !p.ok);
-        details.textContent = `${GR_TXT} ${p.d} Vorprüfung nach Lageplan (±0,25 m), keine Bauvorlage.`;
-        updCaption();
+        if (dummy) { if (animate) duTween = { t0: performance.now(), a: dummy.position.clone(), b: duPos(k) }; else dummy.position.copy(duPos(k)); }
+        rebuildTrees(); vegFelled.visible = bldK === 'none';
+        updCheck(); updCaption();
         if (curView !== 'overview') goView(curView, 900);
       };
       posBtns.forEach((b) => b.addEventListener('click', () => setPos(b.dataset.k)));
       let bungalow = null, loading = false;
-      const setV1 = (on) => {
-        btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', on);
-        vegFelled.visible = !on; posRow.style.display = check.style.display = on ? '' : 'none';
-        viewBtns[1].disabled = false;
-        if (bungalow) bungalow.visible = on;
-        updCaption();
+      const setBld = (k) => {
+        bldK = k; bldBtns.forEach((b) => b.classList.toggle('on', b.dataset.b === k));
+        btn.classList.toggle('on', k === 'bungalow');
+        posRow.style.display = check.style.display = k === 'none' ? 'none' : '';
+        if (bungalow) bungalow.visible = k === 'bungalow';
+        if (dummy) dummy.visible = k === 'dummy';
+        rebuildTrees(); vegFelled.visible = k === 'none';
+        updCheck(); updCaption();
         if (!bungalow && !loading) {   // immer laden: Straße Am Osterfeld steckt im Bungalow-GLB
           loading = true;
           loader.load(BASE + 'bungalow_v1.glb', (g) => {
@@ -355,14 +400,192 @@
             fixGlass(bungalow);
             // Straße/Gehweg Am Osterfeld gehören nicht zum Bungalow → dauerhaft sichtbar.
             bungalow.children.filter((o) => !/^BU_/.test(o.name)).forEach((o) => scene.attach(o));
-            bungalow.visible = btn.classList.contains('on');
+            bungalow.visible = bldK === 'bungalow';
             bungalow.position.copy(buOffset(posU));
             scene.add(bungalow);
             window.__v1Ready = true;
-          }, undefined, (e) => { console.error(e); btn.textContent = 'Bungalow nicht verfügbar'; });
+          }, undefined, (e) => { console.error(e); bldBtns[0].textContent = 'Bungalow n. v.'; });
+        }
+        if (k === 'dummy' && !dummy && !duLoading) {
+          duLoading = true; bldBtns[1].textContent = 'lädt …';
+          loader.load(BASE + (MOBILE ? 'dummy_bestand_mobile.glb' : 'dummy_bestand.glb'), (g) => {
+            g.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+            fixGlass(g.scene);
+            dummy = new THREE.Group(); dummy.name = 'Dummy_Bestand_ohne_Anbau'; dummy.add(g.scene);
+            dummy.rotation.y = -2.47634;   // 180° gedreht, Veranda Richtung Am Osterfeld, Traufseite parallel zur Grenze 121/1|121/2
+            dummy.position.copy(duPos(posK)); dummy.visible = bldK === 'dummy';
+            scene.add(dummy); bldBtns[1].textContent = 'Dummy'; window.__duReady = true;
+          }, undefined, (e) => { console.error(e); bldBtns[1].textContent = 'Dummy n. v.'; });
         }
       };
-      btn.addEventListener('click', () => setV1(!btn.classList.contains('on')));
+      const setV1 = (on) => setBld(on ? 'bungalow' : 'none');
+      bldBtns.forEach((b) => b.addEventListener('click', () => setBld(b.dataset.b)));
+
+      // ---- Navigation wie Revit: Doppelklick / Doppeltipp setzt den Drehpunkt (Marker), Kamera rückt bis auf 25 m heran.
+      // Umschauen: Drehpunkt 1 cm vor dem Auge → auf der Stelle drehen; Mausrad = vor/zurück, Doppelklick = dorthin gehen.
+      const dom = renderer.domElement, ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), marker = document.getElementById('marker');
+      let markP = null, markT = 0, look = false;
+      const shown = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
+      const pick = (cx, cy) => {
+        const r = dom.getBoundingClientRect();
+        ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1);
+        ray.setFromCamera(ndc, camera);
+        const h = ray.intersectObjects(scene.children, true).find((x) => shown(x.object) && !(x.object.material && x.object.material.transparent && x.object !== satMesh));
+        return h ? h.point : null;
+      };
+      const lookBtn = document.getElementById('look');
+      const lookFlags = (on) => {
+        look = on; lookBtn.classList.toggle('on', on); lookBtn.setAttribute('aria-pressed', on);
+        document.getElementById('hint').textContent = on ? 'Ziehen: umsehen · Mausrad: vor/zurück · Doppelklick: dorthin gehen' : 'Ziehen: drehen · Doppelklick: Drehpunkt setzen · Scrollen: zoomen · Rechtsklick: verschieben';
+        controls.enableZoom = !on; controls.screenSpacePanning = !on; controls.rotateSpeed = on ? 0.45 : 1;
+        controls.maxPolarAngle = on ? Math.PI - 0.08 : Math.PI / 2 - 0.03; controls.minPolarAngle = on ? 0.08 : 0;
+        controls.minDistance = on ? 0.001 : (curView !== 'overview' ? 0.05 : 0.5);
+      };
+      const lookOff = () => lookFlags(false);
+      const setLook = (on) => {
+        if (on) {
+          const dir = controls.target.clone().sub(camera.position); let eye = camera.position.clone();
+          if (eye.y > 3.5) {   // aus der Luft: in den Garten zwischen Bestand und 121/2 stellen (Augenhöhe 1,70 m), Blickrichtung bleibt
+            dir.setY(0); if (dir.lengthSq() < 1e-6) dir.set(0, 0, -1); dir.normalize();
+            eye = new THREE.Vector3(-6, 1.7, -16);
+          }
+          dir.normalize(); lookFlags(true);
+          flyTo({ pos: eye, target: eye.clone().addScaledVector(dir, 0.01), fov: 60 }, 900);
+        } else {
+          const dir = controls.target.clone().sub(camera.position).setY(0).normalize();
+          const tgt = camera.position.clone().addScaledVector(dir, 12); tgt.y = 1.5;
+          const pos = tgt.clone().addScaledVector(dir, -24); pos.y = 14;
+          lookFlags(false); flyTo({ pos, target: tgt, fov: 40 }, 900);
+        }
+      };
+      lookBtn.addEventListener('click', () => setLook(!look));
+      const onDbl = (cx, cy) => {
+        const p = pick(cx, cy); if (!p) return;
+        if (look) {   // dorthin gehen (1,5 m davor, Augenhöhe)
+          const dir = p.clone().sub(camera.position).setY(0); const d = dir.length(); if (d < 0.3) return; dir.normalize();
+          const eye = camera.position.clone().addScaledVector(dir, Math.max(0, d - 1.5)); eye.y = Math.max(1.7, Math.min(eye.y, 1.7));
+          flyTo({ pos: eye, target: eye.clone().addScaledVector(dir, 0.01), fov: camera.fov }, 800);
+        } else {
+          const d = camera.position.distanceTo(p), maxD = 25;
+          const pos = d > maxD ? p.clone().add(camera.position.clone().sub(p).setLength(maxD)) : camera.position.clone();
+          flyTo({ pos, target: p.clone(), fov: camera.fov }, 650);
+        }
+        markP = p.clone(); markT = performance.now();
+      };
+      let lastTap = 0, tapXY = [0, 0], downXY = null, lastTouchDbl = 0;
+      dom.addEventListener('dblclick', (e) => { if (performance.now() - lastTouchDbl > 700) onDbl(e.clientX, e.clientY); });
+      dom.addEventListener('pointerdown', (e) => { downXY = e.pointerType === 'mouse' ? null : [e.clientX, e.clientY]; });
+      dom.addEventListener('pointerup', (e) => {
+        if (!downXY || e.pointerType === 'mouse') return;
+        const moved = Math.hypot(e.clientX - downXY[0], e.clientY - downXY[1]) > 12; downXY = null; if (moved) return;
+        const t = performance.now();
+        if (t - lastTap < 380 && Math.hypot(e.clientX - tapXY[0], e.clientY - tapXY[1]) < 40) { lastTap = 0; lastTouchDbl = t; onDbl(e.clientX, e.clientY); }
+        else { lastTap = t; tapXY = [e.clientX, e.clientY]; }
+      });
+      dom.addEventListener('wheel', (e) => {
+        if (!look) return; e.preventDefault();
+        const f = camera.getWorldDirection(new THREE.Vector3()).setY(0).normalize(), st = -Math.sign(e.deltaY) * 0.7;
+        camera.position.addScaledVector(f, st); controls.target.addScaledVector(f, st);
+      }, { passive: false });
+
+      // ---- Sonnenstand für Stelle (53,384° N, 10,111° O), Ortszeit Europe/Berlin, Schatten aus der Sonnenrichtung (SunCalc-Formeln)
+      const RAD = Math.PI / 180, LAT = 53.384 * RAD, LW = -10.111 * RAD;
+      const E3 = new THREE.Vector3(0.531, 0, -0.847), N3 = new THREE.Vector3(-0.847, 0, -0.531);   // Nord = V um 19,8° gedreht
+      const sunPos = (ms) => {
+        const d = ms / 864e5 - 0.5 + 2440588 - 2451545, M = RAD * (357.5291 + 0.98560028 * d);
+        const L = M + RAD * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M)) + RAD * 102.9372 + Math.PI, e = RAD * 23.4397;
+        const dec = Math.asin(Math.sin(e) * Math.sin(L)), ra = Math.atan2(Math.sin(L) * Math.cos(e), Math.cos(L));
+        const H = RAD * (280.16 + 360.9856235 * d) - LW - ra;
+        return { alt: Math.asin(Math.sin(LAT) * Math.sin(dec) + Math.cos(LAT) * Math.cos(dec) * Math.cos(H)), az: Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(LAT) - Math.tan(dec) * Math.cos(LAT)) };
+      };
+      const berlinOff = (ms) => Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Berlin', hour: '2-digit', hourCycle: 'h23' }).format(new Date(ms))) - new Date(ms).getUTCHours();
+      const sday = document.getElementById('sday'), stime = document.getElementById('stime'), sunval = document.getElementById('sunval'), sunBtns = document.querySelectorAll('#sunp button');
+      const PRESET = { '03-21': 79, '06-21': 171, '12-21': 354 };
+      let sunMode = 'std';
+      const warm = new THREE.Color(0xffb27a), white = new THREE.Color(0xfff1dc);
+      const applySun = () => {
+        sunBtns.forEach((b) => b.classList.toggle('on', sunMode === 'std' ? b.dataset.s === 'std' : PRESET[b.dataset.s] === +sday.value));
+        if (sunMode === 'std') { sun.position.copy(sc).addScaledVector(SUN_DIR, sr * 2); sun.intensity = 2.6; sun.color.copy(white); sunval.textContent = 'Standard-Licht (kein bestimmter Sonnenstand)'; return; }
+        const day = new Date(Date.UTC(2026, 0, 1) + +sday.value * 864e5), Y = 2026, Mo = day.getUTCMonth(), D = day.getUTCDate(), t = +stime.value;
+        const noon = Date.UTC(Y, Mo, D, 11), off = berlinOff(noon), ms = Date.UTC(Y, Mo, D) + (t - off) * 36e5;
+        const { alt, az } = sunPos(ms), up = alt > 0;
+        const dir = E3.clone().multiplyScalar(-Math.sin(az) * Math.cos(alt)).addScaledVector(N3, -Math.cos(az) * Math.cos(alt)); dir.y = Math.sin(alt);
+        sun.position.copy(sc).addScaledVector(dir.normalize(), sr * 2);
+        sun.intensity = up ? 2.6 * Math.min(1, 0.25 + Math.sin(alt) * 1.8) : 0;
+        sun.color.copy(warm).lerp(white, Math.min(1, Math.max(0, Math.sin(alt) / 0.35)));
+        const hh = Math.floor(t), mm = String(Math.round((t - hh) * 60)).padStart(2, '0');
+        const comp = Math.round((az / RAD + 180 + 360) % 360);
+        sunval.textContent = `${D}.${Mo + 1}.2026, ${hh}:${mm} Uhr (${off === 2 ? 'MESZ' : 'MEZ'}) · ` + (up ? `Sonnenhöhe ${Math.round(alt / RAD)}°, aus ${comp}° (N = 0°)` : 'Sonne unter dem Horizont');
+      };
+      sunBtns.forEach((b) => b.addEventListener('click', () => { if (b.dataset.s === 'std') sunMode = 'std'; else { sunMode = 'date'; sday.value = PRESET[b.dataset.s]; } applySun(); }));
+      sday.addEventListener('input', () => { sunMode = 'date'; applySun(); });
+      stime.addEventListener('input', () => { sunMode = 'date'; applySun(); });
+
+      // ---- Kleinwindanlage: A modern (3-Blatt, Horizontalachse, Mast) / B Western-Windrad mit Gittermast; Rotor nach WSW
+      const WPOS = {
+        garten: { p: [-4.0, 0, -8.5], top: 10, R: 1.5 },          // Garten 121/1, > 12 m zur Grenze
+        nw:     { p: [-27.086, 0, -25.246], top: 10, R: 1.5 },    // 121/2 Nordwest-Ecke, ≥ 5 m (0,5 H) zu den Grenzen
+        dach:   { p: [9.732, 3.4, -21.880], top: 3, R: 0.6 }       // auf dem First der Garage, 3 m ab Befestigungspunkt
+      };
+      const wMat = new THREE.MeshStandardMaterial({ color: 0xeceff1, roughness: 0.45, metalness: 0.15 });
+      const sMat = new THREE.MeshStandardMaterial({ color: 0x7d8286, roughness: 0.55, metalness: 0.6 });
+      const vMat = new THREE.MeshStandardMaterial({ color: 0xb33a2c, roughness: 0.6, metalness: 0.3, side: THREE.DoubleSide });
+      const mesh = (g, m) => { const o = new THREE.Mesh(g, m); o.castShadow = o.receiveShadow = true; return o; };
+      const beam = (a, b, r, m) => { const l = a.distanceTo(b), o = mesh(new THREE.CylinderGeometry(r, r, l, 6), m); o.position.copy(a).add(b).multiplyScalar(0.5); o.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()); return o; };
+      const buildWind = (type, top, R) => {
+        const g = new THREE.Group(), rotor = new THREE.Group(), k = R / 1.5, hub = top - R, V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+        if (type === 'a') {
+          g.add(beam(V3(0, 0, 0), V3(0, hub, 0), 0.08 * k + 0.02, wMat));
+          const nac = mesh(new THREE.CylinderGeometry(0.11 * k, 0.13 * k, 0.75 * k, 14), wMat); nac.rotation.x = Math.PI / 2; nac.position.set(0, hub, -0.12 * k); g.add(nac);
+          const sp = mesh(new THREE.ConeGeometry(0.11 * k, 0.22 * k, 14), wMat); sp.rotation.x = Math.PI / 2; sp.position.z = 0.11 * k; rotor.add(sp);
+          for (let i = 0; i < 3; i++) { const bl = new THREE.BoxGeometry(0.15 * k, R - 0.08 * k, 0.025 * k); bl.translate(0, (R + 0.08 * k) / 2, 0); const m = mesh(bl, wMat); m.rotation.z = i * 2 * Math.PI / 3; const p = new THREE.Group(); p.add(m); m.rotation.y = 0.25; p.rotation.z = i * 2 * Math.PI / 3; m.rotation.z = 0; rotor.add(p); }
+          rotor.position.set(0, hub, 0.3 * k);
+        } else {
+          const b0 = Math.max(0.3, hub * 0.11), b1 = 0.16 * k, n = Math.max(2, Math.round(hub / 1.6));
+          const leg = (sx, sz, y) => { const f = y / hub, w = b0 + (b1 - b0) * f; return V3(sx * w, y, sz * w); };
+          const C = [[1, 1], [1, -1], [-1, -1], [-1, 1]];
+          C.forEach(([sx, sz]) => g.add(beam(leg(sx, sz, 0), leg(sx, sz, hub), 0.035 * k + 0.01, sMat)));
+          for (let i = 0; i < n; i++) {
+            const y0 = hub * i / n, y1 = hub * (i + 1) / n;
+            C.forEach(([sx, sz], j) => { const [tx, tz] = C[(j + 1) % 4]; g.add(beam(leg(sx, sz, y1), leg(tx, tz, y1), 0.02 * k + 0.006, sMat)); g.add(beam(leg(sx, sz, y0), leg(tx, tz, y1), 0.015 * k + 0.005, sMat)); });
+          }
+          g.add(beam(V3(0, hub - 0.1, -0.1 * k), V3(0, hub + 0.05, -1.5 * R), 0.03 * k + 0.008, sMat));   // Ausleger
+          const vane = mesh(new THREE.PlaneGeometry(1.0 * R, 0.6 * R), vMat); vane.rotation.y = Math.PI / 2; vane.position.set(0, hub + 0.08, -1.5 * R); g.add(vane);
+          g.add(mesh(new THREE.BoxGeometry(0.2 * k, 0.2 * k, 0.5 * k), sMat).translateY(hub).translateZ(-0.05 * k));
+          for (let i = 0; i < 18; i++) {   // 18 Blechflügel, leicht angestellt
+            const bl = new THREE.BoxGeometry(0.17 * k, 0.6 * R, 0.012 * k); bl.translate(0, 0.65 * R, 0);
+            const m = mesh(bl, wMat); m.rotation.y = 0.45; const p = new THREE.Group(); p.add(m); p.rotation.z = i * 2 * Math.PI / 18; rotor.add(p);
+          }
+          for (const rr of [0.38 * R, 0.96 * R]) { const ring = mesh(new THREE.TorusGeometry(rr, 0.015 * k + 0.005, 6, 48), sMat); rotor.add(ring); }
+          rotor.position.set(0, hub, 0.22 * k);
+        }
+        g.add(rotor); g.userData.rotor = rotor; return g;
+      };
+      const WIND_FROM = E3.clone().multiplyScalar(Math.sin(247.5 * RAD)).addScaledVector(N3, Math.cos(247.5 * RAD));   // vorherrschend WSW
+      let wind = null, wType = 'off', wPosK = 'garten';
+      const wtBtns = document.querySelectorAll('#wtype button'), wpBtns = document.querySelectorAll('#wpos button');
+      const setWind = () => {
+        wtBtns.forEach((b) => b.classList.toggle('on', b.dataset.w === wType)); wpBtns.forEach((b) => b.classList.toggle('on', b.dataset.p === wPosK));
+        if (wind) { scene.remove(wind); wind.traverse((o) => o.geometry && o.geometry.dispose()); wind = null; }
+        if (wType === 'off') return;
+        const P = WPOS[wPosK]; wind = buildWind(wType, P.top, P.R); wind.name = 'Kleinwindanlage';
+        wind.position.set(...P.p); wind.lookAt(wind.position.clone().add(WIND_FROM)); scene.add(wind);
+      };
+      wtBtns.forEach((b) => b.addEventListener('click', () => { wType = b.dataset.w; setWind(); }));
+      wpBtns.forEach((b) => b.addEventListener('click', () => { wPosK = b.dataset.p; if (wType === 'off') wType = 'a'; setWind(); }));
+
+      { const tick0 = tick; let last = performance.now();
+        tick = () => {
+          tick0(); const now = performance.now(), dt = Math.min(0.1, (now - last) / 1000); last = now;
+          if (duTween && dummy) { const k = Math.min(1, (now - duTween.t0) / 900); dummy.position.lerpVectors(duTween.a, duTween.b, ease(k)); if (k >= 1) duTween = null; }
+          if (wind) wind.userData.rotor.rotation.z += dt * (wType === 'a' ? 3.2 : 1.3);
+          if (markP) {
+            const a = (now - markT) / 1000; if (a > 2.2) { markP = null; marker.style.display = 'none'; }
+            else { const q = markP.clone().project(camera), r = dom.getBoundingClientRect(); marker.style.display = 'block'; marker.style.left = (r.left + (q.x + 1) / 2 * r.width) + 'px'; marker.style.top = (r.top + (1 - q.y) / 2 * r.height) + 'px'; marker.style.opacity = a > 1.4 ? 0 : 1; }
+          }
+        };
+      }
+      window.__nav = { pick, onDbl, setLook, setBld, applySun };
       const panel = document.getElementById('panel'); panel.style.display = 'flex';
       const fitPanel = () => {   // mobil: Bildmitte über die Bottom-Bar schieben
         const ph = innerWidth <= 700 ? panel.getBoundingClientRect().height : 0;
@@ -371,7 +594,7 @@
       };
       new ResizeObserver(fitPanel).observe(panel); window.addEventListener('resize', fitPanel);
       const qs = new URLSearchParams(location.search);
-      setV1(!qs.has('bestand'));   // Bungalow standardmäßig an; ?bestand = nur Bestand
+      setBld(qs.has('bestand') ? 'none' : ({ dummy: 'dummy', nichts: 'none' }[qs.get('haus')] || 'bungalow'));   // ?bestand = nur Bestand, ?haus=dummy
       setPos({ mitte: 'mitte', west: 'west' }[qs.get('lage')] || 'ost', false);
       if (VIEWS[qs.get('blick')]) goView(qs.get('blick'), 1);
       // Schritte aus der Intro-Karte der Hauptseite
