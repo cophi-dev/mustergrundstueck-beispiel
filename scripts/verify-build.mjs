@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = join(import.meta.dirname, '..');
-const required = ['middleware.ts', 'lib/viewer-access.ts', 'index.html', 'robots.txt', 'vercel.json'];
+const required = ['middleware.js', 'lib/viewer-access.ts', 'index.html', 'robots.txt', 'vercel.json'];
 
 for (const f of required) {
   if (!existsSync(join(root, f))) {

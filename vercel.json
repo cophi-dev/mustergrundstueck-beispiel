@@ -1,6 +1,4 @@
 {
-  "installCommand": "npm ci --include=dev",
-  "buildCommand": "npm run build",
   "redirects": [
     { "source": "/viewer", "destination": "/", "permanent": false },
     { "source": "/viewer/", "destination": "/", "permanent": false },

@@ -8,5 +8,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["middleware.ts", "lib/**/*.ts"]
+  "include": ["lib/**/*.ts"]
 }
