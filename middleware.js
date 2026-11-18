@@ -1,5 +1,3 @@
-import { next } from '@vercel/edge';
-
 const COOKIE_NAME = 'viewer_access';
 const COOKIE_MAX_AGE_SEC = 180 * 24 * 60 * 60;
 
@@ -150,7 +148,7 @@ export default async function middleware(request) {
 
   if (!isAuthorized(request, env)) return loginResponse(false);
 
-  const res = await next();
+  const res = await fetch(request);
   const headers = new Headers(res.headers);
   for (const [k, v] of Object.entries(SECURITY_HEADERS)) headers.set(k, v);
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });

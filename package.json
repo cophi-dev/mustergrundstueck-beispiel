@@ -2,9 +2,6 @@
   "name": "mustergrundstueck-beispiel",
   "private": true,
   "type": "module",
-  "dependencies": {
-    "@vercel/edge": "^1.2.1"
-  },
   "scripts": {
     "build": "node scripts/verify-build.mjs",
     "dev:gate": "tsx scripts/local-gate-server.mjs"
