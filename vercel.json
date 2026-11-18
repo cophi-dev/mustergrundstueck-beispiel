@@ -1,7 +1,4 @@
 {
-  "framework": null,
-  "installCommand": "echo \"no install\"",
-  "buildCommand": "echo \"static\"",
   "redirects": [
     { "source": "/viewer", "destination": "/", "permanent": false },
     { "source": "/viewer/", "destination": "/", "permanent": false },
